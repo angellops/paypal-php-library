@@ -11,6 +11,7 @@ Thumbs.db
 .idea/
 *.iml
 *.xml
+.vscode/
 
 # Composer dependencies and related files
 /vendor/
