@@ -12,6 +12,7 @@ Thumbs.db
 *.iml
 *.xml
 .vscode/
+phpcs.xml
 
 # Composer dependencies and related files
 /vendor/
