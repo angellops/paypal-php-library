@@ -61,7 +61,8 @@ class PayPalREST extends PayPal
         $headers = [
             'Authorization: Basic ' . $auth,
             'Content-Type: application/x-www-form-urlencoded',
-            'Accept: application/json'
+            'Accept: application/json',
+            'Partner-Attribution-Id: AngellEYELLC_Ecom_PHPCatalog'
         ];
 
         $postData = 'grant_type=client_credentials';
