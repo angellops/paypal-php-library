@@ -46,6 +46,40 @@ class PayPalREST extends PayPal
     }
 
     /**
+     * Get standard headers for API requests
+     */
+    private function getHeaders($includeAuth = true, $contentType = 'application/json')
+    {
+        $headers = [
+        'Content-Type: ' . $contentType,
+        'Accept: application/json',
+        'Partner-Attribution-Id: AngellEYELLC_Ecom_PHPCatalog'
+        ];
+
+        if ($includeAuth) {
+            $token = $this->getAccessToken();
+            $headers[] = 'Authorization: Bearer ' . $token;
+        }
+
+        return $headers;
+    }
+
+    /**
+     * Get OAuth-specific headers (for token requests)
+     */
+    private function getOAuthHeaders()
+    {
+        $auth = base64_encode($this->client_id . ':' . $this->client_secret);
+
+        return [
+            'Authorization: Basic ' . $auth,
+            'Content-Type: application/x-www-form-urlencoded',
+            'Accept: application/json',
+            'Partner-Attribution-Id: AngellEYELLC_Ecom_PHPCatalog'
+        ];
+    }
+
+    /**
      * Get OAuth 2.0 access token
      * Caches token for 9 hours to avoid redundant API calls
      */
@@ -58,13 +92,7 @@ class PayPalREST extends PayPal
 
         $auth = base64_encode($this->client_id . ':' . $this->client_secret);
 
-        $headers = [
-            'Authorization: Basic ' . $auth,
-            'Content-Type: application/x-www-form-urlencoded',
-            'Accept: application/json',
-            'Partner-Attribution-Id: AngellEYELLC_Ecom_PHPCatalog'
-        ];
-
+        $headers = $this->getOAuthHeaders();
         $postData = 'grant_type=client_credentials';
 
         $ch = curl_init();
@@ -98,11 +126,7 @@ class PayPalREST extends PayPal
     {
         $token = $this->getAccessToken();
 
-        $headers = [
-            'Authorization: Bearer ' . $token,
-            'Content-Type: application/json',
-            'Accept: application/json'
-        ];
+        $headers = $this->getHeaders(true);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->base_url . $endpoint);
