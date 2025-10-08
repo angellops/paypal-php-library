@@ -33,6 +33,15 @@ if($debug)
 }
 
 /**
+ * PayPal API Mode and Version
+ * --------------------------
+ * Set which PayPal API to use: 'classic' for NVP/SOAP or 'rest' for REST API
+ * The library supports both Classic (NVP/SOAP) and REST APIs.
+ * Set this value to control which API your application will use.
+ */
+$paypal_api_mode = 'classic';  // Options: 'classic' or 'rest'
+
+/**
  * PayPal API Version
  * ------------------
  * The library is currently using PayPal API version 109.0.  
