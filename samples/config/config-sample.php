@@ -39,7 +39,7 @@ if($debug)
  * The library supports both Classic (NVP/SOAP) and REST APIs.
  * Set this value to control which API your application will use.
  */
-$paypal_api_mode = 'classic';  // Options: 'classic' or 'rest'
+$api_mode = 'classic';  // Options: 'classic' or 'rest'
 
 /**
  * PayPal API Version
