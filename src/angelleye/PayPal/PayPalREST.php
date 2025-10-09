@@ -20,11 +20,6 @@ class PayPalREST extends PayPal
         // Call parent constructor first
         parent::__construct($config);
 
-        // abstract public function orderData(array $params);
-        // abstract public function getOrder(int $orderID);
-        // abstract public function authorizeOrder(int $orderID);
-        // abstract public function captureOrder(int $orderID);
-
         // Override base URL for REST API endpoints
         $this->base_url = $this->Sandbox
             ? 'https://api-m.sandbox.paypal.com'

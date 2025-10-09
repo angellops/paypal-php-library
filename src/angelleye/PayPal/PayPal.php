@@ -72,20 +72,4 @@ class PayPal
                 throw new \InvalidArgumentException("Invalid PayPal API mode: $apiMode");
         }
     }
-
-    /**
-     * Common interface that both Classic and REST must implement
-     */
-//     abstract public function SetExpressCheckout(array $params);
-//     abstract public function GetExpressCheckoutDetails($token);
-//     abstract public function DoExpressCheckoutPayment(array $params);
-//     abstract public function DoCapture(array $params);
-//     abstract public function DoAuthorization(array $params);
-//     abstract public function DoVoid(array $params);
-//     abstract public function DoDirectPayment(array $params);
-//     abstract public function RefundTransaction(array $params);
-//     abstract public function orderData(array $params);
-//     abstract public function getOrder(int $orderID);
-//     abstract public function authorizeOrder(int $orderID);
-//     abstract public function captureOrder(int $orderID);
 }

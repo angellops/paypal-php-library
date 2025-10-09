@@ -83,15 +83,6 @@ class PayPalClassic extends PayPal
             $this->Sandbox = true;
         }
 
-        // abstract public function SetExpressCheckout(array $params);
-        // abstract public function GetExpressCheckoutDetails($token);
-        // abstract public function DoExpressCheckoutPayment(array $params);
-        // abstract public function DoCapture(array $params);
-        // abstract public function DoAuthorization(array $params);
-        // abstract public function DoVoid(array $params);
-        // abstract public function DoDirectPayment(array $params);
-        // abstract public function RefundTransaction(array $params);
-
         $this->APIVersion = isset($DataArray['APIVersion']) ? $DataArray['APIVersion'] : '204.0';
         $this->APIMode = isset($DataArray['APIMode']) ? $DataArray['APIMode'] : 'Signature';
         $this->payPalAPIMode = isset($DataArray['payPalAPIMode']) ? $DataArray['payPalAPIMode'] : 'classic';
