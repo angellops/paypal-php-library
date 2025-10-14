@@ -20,6 +20,8 @@ class PayPalREST extends PayPal
         // Call parent constructor first
         parent::__construct($config);
 
+        $this->Sandbox = isset($config['Sandbox']) ? true : false;
+
         // Override base URL for REST API endpoints
         $this->base_url = $this->Sandbox
             ? 'https://api-m.sandbox.paypal.com'
@@ -90,8 +92,6 @@ class PayPalREST extends PayPal
             return $this->accessToken;
         }
 
-        $auth = base64_encode($this->client_id . ':' . $this->client_secret);
-
         $headers = $this->getOAuthHeaders();
         $postData = 'grant_type=client_credentials';
 
@@ -101,7 +101,7 @@ class PayPalREST extends PayPal
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -148,6 +148,49 @@ class PayPalREST extends PayPal
             'body' => json_decode($response, true),
             'raw_response' => $response
         ];
+    }
+
+    /**
+     * Obtain the available balance for a PayPal account.
+     *
+     * @access  public
+     * @return  mixed[] Returns an array structure of the PayPal HTTP response params as well as parsed balance results, errors and the raw request/response.
+     */
+    function GetBalance($DataArray)
+    {
+        $returnAllCurrencies = !empty($DataArray['GBFields']['returnallcurrencies']) ? true : false;
+
+        $response = $this->makeRequest('/v1/reporting/balances');
+
+        $responseSimplified = [
+            'ASOFTIME' => !empty($response['body']['as_of_time']) ? $response['body']['as_of_time'] : '',
+            'ACCOUNTID' => !empty($response['body']['account_id']) ? $response['body']['account_id'] : '',
+            'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
+            'ERRORS' => [],
+            'BALANCES' => [],
+            'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : '',
+        ];
+
+        // Capture errors if available
+        if (!empty($response['body']['errors']) && is_array($response['body']['errors'])) {
+            $responseSimplified['errors'] = $response['body']['errors'];
+        }
+
+        if (!empty($response['body']['balances']) && is_array($response['body']['balances'])) {
+            foreach ($response['body']['balances'] as $balance) {
+                if ($returnAllCurrencies || !empty($balance['primary'])) {
+                    $responseSimplified['BALANCES'][] = [
+                        'CURRENCY' => !empty($balance['currency']) ? $balance['currency'] : '',
+                        'TOTALBALANCE' => !empty($balance['total_balance']['value']) ? $balance['total_balance']['value'] : 0,
+                        'AVAILABLEBALANCE' => !empty($balance['available_balance']['value']) ? $balance['available_balance']['value'] : 0,
+                        'WITHHELDBALANCE' => !empty($balance['withheld_balance']['value']) ? $balance['withheld_balance']['value'] : 0,
+                        'PRIMARY' => !empty($balance['primary']) ? 1 : 0,
+                    ];
+                }
+            }
+        }
+
+        return $responseSimplified;
     }
 
     /**

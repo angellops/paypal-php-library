@@ -61,7 +61,7 @@ class PayPal
      */
     public static function init(array $config = [])
     {
-        $apiMode = isset($config['api_mode']) ? $config['api_mode'] : 'classic';
+        $apiMode = isset($config['PayPalAPIMode']) ? $config['PayPalAPIMode'] : 'classic';
 
         switch (strtolower($apiMode)) {
             case 'rest':
