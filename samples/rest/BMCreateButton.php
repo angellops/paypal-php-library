@@ -5,24 +5,22 @@ require_once('../../autoload.php');
 
 // Create PayPal object.
 $PayPalConfig = array(
-					'Sandbox' => $sandbox,
-                    'PayPalAPIMode' => $api_mode,
-					'APIUsername' => $api_username,
-					'APIPassword' => $api_password,
-					'APISignature' => $api_signature, 
-					'PrintHeaders' => $print_headers, 
-					'LogResults' => $log_results,
-					'LogPath' => $log_path,
-					);
+    'Sandbox' => $sandbox,
+    'PayPalAPIMode' => $api_mode,
+    'ClientID' => $rest_client_id,
+    'ClientSecret' => $rest_client_secret,
+    'PrintHeaders' => $print_headers, 
+    'LogResults' => $log_results,
+    'LogPath' => $log_path,
+);
 
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 // Prepare request arrays
-$BMCreateButtonFields = array
-						(
-						'buttoncode' => 'CLEARTEXT', 		// The kind of button code to create.  It is one of the following values:  HOSTED, ENCRYPTED, CLEARTEXT, TOKEN
-						'buttontype' => 'CART',			// Required.  The kind of button you want to create.  It is one of the following values:  BUYNOW, CART, GIFTCERTIFICATE, SUBSCRIBE, DONATE, UNSUBSCRIBE, VIEWCART, PAYMENTPLAN, AUTOBILLING, PAYMENT
-                        'buttonsubtype' => '',      // The use of button you want to create.  Values are:  PRODUCTS, SERVICES
+$BMCreateButtonFields = array(
+    'buttoncode' => 'CLEARTEXT', 	// The kind of button code to create.  It is one of the following values:  HOSTED, ENCRYPTED, CLEARTEXT, TOKEN
+    'buttontype' => 'CART',			// Required.  The kind of button you want to create.  It is one of the following values:  BUYNOW, CART, GIFTCERTIFICATE, SUBSCRIBE, DONATE, UNSUBSCRIBE, VIEWCART, PAYMENTPLAN, AUTOBILLING, PAYMENT
+    'buttonsubtype' => '',          // The use of button you want to create.  Values are:  PRODUCTS, SERVICES
 );
 
 /**
@@ -41,7 +39,7 @@ $BMButtonVars = array(
     'discount_rate' => '',                      // Discount rate (percentage) associated with an item.  Must be set to a value less than 100.
     'discount_rate2' => '',                     // Discount rate (percentage) associated with each additional quantity of the item.  Must be equal to or less than 100.
     'discount_num' => '',                       // Number of additional quantities of the item to which the discount applies.
-    'item_name' => 'Test Widget',                          // Description of the item.  If this is omitted, buyers enter their own name during checkout.
+    'item_name' => 'Test Widget',               // Description of the item.  If this is omitted, buyers enter their own name during checkout.
     'item_number' => '',                        // Pass-through variable for you to track product or service purchased or the contribution made.
     'quantity' => '',                           // Number of items.
     'shipping' => '',                           // The cost of shipping this item.

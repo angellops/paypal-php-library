@@ -68,6 +68,8 @@ class PayPalClassic extends PayPal
     protected array $AVSCodes;
     protected array $CVV2Codes;
     protected array $CurrencyCodes;
+
+    public Adaptive $Adaptive;
 /**
      * Constructor
      *
@@ -81,6 +83,10 @@ class PayPalClassic extends PayPal
             $this->Sandbox = $DataArray['Sandbox'];
         } else {
             $this->Sandbox = true;
+        }
+
+        if (isset($DataArray['isAdaptive'])) {
+            $this->Adaptive = new Adaptive($DataArray);
         }
 
         $this->APIVersion = isset($DataArray['APIVersion']) ? $DataArray['APIVersion'] : '204.0';

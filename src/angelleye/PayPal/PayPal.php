@@ -49,7 +49,7 @@ class PayPal
 
     public function __construct(array $config = [])
     {
-	$this->config = $config;
+	    $this->config = $config;
         $this->mode = isset($config['Sandbox']) ? $config['Sandbox'] : 'live';
         $this->payPalAPIMode = isset($config['PayPalAPIMode']) ? $config['PayPalAPIMode'] : 'classic';
         $this->Sandbox = ($this->mode === 'sandbox') ? true : false;
