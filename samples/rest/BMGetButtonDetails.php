@@ -7,9 +7,8 @@ require_once('../../autoload.php');
 $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature, 
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results,
 	'LogPath' => $log_path,
@@ -17,7 +16,7 @@ $PayPalConfig = array(
 
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
-$HostedButtonID = '';
+$HostedButtonID = 'SG9SQU2GBXJNA';
 $PayPalResult = $PayPal->BMGetButtonDetails($HostedButtonID);
 
 // Write the contents of the response array to the screen for demo purposes.

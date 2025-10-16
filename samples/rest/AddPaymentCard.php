@@ -11,9 +11,8 @@ $PayPalConfig = array(
 	'DeviceID' => '',
 	'IPAddress' => $_SERVER['REMOTE_ADDR'],
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
 	'isAdaptive' => true,
 	'APISubject' => $api_subject,
 	'PrintHeaders' => $print_headers, 
@@ -28,7 +27,7 @@ $AddPaymentCardFields = array(
 	'AccountID' => '', 						// The ID number of the PayPal account for which the payment card is being added.  You must specify either AccountID or EmailAdddress
 	'CardNumber' => '5581588041402157', 				// Required.  The credit card number.
 	'CardOwnerDateOfBirth' => '', 					// The date of birth of the card holder.
-	'CardType' => 'MasterCard', 					// Required.  The type of card being added.  Values are:  Visa, MasterCard, AmericanExpress, Discover, SwitchMaestro, Solo, CarteAurore, CarteBleue, Cofinoga, 4etoiles, CarteAura, TarjetaAurora, JCB
+	'CardType' => 'mastercard', 					// Required.  The type of card being added.  Values are:  Visa, MasterCard, AmericanExpress, Discover, SwitchMaestro, Solo, CarteAurore, CarteBleue, Cofinoga, 4etoiles, CarteAura, TarjetaAurora, JCB
 	'CardVerificationNumber' => '', 				// The verification code for the card.  Generally required for calls where ConfirmationType is set to NONE.  With the appropriate account review, this param is optional.
 	'ConfirmationType' => 'WEB', 					// Required.  Whether the account holder is redirected to PayPal.com to confirm the card addition.  Values are:  WEB, NONE
 	'CreateAccountKey' => '', 					// The key returned in a CreateAccount response.  Required for calls where the ConfirmationType is NONE.
@@ -56,7 +55,7 @@ $BillingAddress = array(
 
 $ExpirationDate = array(
 	'Month' => '12', 		// Expiration month.
-	'Year' => '2015'		// Required.  Expiration Year.
+	'Year' => date('Y')		// Required.  Expiration Year.
 );
 							
 $WebOptions = array(
@@ -75,7 +74,7 @@ $PayPalRequestData = array(
 );
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
-$PayPalResult = $PayPal->Adaptive->AddPaymentCard($PayPalRequestData);
+$PayPalResult = $PayPal->AddPaymentCard($PayPalRequestData);
 
 // Write the contents of the response array to the screen for demo purposes.
 echo '<pre />';

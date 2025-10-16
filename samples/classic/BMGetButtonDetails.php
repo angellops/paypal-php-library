@@ -5,16 +5,17 @@ require_once('../../autoload.php');
 
 // Create PayPal object.
 $PayPalConfig = array(
-					'Sandbox' => $sandbox,
-					'APIUsername' => $api_username,
-					'APIPassword' => $api_password,
-					'APISignature' => $api_signature, 
-					'PrintHeaders' => $print_headers, 
-					'LogResults' => $log_results,
-					'LogPath' => $log_path,
-					);
+	'Sandbox' => $sandbox,
+	'PayPalAPIMode' => $api_mode,
+	'APIUsername' => $api_username,
+	'APIPassword' => $api_password,
+	'APISignature' => $api_signature, 
+	'PrintHeaders' => $print_headers, 
+	'LogResults' => $log_results,
+	'LogPath' => $log_path,
+);
 
-$PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
+$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 $HostedButtonID = 'SG9SQU2GBXJNA';
 $PayPalResult = $PayPal->BMGetButtonDetails($HostedButtonID);

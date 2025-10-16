@@ -17,9 +17,6 @@ class PayPalREST extends PayPal
 
     public function __construct($config)
     {
-        // Call parent constructor first
-        parent::__construct($config);
-
         $this->Sandbox = isset($config['Sandbox']) ? true : false;
 
         // Override base URL for REST API endpoints
@@ -124,8 +121,6 @@ class PayPalREST extends PayPal
      */
     protected function makeRequest($endpoint, $method = 'GET', $data = null)
     {
-        $token = $this->getAccessToken();
-
         $headers = $this->getHeaders(true);
 
         $ch = curl_init();
@@ -188,6 +183,118 @@ class PayPalREST extends PayPal
                     ];
                 }
             }
+        }
+
+        return $responseSimplified;
+    }
+
+    function AddBankAccount($DataArray) {
+        $AddBankAccountFields = isset($DataArray['AddBankAccountFields']) ? $DataArray['AddBankAccountFields'] : array();
+        $WebOptions = isset($DataArray['WebOptions']) ? $DataArray['WebOptions'] : array();
+
+        $payload = array(
+            "account_number" => $AddBankAccountFields['BankAccountNumber'],
+            "routing_number" => $AddBankAccountFields['RoutingNumber'],
+            "account_type" => strtolower($AddBankAccountFields['BankAccountType']), // checking/savings
+            "bank_name" => $AddBankAccountFields['BankName'],
+            "country_code" => $AddBankAccountFields['BankCountryCode'],
+            "account_holder_name" => $AddBankAccountFields['BankName'] . " Holder", // Example
+            "confirmation_type" => strtoupper($AddBankAccountFields['ConfirmationType']), // WEB or NONE
+            "metadata" => array(
+                "email" => $AddBankAccountFields['EmailAddress'],
+                "return_url" => $WebOptions['ReturnURL'],
+                "cancel_url" => $WebOptions['CancelURL']
+            )
+        );
+
+        // Step 3: Make REST Call
+        $response = $this->makeRequest('/v1/vault/bank-accounts', 'POST', $payload);
+
+        // Step 4: Handle Response
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            return array(
+                'success' => true,
+                'status' => $response['status_code'],
+                'response' => $response
+            );
+        } else {
+            return array(
+                'success' => false,
+                'status' => $response['status_code'],
+                'error' => $response
+            );
+        }
+    }
+
+    function AddPaymentCard($DataArray) {
+        $AddPaymentCardFields = isset($DataArray['AddPaymentCardFields']) ? $DataArray['AddPaymentCardFields'] : array();
+        $NameOnCard = isset($DataArray['NameOnCard']) ? $DataArray['NameOnCard'] : array();
+        $BillingAddress = isset($DataArray['BillingAddress']) ? $DataArray['BillingAddress'] : array();
+        $ExpirationDate = isset($DataArray['ExpirationDate']) ? $DataArray['ExpirationDate'] : array();
+        $WebOptions = isset($DataArray['WebOptions']) ? $DataArray['WebOptions'] : array();
+
+        $payload = array(
+            'number' => $AddPaymentCardFields['CardNumber'],
+            'type' => $AddPaymentCardFields['CardType'],
+            'expire_month' => $ExpirationDate['Month'],
+            'expire_year' => $ExpirationDate['Year'],
+            'first_name' => $NameOnCard['FirstName'],
+            'last_name' => $NameOnCard['LastName'],
+            'billing_address' => array(
+                'line1' => $BillingAddress['Line1'],
+                'city' => $BillingAddress['City'],
+                'state' => $BillingAddress['State'],
+                'postal_code' => $BillingAddress['PostalCode'],
+                'country_code' => $BillingAddress['CountryCode']
+            )
+        );
+
+        // Step 3: Make REST Call
+        $response = $this->makeRequest('/v1/vault/credit-cards', 'POST', $payload);
+
+        $responseSimplified = [];
+
+        // Step 4: Handle Response
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            $responseSimplified = array(
+                'SUCCESS' => true,
+                'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        } else {
+            $responseSimplified = array(
+                'SUCCESS' => false,
+                'STATUSCODE' => $response['status_code'],
+                'ERRORS' => !empty($response['body']) ? $response['body'] : [],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        }
+
+        return $responseSimplified;
+    }
+
+    function BMButtonSearch($DataArray) {
+        $BMButtonSearchFields = isset($DataArray['BMButtonSearchFields']) ? $DataArray['BMButtonSearchFields'] : array();
+
+        $response = $this->makeRequest('/v1/reporting/transactions?start_date=' . $BMButtonSearchFields['startdate'] . '&end_date=' . $BMButtonSearchFields['enddate']);
+
+        $responseSimplified = [];
+
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            $responseSimplified = array(
+                'SUCCESS' => true,
+                'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        } else {
+            $responseSimplified = array(
+                'SUCCESS' => false,
+                'STATUSCODE' => $response['status_code'],
+                'ERRORS' => !empty($response['body']) ? $response['body'] : [],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
         }
 
         return $responseSimplified;

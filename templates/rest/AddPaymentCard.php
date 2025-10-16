@@ -11,9 +11,8 @@ $PayPalConfig = array(
 	'DeviceID' => '',
 	'IPAddress' => $_SERVER['REMOTE_ADDR'],
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
 	'isAdaptive' => true,
 	'APISubject' => $api_subject,
 	'PrintHeaders' => $print_headers, 
@@ -75,7 +74,7 @@ $PayPalRequestData = array(
 );
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
-$PayPalResult = $PayPal->Adaptive->AddPaymentCard($PayPalRequestData);
+$PayPalResult = $PayPal->AddPaymentCard($PayPalRequestData);
 
 // Write the contents of the response array to the screen for demo purposes.
 echo '<pre />';
