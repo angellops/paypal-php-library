@@ -7,9 +7,8 @@ require_once('../../autoload.php');
 $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature, 
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret, 
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results,
 	'LogPath' => $log_path,
@@ -167,10 +166,20 @@ $PayPalRequestData = array(
 	'BillingAgreements' => $BillingAgreements
 );
 
-// Pass data into class for processing with PayPal and load the response array into $PayPalResult
-$PayPalResult = $PayPal->SetExpressCheckout($PayPalRequestData);
+$PaymentResult = $PayPal->CreatePayment($PayPalRequestData);
 
-// Write the contents of the response array to the screen for demo purposes.
-echo '<a href="' . $PayPalResult['REDIRECTURL'] . '">Click here to continue.</a><br /><br />';
+// Save approval URL to session
+$_SESSION['PayPalPaymentID'] = $PaymentResult['RESPONSE']['id'];
+
+// Redirect user to PayPal approval URL
+$ApprovalUrl = '';
+foreach ($PaymentResult['RESPONSE']['links'] as $link) {
+    if ($link['rel'] === 'approval_url') {
+        $ApprovalUrl = $link['href'];
+        break;
+    }
+}
+
+echo '<a href="' . $ApprovalUrl . '">Click here to continue.</a><br /><br />';
 echo '<pre />';
-print_r($PayPalResult);
+print_r($PaymentResult);

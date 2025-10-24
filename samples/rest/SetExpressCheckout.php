@@ -7,9 +7,8 @@ require_once('../../autoload.php');
 $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature, 
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
 	'APIVersion' => '97.0', 
 	'APISubject' => '',
 	'PrintHeaders' => $print_headers, 
@@ -22,7 +21,7 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 $SECFields = array(
 	'token' => '', 								// A timestamped token, the value of which was returned by a previous SetExpressCheckout call.
 	'maxamt' => '200.00', 							// The expected maximum total amount the order will be, including S&H and sales tax.
-	'returnurl' => 'http://localhost:8888/paypal-library/samples/classic/DoExpressCheckoutPayment.php', 	// Required.  URL to which the customer will be returned after returning from PayPal.  2048 char max.
+	'returnurl' => 'http://localhost:8888/paypal-library/samples/rest/DoExpressCheckoutPayment.php', 	// Required.  URL to which the customer will be returned after returning from PayPal.  2048 char max.
 	'cancelurl' => $domain . 'paypal/class/cancel.php', 			// Required.  URL to which the customer will be returned if they cancel payment on PayPal's site.
 	'callback' => '', 							// URL to which the callback request from PayPal is sent.  Must start with https:// for production.
 	'callbacktimeout' => '', 						// An override for you to request more or less time to be able to process the callback request and response.  Acceptable range for override is 1-6 seconds.  If you specify greater than 6 PayPal will use default value of 3 seconds.
@@ -175,8 +174,20 @@ $PayPalRequest = array(
 	'Payments' => $Payments
 );
 
-$_SESSION['SetExpressCheckoutResult'] = $PayPal->SetExpressCheckout($PayPalRequest);
+$PaymentResult = $PayPal->CreatePayment($PayPalRequest);
 
-echo '<a href="' . $_SESSION['SetExpressCheckoutResult']['REDIRECTURL'] . '">Click here to continue.</a><br /><br />';
+// Save approval URL to session
+$_SESSION['PayPalPaymentID'] = $PaymentResult['RESPONSE']['id'];
+
+// Redirect user to PayPal approval URL
+$ApprovalUrl = '';
+foreach ($PaymentResult['RESPONSE']['links'] as $link) {
+    if ($link['rel'] === 'approval_url') {
+        $ApprovalUrl = $link['href'];
+        break;
+    }
+}
+
+echo '<a href="' . $ApprovalUrl . '">Click here to continue.</a><br /><br />';
 echo '<pre />';
-print_r($_SESSION['SetExpressCheckoutResult']);
+print_r($PaymentResult);

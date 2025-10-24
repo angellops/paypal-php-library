@@ -504,6 +504,108 @@ class PayPalREST extends PayPal
         return null;
     }
 
+    public function CreatePayment($paymentData) {
+        $paymentsMappedData = [];
+
+        // Map basic payment info
+        $paymentsMappedData['intent'] = strtolower($paymentData['Payments'][0]['paymentaction'] ?? 'sale');
+        $paymentsMappedData['payer'] = [
+            'payment_method' => 'paypal'
+        ];
+
+        // Redirect URLs
+        $paymentsMappedData['redirect_urls'] = [
+            'return_url' => $paymentData['SECFields']['returnurl'] ?? '',
+            'cancel_url' => $paymentData['SECFields']['cancelurl'] ?? ''
+        ];
+
+        // Transaction
+        $transaction = [
+            'amount' => [
+                'total' => $paymentData['Payments'][0]['amt'] ?? '0.00',
+                'currency' => $paymentData['Payments'][0]['currencycode'] ?? 'USD',
+                'details' => [
+                    'subtotal' => $paymentData['Payments'][0]['itemamt'] ?? '0.00',
+                    'tax' => $paymentData['Payments'][0]['taxamt'] ?? '0.00',
+                    'shipping' => $paymentData['Payments'][0]['shippingamt'] ?? '0.00'
+                ]
+            ],
+            'description' => $paymentData['Payments'][0]['desc'] ?? '',
+            'item_list' => [
+                'items' => []
+            ]
+        ];
+
+        // Map order items
+        if (!empty($paymentData['Payments'][0]['order_items'])) {
+            foreach ($paymentData['Payments'][0]['order_items'] as $item) {
+                $transaction['item_list']['items'][] = [
+                    'name' => $item['name'] ?? '',
+                    'sku' => $item['number'] ?? '',
+                    'price' => $item['amt'] ?? '0.00',
+                    'currency' => $paymentData['Payments'][0]['currencycode'] ?? 'USD',
+                    'quantity' => $item['qty'] ?? 1
+                ];
+            }
+        }
+
+        $paymentsMappedData['transactions'][] = $transaction;
+        
+        $response = $this->makeRequest('/v1/payments/payment', 'POST', $paymentsMappedData);
+
+        $responseSimplified = [];
+
+        // Handle Response
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            $responseSimplified = array(
+                'SUCCESS' => true,
+                'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        } else {
+            $responseSimplified = array(
+                'SUCCESS' => false,
+                'STATUSCODE' => $response['status_code'],
+                'ERRORS' => !empty($response['body']) ? $response['body'] : ['invalid_payment' => 'Payment execution failed'],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        }
+
+        return $responseSimplified;
+    }
+
+    public function ExecutePayment($paymentData) {
+        $data = [
+            'payer_id' => !empty($paymentData['payerID']) ? $paymentData['payerID'] : ''
+        ];
+
+        $paymentID = !empty($paymentData['paymentID']) ? $paymentData['paymentID'] : '';
+
+        $response = $this->makeRequest('/v1/payments/payment/' . $paymentID . '/execute', 'POST', $data);
+        
+        $responseSimplified = [];
+
+        // Handle Response
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            $responseSimplified = array(
+                'SUCCESS' => true,
+                'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        } else {
+            $responseSimplified = array(
+                'SUCCESS' => false,
+                'STATUSCODE' => $response['status_code'],
+                'ERRORS' => !empty($response['body']) ? $response['body'] : ['invalid_payment' => 'Payment execution failed'],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        }
+
+        return $responseSimplified;
+    }
+
     /**
      * Test Orders API functionality
      */
