@@ -300,6 +300,30 @@ class PayPalREST extends PayPal
         return $responseSimplified;
     }
 
+    function BMGetButtonDetails($HostedButtonID) {
+        $response = $this->makeRequest('/v1/checkout/orders/' . $HostedButtonID);
+
+        $responseSimplified = [];
+
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            $responseSimplified = array(
+                'SUCCESS' => true,
+                'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        } else {
+            $responseSimplified = array(
+                'SUCCESS' => false,
+                'STATUSCODE' => $response['status_code'],
+                'ERRORS' => !empty($response['body']) ? $response['body'] : [],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        }
+
+        return $responseSimplified;
+    }
+
     /**
      * Test OAuth authentication
      */
