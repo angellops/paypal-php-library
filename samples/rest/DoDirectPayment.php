@@ -5,9 +5,8 @@ require_once('../../autoload.php');
 $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature, 
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
 	'PrintHeaders' => $print_headers,
 	'LogResults' => $log_results,
 	'LogPath' => $log_path,					
@@ -16,7 +15,7 @@ $PayPalConfig = array(
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 $DPFields = array(
-	'paymentaction' => 'Sale', 				// How you want to obtain payment.  Authorization indicates the payment is a basic auth subject to settlement with Auth & Capture.  Sale indicates that this is a final sale for which you are requesting payment.  Default is Sale.
+	'paymentaction' => 'CAPTURE', 				// How you want to obtain payment.  Authorization indicates the payment is a basic auth subject to settlement with Auth & Capture.  Sale indicates that this is a final sale for which you are requesting payment.  Default is Sale.
 	'ipaddress' => $_SERVER['REMOTE_ADDR'], 		// Required.  IP address of the payer's browser.
 	'returnfmfdetails' => '1' 				// Flag to determine whether you want the results returned by FMF.  1 or 0.  Default is 0.
 );
@@ -24,24 +23,24 @@ $DPFields = array(
 $CCDetails = array(
 	'creditcardtype' => 'Visa', 		// Required. Type of credit card.  Visa, MasterCard, Discover, Amex, Maestro, Solo.  If Maestro or Solo, the currency code must be GBP.  In addition, either start date or issue number must be specified.
 	'acct' => '4716392328094345', 		// Required.  Credit card number.  No spaces or punctuation.
-	'expdate' => '022026', 			// Required.  Credit card expiration date.  Format is MMYYYY
+	'expdate' => '2026-01', 		// Required.  Credit card expiration date.  Format is MMYYYY
 	'cvv2' => '456', 			// Requirements determined by your PayPal account settings.  Security digits for credit card.
 	'startdate' => '', 			// Month and year that Maestro or Solo card was issued.  MMYYYY
 	'issuenumber' => ''			// Issue number of Maestro or Solo card.  Two numeric digits max.
 );
 				
 $PayerInfo = array(
-	'email' => 'sb-j47z3s6571663@business.example.com', 	// Email address of payer.
-	'payerid' => '', 					// Unique PayPal customer ID for payer.
-	'payerstatus' => '', 					// Status of payer.  Values are verified or unverified
-	'business' => '' 					// Payer's business name.
+	'email' => 'sandbox@angelleye.com', 	// Email address of payer.
+	'payerid' => '', 			// Unique PayPal customer ID for payer.
+	'payerstatus' => '', 			// Status of payer.  Values are verified or unverified
+	'business' => '' 			// Payer's business name.
 );
 				
 $PayerName = array(
 	'salutation' => '', 			// Payer's salutation.  20 char max.
-	'firstname' => 'Tester', 		// Payer's first name.  25 char max.
+	'firstname' => 'John', 			// Payer's first name.  25 char max.
 	'middlename' => '', 			// Payer's middle name.  25 char max.
-	'lastname' => 'Testerson', 		// Payer's last name.  25 char max.
+	'lastname' => 'Doe',	 		// Payer's last name.  25 char max.
 	'suffix' => ''				// Payer's suffix.  12 char max.
 );
 				
@@ -117,9 +116,9 @@ $PayPalRequestData = array(
 	'OrderItems' => $OrderItems
 );
 
-$PayPalResult = $PayPal -> DoDirectPayment($PayPalRequestData);
+$PayPalResult = $PayPal->DoDirectPayment($PayPalRequestData);
 
-$_SESSION['transaction_id'] = isset($PayPalResult['TRANSACTIONID']) ? $PayPalResult['TRANSACTIONID'] : '';
+$_SESSION['transaction_id'] = isset($PayPalResult['RESPONSE']['id']) ? $PayPalResult['RESPONSE']['id'] : '';
 
 echo '<pre />';
 print_r($PayPalResult);

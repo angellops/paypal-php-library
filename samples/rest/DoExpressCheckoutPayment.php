@@ -16,8 +16,8 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 $PayPalRequestedData = array(
 	'paymentID' => isset($_GET['paymentId']) ? $_GET['paymentId'] : '',
-	'token' => isset($_GET['PayerID']) ? $_GET['PayerID'] : '',
-	'payerID' => isset($_GET['PayerID']) ? $_GET['PayerID'] : '',
+	'token' => isset($_GET['token']) ? $_GET['token'] : '',
+	'PayerID' => isset($_GET['PayerID']) ? $_GET['PayerID'] : '',
 );
 
 $ExecuteResult = $PayPal->ExecutePayment($PayPalRequestedData);

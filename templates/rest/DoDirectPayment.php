@@ -7,9 +7,8 @@ require_once('../../autoload.php');
 $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature, 
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results,
 	'LogPath' => $log_path,
@@ -122,6 +121,7 @@ $PayPalRequestData = array(
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
 $PayPalResult = $PayPal->DoDirectPayment($PayPalRequestData);
 
-// Write the contents of the response array to the screen for demo purposes.
+$_SESSION['transaction_id'] = isset($PayPalResult['RESPONSE']['id']) ? $PayPalResult['RESPONSE']['id'] : '';
+
 echo '<pre />';
 print_r($PayPalResult);

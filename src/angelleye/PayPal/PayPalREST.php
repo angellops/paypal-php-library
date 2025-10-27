@@ -47,7 +47,7 @@ class PayPalREST extends PayPal
     /**
      * Get standard headers for API requests
      */
-    private function getHeaders($includeAuth = true, $contentType = 'application/json')
+    private function getHeaders($includeAuth = true, $contentType = 'application/json', $requestId = null)
     {
         $headers = [
         'Content-Type: ' . $contentType,
@@ -58,6 +58,10 @@ class PayPalREST extends PayPal
         if ($includeAuth) {
             $token = $this->getAccessToken();
             $headers[] = 'Authorization: Bearer ' . $token;
+        }
+
+        if (!empty($requestId)) {
+            $headers[] = 'PayPal-Request-Id: ' . $requestId;
         }
 
         return $headers;
@@ -119,9 +123,9 @@ class PayPalREST extends PayPal
     /**
      * Make authenticated REST API request
      */
-    protected function makeRequest($endpoint, $method = 'GET', $data = null)
+    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null)
     {
-        $headers = $this->getHeaders(true);
+        $headers = $this->getHeaders(true, 'application/json', $requestId);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->base_url . $endpoint);
@@ -577,13 +581,68 @@ class PayPalREST extends PayPal
 
     public function ExecutePayment($paymentData) {
         $data = [
-            'payer_id' => !empty($paymentData['payerID']) ? $paymentData['payerID'] : ''
+            'payer_id' => !empty($paymentData['PayerID']) ? $paymentData['PayerID'] : ''
         ];
 
         $paymentID = !empty($paymentData['paymentID']) ? $paymentData['paymentID'] : '';
 
         $response = $this->makeRequest('/v1/payments/payment/' . $paymentID . '/execute', 'POST', $data);
         
+        $responseSimplified = [];
+
+        // Handle Response
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            $responseSimplified = array(
+                'SUCCESS' => true,
+                'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        } else {
+            $responseSimplified = array(
+                'SUCCESS' => false,
+                'STATUSCODE' => $response['status_code'],
+                'ERRORS' => !empty($response['body']) ? $response['body'] : ['invalid_payment' => 'Payment execution failed'],
+                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            );
+        }
+
+        return $responseSimplified;
+    }
+
+    public function DoDirectPayment($paymentData) {
+        $paymentsMappedData = [];
+
+        $paymentsMappedData['intent'] = !empty($paymentData['DPFields']['paymentaction']) ? $paymentData['DPFields']['paymentaction'] : 'sale';
+        $paymentsMappedData['purchase_units'] = [
+            [
+                'amount' => [
+                    'currency_code' => !empty($paymentData['PaymentDetails']['currencycode']) ? $paymentData['PaymentDetails']['currencycode'] : '',
+                    'value' => !empty($paymentData['PaymentDetails']['amt']) ? $paymentData['PaymentDetails']['amt'] : 0.00,
+                ]
+            ]
+        ];
+
+        $paymentsMappedData['payment_source'] = [
+            'card' => [
+                'number' => !empty($paymentData['CCDetails']['acct']) ? $paymentData['CCDetails']['acct'] : '',
+                'expiry' => !empty($paymentData['CCDetails']['expdate']) ? $paymentData['CCDetails']['expdate'] : '',
+                'security_code' => !empty($paymentData['CCDetails']['cvv2']) ? $paymentData['CCDetails']['cvv2'] : '',
+                'name' => (!empty($paymentData['PayerName']['firstname']) ? $paymentData['PayerName']['firstname'] : '') . ' ' . (!empty($paymentData['PayerName']['lastname']) ? $paymentData['PayerName']['lastname'] : ''),
+                'billing_address' => [
+                    'address_line_1' => !empty($paymentData['BillingAddress']['street']) ? $paymentData['BillingAddress']['street'] : '',
+                    'admin_area_2' => !empty($paymentData['BillingAddress']['city']) ? $paymentData['BillingAddress']['city'] : '',
+                    'admin_area_1' => !empty($paymentData['BillingAddress']['state']) ? $paymentData['BillingAddress']['state'] : '',
+                    'postal_code' => !empty($paymentData['BillingAddress']['zip']) ? $paymentData['BillingAddress']['zip'] : '',
+                    'country_code' => !empty($paymentData['BillingAddress']['countrycode']) ? $paymentData['BillingAddress']['countrycode'] : ''
+                ]
+            ]  
+        ];
+
+        $paypalRequestId = uniqid('pprid_', true);
+
+        $response = $this->makeRequest('/v2/checkout/orders', 'POST', $paymentsMappedData, $paypalRequestId);
+
         $responseSimplified = [];
 
         // Handle Response
