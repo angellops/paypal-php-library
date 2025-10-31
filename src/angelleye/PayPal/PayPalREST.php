@@ -496,6 +496,67 @@ class PayPalREST extends PayPal
     }
 
     /**
+     * Capture Authorized order
+     */
+    public function captureAutorizedOrder($authorizationId)
+    {
+        try {
+            $response = $this->makeRequest('/v2/payments/authorizations/' . $authorizationId . '/capture', 'POST');
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'capture_id' => $response['body']['id'],
+                    'status' => $response['body']['status'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to capture order',
+                'status_code' => $response['status_code'],
+                'details' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Capture Authorized order
+     */
+    public function getCapturedOrderDetails($captureId)
+    {
+        try {
+            $response = $this->makeRequest('/v2/payments/captures/' . $captureId, 'GET');
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status' => $response['status_code'],
+                'full_response' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Helper method to extract approval URL from links
      */
     private function getApprovalUrl($links)

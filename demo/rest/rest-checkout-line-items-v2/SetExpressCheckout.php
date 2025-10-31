@@ -20,9 +20,11 @@ $PayPalConfig = array(
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
+$paymentIntent = isset($_SESSION['payment_intent']) ? $_SESSION['payment_intent'] : 'CAPTURE';
+
 // Build PayPal order data from session
 $orderData = [
-	'intent' => 'CAPTURE',
+	'intent' => $paymentIntent,
     	'purchase_units' => [
 		[
 			'amount' => [

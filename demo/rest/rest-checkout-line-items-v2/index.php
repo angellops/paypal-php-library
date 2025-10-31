@@ -27,6 +27,15 @@ $_SESSION['shopping_cart'] = array(
 	'tax' => 0,
 );
 $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
+  $_SESSION['payment_intent'] = isset($_POST['payment_intent']) ? $_POST['payment_intent'] : 'CAPTURE';
+
+  // Redirect to checkout process (classic or REST)
+  header("Location: SetExpressCheckout.php");
+  exit;
+}
+
 ?>
 <html lang="en">
   <head>
@@ -106,33 +115,49 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
             <div class="col-md-4 column"> </div>
             <div class="col-md-4 column"> </div>
             <div class="col-md-4 column">
-              <table class="table">
-                <tbody>
-                  <tr>
-                    <td><strong> Subtotal</strong></td>
-                    <td> $<?php echo number_format($_SESSION['shopping_cart']['subtotal'],2); ?></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Shipping</strong></td>
-                    <td>$<?php echo number_format($_SESSION['shopping_cart']['shipping'],2); ?></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Handling</strong></td>
-                    <td>$<?php echo number_format($_SESSION['shopping_cart']['handling'],2); ?></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Tax</strong></td>
-                    <td>$<?php echo number_format($_SESSION['shopping_cart']['tax'],2); ?></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Grand Total</strong></td>
-                    <td>$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
-                  </tr>
-                  <tr>
-                      <td class="center" colspan="2"><a href="SetExpressCheckout.php"><img src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"></a></td>
-                  </tr>
-                </tbody>
-              </table>
+              <form method="post" action="">
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <td><strong> Subtotal</strong></td>
+                      <td> $<?php echo number_format($_SESSION['shopping_cart']['subtotal'],2); ?></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Shipping</strong></td>
+                      <td>$<?php echo number_format($_SESSION['shopping_cart']['shipping'],2); ?></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Handling</strong></td>
+                      <td>$<?php echo number_format($_SESSION['shopping_cart']['handling'],2); ?></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Tax</strong></td>
+                      <td>$<?php echo number_format($_SESSION['shopping_cart']['tax'],2); ?></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Grand Total</strong></td>
+                      <td>$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
+                    </tr>
+                    <!-- Select Intent Dropdown -->
+                    <tr>
+                      <td><strong>Payment Intent</strong></td>
+                      <td>
+                        <select name="payment_intent" required class="form-control">
+                          <option value="CAPTURE">Capture</option>
+                          <option value="AUTHORIZE">Authorize</option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="center" colspan="2">
+                        <button type="submit" name="checkout" class="btn btn-primary">
+                          Checkout with PayPal
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </form>
             </div>
           </div>
         </div>

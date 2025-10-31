@@ -1,5 +1,7 @@
 <?php
 require_once('../../../includes/config.php');
+
+$paymentIntent = isset($_SESSION['payment_intent']) ? $_SESSION['payment_intent'] : 'CAPTURE';
 ?>
 <html lang="en">
   <head>
@@ -48,9 +50,15 @@ require_once('../../../includes/config.php');
           <h2 align="center">Order Review</h2><br />
           <p class="bg-info">Display the final review page to the buyer using the details retrieved from the Get Order response — including shipping, handling, tax, and buyer-provided billing/shipping information.
           </p>
-          <p class="bg-info">
-          The payment has not been processed at this point because we have not yet called the final captureOrder API. That is what will happen when we click the "Complete Order" button below.
-          </p>
+          <?php if ($paymentIntent === 'CAPTURE'): ?>
+            <p class="bg-info">
+              The payment has not been processed at this point because we have not yet called the final captureOrder API. That is what will happen when we click the "Complete Order" button below.
+            </p>
+          <?php else: ?>
+            <p class="bg-info">
+              The payment has not been captured yet because we have only created the order. Click on "Authorize & Capture Order" button below to authorize and capture the payment in one step.
+            </p>
+          <?php endif; ?>
           <table class="table table-bordered">
             <thead>
               <tr>
@@ -122,7 +130,11 @@ require_once('../../../includes/config.php');
                     <td>$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="center" colspan="2"><a href="DoExpressCheckoutPayment.php?token=<?php echo $_SESSION['order_id'] ?>" class="btn btn-success btn-lg" role="button">Complete Order</a></td>
+                    <td class="center" colspan="2">
+                      <a href="ProcessPayments.php?token=<?php echo $_SESSION['order_id'] ?>" class="btn btn-success btn-lg" role="button">
+                        <?php echo ($paymentIntent === 'CAPTURE') ? 'Complete Order' : 'Authorize & Capture Order'; ?>
+                      </a>
+                    </td>
                   </tr>
                 </tbody>
               </table>
