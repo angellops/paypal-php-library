@@ -3,15 +3,18 @@ require_once('../includes/config.php');
 require_once('../autoload.php');
 
 $PayPalConfig = array(
-    'Sandbox' => $sandbox,
-    'APIUsername' => $api_username,
-    'APIPassword' => $api_password,
-    'APISignature' => $api_signature,
-    'PrintHeaders' => $print_headers,
-    'LogResults' => $log_results,
-    'LogPath' => $log_path,
+  'Sandbox' => $sandbox,
+  'PayPalAPIMode' => $api_mode,
+  'APIUsername' => $api_username,
+  'APIPassword' => $api_password,
+  'APISignature' => $api_signature,
+  'ClientID' => $rest_client_id,
+  'ClientSecret' => $rest_client_secret,
+  'PrintHeaders' => $print_headers,
+  'LogResults' => $log_results,
+  'LogPath' => $log_path,
 );
-$PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
+$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 ?>
 <html lang="en">
 <head>
@@ -69,7 +72,7 @@ $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
           unset($_SESSION['rest_errors']);
       }
       else{
-          $PayPal->DisplayErrors($_SESSION['paypal_errors']);
+        $PayPal->DisplayErrors($_SESSION['paypal_errors']);
       }
 	  ?>
       </div>

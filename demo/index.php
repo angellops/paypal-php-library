@@ -83,12 +83,12 @@
                             <p>Learn how to integrate PayPal Checkout w/ Line Items using PayPal's REST API v2.
                                 It allows you to create and capture an order using the Orders API.</p>
                             <?php
-                            $DIR = '\rest\rest-checkout-line-items-v2';
+                            $DIR = '/rest/rest-checkout-line-items-v2';
                             $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
                             ?>
                             <p align="center">
                                 <?php if ($DIR_exists) : ?>
-                                    <a class="btn btn-primary" href="rest/rest-checkout-line-items-v2" target="_blank">Launch Demo</a>
+                                    <a class="btn btn-primary" href="/paypal-library/demo/rest/rest-checkout-line-items-v2" target="_blank">Launch Demo</a>
                                 <?php else: ?>
                                     <a class="btn btn-success"
                                        href="https://www.angelleye.com/product/paypal-rest-checkout-line-items-php-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"

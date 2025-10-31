@@ -11,6 +11,7 @@ require_once('../../../vendor/autoload.php');
  */
 $PayPalConfig = array(
     'Sandbox' => $sandbox,
+    'PayPalAPIMode' => $api_mode,
     'APIUsername' => $api_username,
     'APIPassword' => $api_password,
     'APISignature' => $api_signature,
@@ -18,7 +19,7 @@ $PayPalConfig = array(
     'LogResults' => $log_results,
     'LogPath' => $log_path,
 );
-$PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
+$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 /**
  * Now we'll setup the request params for the final call in the Express Checkout flow.
@@ -71,9 +72,9 @@ array_push($Payments, $Payment);
  * Now we gather all of the arrays above into a single array.
  */
 $PayPalRequestData = array(
-					   'DECPFields' => $DECPFields, 
-					   'Payments' => $Payments, 
-					   );
+    'DECPFields' => $DECPFields, 
+    'Payments' => $Payments, 
+);
 
 /**
  * Here we are making the call to the DoExpressCheckoutPayment function in the library,

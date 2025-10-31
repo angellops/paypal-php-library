@@ -14,13 +14,9 @@ $PayPalConfig = array(
 
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
-$PayPalRequestedData = array(
-	'paymentID' => isset($_GET['paymentId']) ? $_GET['paymentId'] : '',
-	'token' => isset($_GET['token']) ? $_GET['token'] : '',
-	'PayerID' => isset($_GET['PayerID']) ? $_GET['PayerID'] : '',
-);
+$orderId = isset($_GET['token']) ? $_GET['token'] : '';
 
-$ExecuteResult = $PayPal->ExecutePayment($PayPalRequestedData);
+$PaymentResult = $PayPal->captureOrder($orderId);
 
 echo '<pre>';
-print_r($ExecuteResult);
+print_r($PaymentResult);

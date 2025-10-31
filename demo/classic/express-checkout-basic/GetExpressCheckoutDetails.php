@@ -11,6 +11,7 @@ require_once('../../../vendor/autoload.php');
  */
 $PayPalConfig = array(
     'Sandbox' => $sandbox,
+    'PayPalAPIMode' => $api_mode,
     'APIUsername' => $api_username,
     'APIPassword' => $api_password,
     'APISignature' => $api_signature,
@@ -18,7 +19,7 @@ $PayPalConfig = array(
     'LogResults' => $log_results,
     'LogPath' => $log_path,
 );
-$PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
+$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 /**
  * Now we pass the PayPal token that we saved to a session variable
