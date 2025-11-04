@@ -384,7 +384,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'order_id' => $response['body']['id'],
-                    'status' => $response['body']['status'],
+                    'status' => $response['body']['status'] ?? $response['status_code'],
                     'approval_url' => $this->getApprovalUrl($response['body']['links']),
                     'full_response' => $response['body']
                 ];
@@ -393,7 +393,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => 'Failed to create order',
-                'status_code' => $response['status_code'],
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
                 'details' => $response['body']
             ];
         } catch (\Exception $e) {
@@ -422,7 +422,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => 'Failed to get order details',
-                'status_code' => $response['status_code'],
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
                 'details' => $response['body']
             ];
         } catch (\Exception $e) {
@@ -445,7 +445,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'authorization_id' => $response['body']['purchase_units'][0]['payments']['authorizations'][0]['id'],
-                    'status' => $response['body']['status'],
+                    'status' => $response['body']['status'] ?? $response['status_code'],
                     'full_response' => $response['body']
                 ];
             }
@@ -453,7 +453,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => 'Failed to authorize order',
-                'status_code' => $response['status_code'],
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
                 'details' => $response['body']
             ];
         } catch (\Exception $e) {
@@ -476,7 +476,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'capture_id' => $response['body']['purchase_units'][0]['payments']['captures'][0]['id'],
-                    'status' => $response['body']['status'],
+                    'status' => $response['body']['status'] ?? $response['status_code'],
                     'full_response' => $response['body']
                 ];
             }
@@ -484,7 +484,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => 'Failed to capture order',
-                'status_code' => $response['status_code'],
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
                 'details' => $response['body']
             ];
         } catch (\Exception $e) {
@@ -507,7 +507,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'capture_id' => $response['body']['id'],
-                    'status' => $response['body']['status'],
+                    'status' => $response['body']['status'] ?? $response['status_code'],
                     'full_response' => $response['body']
                 ];
             }
@@ -515,7 +515,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => 'Failed to capture order',
-                'status_code' => $response['status_code'],
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
                 'details' => $response['body']
             ];
         } catch (\Exception $e) {
@@ -537,7 +537,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] === 201) {
                 return [
                     'success' => true,
-                    'status' => $response['body']['status'],
+                    'status' => $response['body']['status'] ?? $response['status_code'],
                     'full_response' => $response['body']
                 ];
             }
@@ -545,7 +545,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => '',
-                'status' => $response['status_code'],
+                'status' => $response['body']['status'] ?? $response['status_code'],
                 'full_response' => $response['body']
             ];
         } catch (\Exception $e) {
@@ -713,7 +713,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] === 201) {
                 return [
                     'success' => true,
-                    'status' => $response['body']['status'],
+                    'status' => $response['body']['status'] ?? $response['status_code'],
                     'full_response' => $response['body']
                 ];
             }
@@ -721,7 +721,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => '',
-                'status' => $response['status_code'],
+                'status' => $response['body']['status'] ?? $response['status_code'],
                 'full_response' => $response['body']
             ];
         } catch (\Exception $e) {
@@ -749,7 +749,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] === 201) {
                 return [
                     'success' => true,
-                    'status' => $response['body']['status'],
+                    'status' => $response['body']['status'] ?? $response['status_code'],
                     'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
                 ];
             }
@@ -757,8 +757,104 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => '',
-                'status' => $response['status_code'],
+                'status' => $response['body']['status'] ?? $response['status_code'],
                 'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function UpdateSubscriptionProfile($DataArray) {
+        try {
+            $subscriptionId = isset($DataArray['subscription_id']) ? $DataArray['subscription_id'] : '';
+            $patches = isset($DataArray['patches']) ? $DataArray['patches'] : array();
+
+            $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionId, 'PATCH', $patches);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status' => $response['body']['status'] ?? $response['status_code'],
+                'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Executes a PayPal Mass Payment (Payout) request using the REST API.
+     *
+     * This function sends a POST request to the PayPal Payouts endpoint (`/v1/payments/payouts`)
+     * with the provided payout data array. It returns the response status, success flag,
+     * and the full API response for further inspection.
+     */
+    public function MassPay($DataArray) {
+        try {
+            $response = $this->makeRequest('/v1/payments/payouts', 'POST', $DataArray);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status' => $response['body']['status'] ?? $response['status_code'],
+                'full_response' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Retrieves PayPal account details of the authenticated user using the REST Identity API.
+     *
+     * This method calls the `/v1/identity/oauth2/userinfo?schema=paypalv1.1` endpoint
+     * to get information about the merchant’s PayPal account such as email, account ID,
+     * verification status, and country. It serves as the REST equivalent of the classic
+     * NVP `GetPalDetails` API.
+     */
+    public function GetPalDetails() {
+        try {
+            $response = $this->makeRequest('/v1/identity/oauth2/userinfo?schema=paypalv1.1');
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status' => $response['body']['status'] ?? $response['status_code'],
+                'full_response' => $response['body']
             ];
         } catch (\Exception $e) {
             return [

@@ -7,18 +7,34 @@ require_once('../../autoload.php');
 $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature, 
-	'PrintHeaders' => $print_headers, 
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
+	'PrintHeaders' => $print_headers,
 	'LogResults' => $log_results,
 	'LogPath' => $log_path,
 );
 
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
+$ReplaceFields = array(
+	"op" => "replace",
+        "path" => "/shipping_amount",
+        "value" => [
+                "currency_code" => "USD",
+                "value" => "1.00"
+        ]
+);
+
+$Patches = array($ReplaceFields);
+
+// Prepare request arrays
+$PayPalRequestData = array(
+        'subscription_id' => 'I-W67GUR0BDTG6',
+        'patches' => $Patches,
+);
+
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
-$PayPalResult = $PayPal->GetPalDetails();
+$PayPalResult = $PayPal->UpdateSubscriptionProfile($PayPalRequestData);
 
 // Write the contents of the response array to the screen for demo purposes.
 echo '<pre />';

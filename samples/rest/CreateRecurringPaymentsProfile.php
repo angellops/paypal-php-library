@@ -38,8 +38,8 @@ $PlanData = array(
                         "total_cycles" => 0, // 0 = infinite
                         "pricing_scheme" => array(
                                 "fixed_price" => array(
-                                "value" => "10.00",
-                                "currency_code" => "USD"
+                                        "value" => "10.00",
+                                        "currency_code" => "USD"
                                 )
                         )
                 )
