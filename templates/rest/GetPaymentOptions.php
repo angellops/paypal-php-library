@@ -11,21 +11,18 @@ $PayPalConfig = array(
 	'DeviceID' => $device_id,
 	'IPAddress' => $_SERVER['REMOTE_ADDR'],
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
-	'APISubject' => $api_subject,
+	'ClientID' => $rest_client_id,
+        'ClientSecret' => $rest_client_secret, 
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
-	'isAdaptive' => true,
 );
 
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
-$PayKey = 'AP-8GH334440A259981L';
-$PayPalResult = $PayPal->Adaptive->GetPaymentOptions($PayKey);
+$PayKey = '';
+$PayPalResult = $PayPal->getOrder($PayKey);
 
 // Write the contents of the response array to the screen for demo purposes.
 echo '<pre />';
