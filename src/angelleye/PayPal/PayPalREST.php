@@ -805,6 +805,39 @@ class PayPalREST extends PayPal
     }
 
     /**
+     * Reauthorizes an existing PayPal payment authorization.
+     *
+     * This method sends a POST request to the PayPal REST API endpoint
+     * `/v2/payments/authorizations/{authorization_id}/reauthorize` to reauthorize
+     * a previously authorized payment before it expires.
+     */
+    public function UpdateAuthorization($transactionId)
+    {
+        try {
+            $response = $this->makeRequest('/v2/payments/authorizations/' . $transactionId . '/reauthorize', 'POST');
+
+            if ($response['status_code'] === 200) {
+                return [
+                    'success' => true,
+                    'order' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to get order details',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Issues a refund for a captured PayPal payment.
      *
      * This method sends a POST request to the PayPal REST API endpoint
