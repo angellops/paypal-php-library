@@ -40,6 +40,14 @@ use DOMDocument;
 
 class Adaptive extends PayPal
 {
+	var $APISubject = '';
+	var $APIUsername = '';
+	var $APIPassword = '';
+	var $APISignature = '';
+	var $APIMode = '';
+	var $EndPointURL = '';
+	var $PrintHeaders = '';
+	var $LogResults = '';
 	var $DeveloperAccountEmail = '';
 	var $XMLNamespace = '';
 	var $ApplicationID = '';

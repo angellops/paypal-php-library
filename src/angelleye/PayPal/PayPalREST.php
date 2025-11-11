@@ -768,12 +768,55 @@ class PayPalREST extends PayPal
         }
     }
 
+    /**
+     * Updates an existing PayPal subscription profile using PATCH request.
+     *
+     * This method sends a PATCH request to the PayPal REST API endpoint
+     * `/v1/billing/subscriptions/{subscription_id}` to update details of an active subscription,
+     * such as plan, quantity, or metadata.
+     */
     public function UpdateSubscriptionProfile($DataArray) {
         try {
             $subscriptionId = isset($DataArray['subscription_id']) ? $DataArray['subscription_id'] : '';
             $patches = isset($DataArray['patches']) ? $DataArray['patches'] : array();
 
             $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionId, 'PATCH', $patches);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status' => $response['body']['status'] ?? $response['status_code'],
+                'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Issues a refund for a captured PayPal payment.
+     *
+     * This method sends a POST request to the PayPal REST API endpoint
+     * `/v2/payments/captures/{transaction_id}/refund` to process a full or partial refund
+     * for a completed payment capture.
+     */
+    public function Refund($DataArray) {
+        try {
+            $transactionId = isset($DataArray['transaction_id']) ? $DataArray['transaction_id'] : '';
+            $refundFields = isset($DataArray['refund_fields']) ? $DataArray['refund_fields'] : array();
+
+            $response = $this->makeRequest('/v2/payments/captures/' . $transactionId . '/refund', 'POST', $refundFields);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -841,6 +884,32 @@ class PayPalREST extends PayPal
     public function GetPalDetails() {
         try {
             $response = $this->makeRequest('/v1/identity/oauth2/userinfo?schema=paypalv1.1');
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status' => $response['body']['status'] ?? $response['status_code'],
+                'full_response' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function RequestPermissions() {  
+        try {
+            $response = $this->makeRequest('/v1/identity/oauth2/userinfo?schema=openid');
 
             if ($response['status_code'] === 201) {
                 return [
