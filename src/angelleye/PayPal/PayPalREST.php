@@ -1095,6 +1095,110 @@ class PayPalREST extends PayPal
     }
 
     /**
+     * Retrieves detailed information about a specific PayPal invoice.
+     *
+     * This method calls the PayPal REST API endpoint `/v2/invoicing/invoices/{invoice_id}`
+     * to fetch full invoice details including status, amount, payer, and metadata.
+     */
+    public function GetInvoiceDetails($InvoiceID)
+    {
+        try {
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID, 'GET', null, null, true);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Cancels an existing PayPal invoice.
+     *
+     * This method sends a POST request to the PayPal REST API endpoint 
+     * `/v2/invoicing/invoices/{invoice_id}/cancel` to cancel a specific invoice.
+     * Optionally, it can send an email notification to both the payer and the merchant.
+     */
+    public function CancelInvoice($InvoiceData)
+    {
+        try {
+            $payload = [
+                'subject' => $InvoiceData['Subject'] ?? 'Invoice has been canceled.',
+                'note' => $InvoiceData['NoteForPayer'] ?? 'The invoice has been canceled by the merchant.',
+                'send_to_invoicer' => isset($InvoiceData['SendCopyToMerchant'])
+                    ? filter_var($InvoiceData['SendCopyToMerchant'], FILTER_VALIDATE_BOOLEAN)
+                    : true
+            ];
+
+            $InvoiceID = isset($InvoiceData['InvoiceID']) ? $InvoiceData['InvoiceID'] : '';
+
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/cancel', 'POST', $payload, null, true);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice canceled successfully which may not return a body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice canceled successfully which may not return a body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function DeleteInvoice($InvoiceID)
+    {
+        try {
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID, 'DELETE', null, null, true);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice deleted successfully which may not return a body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice deleted successfully which may not return a body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Test Orders API functionality
      */
     public function testOrdersAPI()
