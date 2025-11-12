@@ -1284,6 +1284,151 @@ class PayPalREST extends PayPal
     }
 
     /**
+     * Sends a reminder for a specific invoice using the PayPal REST API.
+     *
+     * This method triggers a reminder email to the recipient of the specified invoice.
+     * It makes a POST request to the `/v2/invoicing/invoices/{invoice_id}/remind` endpoint.
+     */
+    public function RemindInvoice($InvoiceData)
+    {
+        try {
+            $payload = !empty($InvoiceData['RemindInvoiceFields']) ? $InvoiceData['RemindInvoiceFields'] : [];
+            $InvoiceID = isset($InvoiceData['InvoiceID']) ? $InvoiceData['InvoiceID'] : '';
+
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/remind', 'POST', $payload, null, true);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice reminder sent successfully which may not return a body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice reminder sent successfully which may not return a body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Searches and filters PayPal invoices using REST API.
+     *
+     * This method retrieves a paginated list of invoices from the PayPal Invoicing API
+     * and applies optional filters such as status, email, currency, amount range, and memo.
+     * It supports client-side filtering using the provided `$Parameters` array.
+     */
+    public function SearchInvoices($InvoiceData)
+    {
+        try {
+            $SearchInvoicesFields = !empty($InvoiceData['SearchInvoicesFields']) ? $InvoiceData['SearchInvoicesFields'] : [];
+            $Parameters = !empty($InvoiceData['Parameters']) ? $InvoiceData['Parameters'] : [];
+
+            $page = isset($SearchInvoicesFields['Page']) ? $SearchInvoicesFields['Page'] : 1;
+            $page_size = isset($SearchInvoicesFields['PageSize']) ? $SearchInvoicesFields['PageSize'] : 20;
+
+            // Build query parameters for filtering
+            $query = [];
+
+            // Pagination parameters
+            $query['page'] = $page;
+            $query['page_size'] = $page_size;
+
+            // Build the query string
+            $query_string = http_build_query($query);
+
+            // Make REST API request
+            $response = $this->makeRequest('/v2/invoicing/invoices?' . $query_string, 'GET', null, null, true);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                $invoices = $response['body']['items'];
+
+                $filteredInvoices = array_filter($invoices, function ($invoice) use ($Parameters) {
+                    $statusMatch = true;
+                    $emailMatch = true;
+                    $invoiceEmailMatch = true;
+                    $invoiceNumberMatch = true;
+                    $currencyMatch = true;
+                    $amountMatch = true;
+                    $memoMatch = true;
+
+                    // Filter: Status
+                    if (!empty($Parameters['Status'])) {
+                        $statusMatch = isset($invoice['status']) && strtoupper($invoice['status']) === strtoupper($Parameters['Status']);
+                    }
+
+                    // Filter: Email
+                    if (!empty($Parameters['Email'])) {
+                        $recipientEmail = $invoice['primary_recipients'][0]['billing_info']['email_address'] ?? '';
+                        $emailMatch = strcasecmp($recipientEmail, $Parameters['Email']) === 0;
+                    }
+
+                    // Filter: Invoicer email
+                    if (!empty($Parameters['MerchantEmail'])) {
+                        $invoicerEmail = $invoice['invoicer']['email_address'] ?? '';
+                        $emailMatch = strcasecmp($invoicerEmail, $Parameters['MerchantEmail']) === 0;
+                    }
+
+                    // Filter: Invoice number
+                    if (!empty($Parameters['InvoiceNumber'])) {
+                        $invoiceNumberMatch = isset($invoice['detail']['invoice_number']) && $invoice['detail']['invoice_number'] == $Parameters['InvoiceNumber'];
+                    }
+
+                    // Filter: Currency code
+                    if (!empty($Parameters['CurrencyCode'])) {
+                        $currencyMatch = isset($invoice['detail']['currency_code']) && $invoice['detail']['currency_code'] == $Parameters['CurrencyCode'];
+                    }
+
+                    // Filter: Amount range
+                    if (!empty($Parameters['LowerAmount']) || !empty($Parameters['UpperAmount'])) {
+                        $total = $invoice['amount']['value'] ?? 0;
+                        $lower = $Parameters['LowerAmount'] ?? 0;
+                        $upper = $Parameters['UpperAmount'] ?? 999999;
+                        $amountMatch = ($total >= $lower && $total <= $upper);
+                    }
+
+                    // Filter: Memo (check detail.note or similar)
+                    if (!empty($Parameters['Memo'])) {
+                        $memo = $invoice['detail']['note'] ?? '';
+                        $memoMatch = stripos($memo, $Parameters['Memo']) !== false;
+                    }
+
+                    // Must satisfy all filters
+                    return $statusMatch && $emailMatch && $invoiceEmailMatch && $invoiceNumberMatch && $currencyMatch && $amountMatch && $memoMatch;
+                });
+
+                return [
+                    'success' => true,
+                    'status_code' => $response['status_code'],
+                    'total_items' => count($filteredInvoices),
+                    'invoices' => array_values($filteredInvoices),
+                ];
+            }
+
+            return [
+                'success' => false,
+                'status_code' => $response['status_code'],
+                'message' => $response['body']['message'] ?? 'Unknown error',
+                'full_response' => $response['body']
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'status_code' => 500,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Test Orders API functionality
      */
     public function testOrdersAPI()

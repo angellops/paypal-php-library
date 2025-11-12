@@ -11,9 +11,8 @@ $PayPalConfig = array(
 	'DeviceID' => $device_id,
 	'IPAddress' => $_SERVER['REMOTE_ADDR'],
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
+	'ClientID' => $rest_client_id,
+        'ClientSecret' => $rest_client_secret,
 	'APISubject' => $api_subject,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
@@ -25,15 +24,17 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 // Prepare request arrays
 $RemindInvoiceFields = array(
-	'InvoiceID' => 'INV2-NV29-RP49-7ERJ-8L6C', 			// ID of the invoice.
-	'Subject' => 'This is the subject.', 				// Subject of the cancelation notification.
-	'NoteForPayer' => 'This is a note to the payer.' 		// Note to send the payer within the cancelation notification.
+        'subject' => 'This is the subject.', 			// Subject of the cancelation notification.
+	'note' => 'This is a note to the payer.' 		// Note to send the payer within the cancelation notification.
 );
 
-$PayPalRequestData = array('RemindInvoiceFields' => $RemindInvoiceFields);
+$PayPalRequestData = array(
+        'InvoiceID' => 'INV2-2HKE-U26U-9AAF-LN6B',
+        'RemindInvoiceFields' => $RemindInvoiceFields
+);
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
-$PayPalResult = $PayPal->Adaptive->RemindInvoice($PayPalRequestData);
+$PayPalResult = $PayPal->RemindInvoice($PayPalRequestData);
 
 // Write the contents of the response array to the screen for demo purposes.
 echo '<pre />';
