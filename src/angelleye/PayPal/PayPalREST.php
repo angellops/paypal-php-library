@@ -47,7 +47,7 @@ class PayPalREST extends PayPal
     /**
      * Get standard headers for API requests
      */
-    private function getHeaders($includeAuth = true, $contentType = 'application/json', $requestId = null)
+    private function getHeaders($includeAuth = true, $contentType = 'application/json', $requestId = null, $isInvoiceRequest = false)
     {
         $headers = [
         'Content-Type: ' . $contentType,
@@ -62,6 +62,10 @@ class PayPalREST extends PayPal
 
         if (!empty($requestId)) {
             $headers[] = 'PayPal-Request-Id: ' . $requestId;
+        }
+
+        if ($isInvoiceRequest) {
+            $headers[] = 'Prefer: return=representation';
         }
 
         return $headers;
@@ -123,9 +127,9 @@ class PayPalREST extends PayPal
     /**
      * Make authenticated REST API request
      */
-    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null)
+    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null, $isInvoiceRequest = false)
     {
-        $headers = $this->getHeaders(true, 'application/json', $requestId);
+        $headers = $this->getHeaders(true, 'application/json', $requestId, $isInvoiceRequest);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->base_url . $endpoint);
@@ -940,6 +944,13 @@ class PayPalREST extends PayPal
         }
     }
 
+    /**
+     * Retrieves user information using the PayPal REST Identity API.
+     *
+     * This method sends a request to the PayPal endpoint `/v1/identity/oauth2/userinfo?schema=openid`
+     * to obtain user details associated with the OAuth2 token. It processes the API response and
+     * returns success or failure based on the HTTP status code.
+     */
     public function RequestPermissions() {  
         try {
             $response = $this->makeRequest('/v1/identity/oauth2/userinfo?schema=openid');
@@ -964,6 +975,123 @@ class PayPalREST extends PayPal
                 'error' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Creates a new invoice using the PayPal Invoicing API (v2).
+     *
+     * This method sends a POST request to the `/v2/invoicing/invoices` endpoint with the provided
+     * invoice data. If successful, it returns the created invoice's ID, status, and full response.
+     */
+    public function CreateInvoice($InvoiceData)
+    {
+        try {
+            $response = $this->makeRequest('/v2/invoicing/invoices', 'POST', $InvoiceData, null, true);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'invoice_id' => $response['body']['id'] ?? null,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to create order',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Sends a PayPal invoice to the recipient using the PayPal Invoicing API (v2).
+     *
+     * This method triggers the sending of an existing draft invoice identified by its Invoice ID.
+     * The API endpoint `/v2/invoicing/invoices/{invoice_id}/send` is used to send the invoice
+     * to the customer via email.
+     */
+    public function SendInvoice($InvoiceID)
+    {
+        try {
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/send', 'POST', null, null, true);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Create and send a PayPal invoice using the PayPal Invoicing REST API (v2).
+     *
+     * This method first creates a new invoice using the provided invoice data, then immediately sends
+     * the created invoice to the recipient. It performs both API calls sequentially:
+     *  1. Create the invoice via `/v2/invoicing/invoices`
+     *  2. Send the created invoice via `/v2/invoicing/invoices/{invoice_id}/send`
+     */
+    public function CreateAndSendInvoice($InvoiceData)
+    {
+        $createInvoiceResponse = $this->makeRequest('/v2/invoicing/invoices', 'POST', $InvoiceData, null, true);
+
+        $responseSimplified = array();
+
+        // Check if product creation succeeded (status 2xx)
+        if ($createInvoiceResponse['status_code'] >= 200 && $createInvoiceResponse['status_code'] < 300) {
+            // Attach created product_id to the plan data
+            $InvoiceID = isset($createInvoiceResponse['body']['id']) ? $createInvoiceResponse['body']['id'] : '';
+
+            // Step 2: Create a billing plan associated with the product
+            $sendInvoiceResponse = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/send', 'POST', null, null, true);
+
+            if ($sendInvoiceResponse['status_code'] >= 200 && $sendInvoiceResponse['status_code'] < 300) {
+                $responseSimplified = array(
+                    'success' => true,
+                    'status' => !empty($sendInvoiceResponse['status_code']) ? $sendInvoiceResponse['status_code'] : 0,
+                    'response' => !empty($sendInvoiceResponse['body']) ? $sendInvoiceResponse['body'] : [],
+                    'raw_response' => !empty($sendInvoiceResponse['raw_response']) ? $sendInvoiceResponse['raw_response'] : [],
+                );
+            } else {
+                $responseSimplified = array(
+                    'success' => false,
+                    'status' => $sendInvoiceResponse['status_code'],
+                    'error' => !empty($sendInvoiceResponse['body']) ? $sendInvoiceResponse['body'] : [],
+                    'raw_response' => !empty($sendInvoiceResponse['raw_response']) ? $sendInvoiceResponse['raw_response'] : [],
+                );
+            }
+        } else {
+            $responseSimplified = array(
+                'success' => false,
+                'status' => $createInvoiceResponse['status_code'],
+                'error' => !empty($createInvoiceResponse['body']) ? $createInvoiceResponse['body'] : [],
+                'raw_response' => !empty($createInvoiceResponse['raw_response']) ? $createInvoiceResponse['raw_response'] : [],
+            );
+        }
+
+        return $responseSimplified;
     }
 
     /**

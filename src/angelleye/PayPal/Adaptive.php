@@ -45,6 +45,7 @@ class Adaptive extends PayPal
 	var $APIPassword = '';
 	var $APISignature = '';
 	var $APIMode = '';
+	var $APIButtonSource = '';
 	var $EndPointURL = '';
 	var $PrintHeaders = '';
 	var $LogResults = '';
