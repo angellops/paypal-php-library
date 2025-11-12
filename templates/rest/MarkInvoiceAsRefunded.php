@@ -11,30 +11,34 @@ $PayPalConfig = array(
 	'DeviceID' => $device_id,
 	'IPAddress' => $_SERVER['REMOTE_ADDR'],
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
+	'ClientID' => $rest_client_id,
+        'ClientSecret' => $rest_client_secret,
 	'APISubject' => $api_subject,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
-	'isAdaptive' => true,
 );
 
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 // Prepare request arrays
-$MarkInvoiceAsPaidFields = array(
-	'InvoiceID' => 'INV2-GZWT-JZHS-FR3G-EDWA', 		// Required.  ID of the invoice to mark paid.
-	'Method' => 'Cash', 					// Method t hat can be used to mark an invoice as paid when the payer p ays offline.  Values are:  BankTransfer, Cash, Check, CreditCard, DebitCard, Other, PayPal, WireTransfer
-	'Note' => 'This is a test note.', 			// Optional note associated with the payment.
-	'Date' => '2012-02-19'					// Date the invoice was paid.
+$MarkInvoiceAsRefundedFields = array(
+	'note' => '',
+	'amount' => array(
+                'currency_code' => '',
+                'value' => ''
+	),
+	'method' => '',
+	'Date' => date('Y-m-d')
 );
 
-$PayPalRequestData = array('MarkInvoiceAsPaidFields' => $MarkInvoiceAsPaidFields);
+$PayPalRequestData = array(
+	'InvoiceID' => '',                   // Invoice ID of the invoice to mark refunded which has been paid
+	'MarkInvoiceAsRefundedFields' => $MarkInvoiceAsRefundedFields
+);
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
-$PayPalResult = $PayPal->Adaptive->MarkInvoiceAsPaid($PayPalRequestData);
+$PayPalResult = $PayPal->MarkInvoiceAsRefunded($PayPalRequestData);
 
 // Write the contents of the response array to the screen for demo purposes.
 echo '<pre />';

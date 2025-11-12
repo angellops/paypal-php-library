@@ -21,7 +21,7 @@ $PayPalConfig = array(
 
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
-$InvoiceID = '';
+$InvoiceID = '';	// Invoice ID of the invoice to delete which has been cancelled
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
 $PayPalResult = $PayPal->DeleteInvoice($InvoiceID);

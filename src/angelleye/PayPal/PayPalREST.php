@@ -1171,6 +1171,14 @@ class PayPalREST extends PayPal
         }
     }
 
+    /**
+     * Deletes an existing invoice from PayPal using the REST API (v2).
+     *
+     * This method sends a DELETE request to the PayPal Invoicing API endpoint to permanently 
+     * remove an invoice identified by the provided Invoice ID. 
+     * 
+     * Note: A successful DELETE operation may return an empty response body.
+     */
     public function DeleteInvoice($InvoiceID)
     {
         try {
@@ -1189,6 +1197,83 @@ class PayPalREST extends PayPal
                 'error' => '',
                 'status_code' => $response['body']['status'] ?? $response['status_code'],
                 'details' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice deleted successfully which may not return a body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Marks a PayPal invoice as paid using the REST API (v2).
+     *
+     * This method records a payment against an existing PayPal invoice by sending
+     * a POST request to the `/v2/invoicing/invoices/{invoice_id}/payments` endpoint.
+     * 
+     * The provided payload should contain payment details such as the method,
+     * transaction ID, and payment date. A successful operation marks the invoice
+     * as paid and updates its status accordingly.
+     */
+    public function MarkInvoiceAsPaid($InvoiceData)
+    {
+        try {
+            $payload = !empty($InvoiceData['MarkInvoiceAsPaidFields']) ? $InvoiceData['MarkInvoiceAsPaidFields'] : [];
+            $InvoiceID = isset($InvoiceData['InvoiceID']) ? $InvoiceData['InvoiceID'] : '';
+
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/payments', 'POST', $payload, null, true);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Marks a PayPal invoice as refunded using the REST API.
+     *
+     * This method sends a POST request to the PayPal Invoicing API to record a refund 
+     * against a specific invoice. It requires the invoice ID and refund details 
+     * such as amount, note, or refund type (if applicable) in the payload.
+     */
+    public function MarkInvoiceAsRefunded($InvoiceData)
+    {
+        try {
+            $payload = !empty($InvoiceData['MarkInvoiceAsRefundedFields']) ? $InvoiceData['MarkInvoiceAsRefundedFields'] : [];
+            $InvoiceID = isset($InvoiceData['InvoiceID']) ? $InvoiceData['InvoiceID'] : '';
+
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/refunds', 'POST', $payload, null, true);
+
+            if ($response['status_code'] === 201) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => $response['body']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => $response['body']
             ];
         } catch (\Exception $e) {
             return [
