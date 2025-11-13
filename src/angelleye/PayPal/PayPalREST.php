@@ -13,6 +13,7 @@ class PayPalREST extends PayPal
     private $tokenExpiry;
     private $client_id;
     private $client_secret;
+    private $api_upgrade;
     private $base_url;
 
     public function __construct($config)
@@ -27,6 +28,7 @@ class PayPalREST extends PayPal
         // Set REST-specific credentials
         $this->client_id = isset($config['ClientID']) ? $config['ClientID'] : '';
         $this->client_secret = isset($config['ClientSecret']) ? $config['ClientSecret'] : '';
+        $this->api_upgrade = isset($config['PayPalAPIUpgrade']) ? $config['PayPalAPIUpgrade'] : FALSE;
 
         // Parent class already handles: sandbox, print_headers, log_results, log_path, base URLs
     }
@@ -161,39 +163,64 @@ class PayPalREST extends PayPal
      */
     function GetBalance($DataArray)
     {
-        $returnAllCurrencies = !empty($DataArray['GBFields']['returnallcurrencies']) ? true : false;
+        try {
+            $response = $this->makeRequest('/v1/reporting/balances');
 
-        $response = $this->makeRequest('/v1/reporting/balances');
+            if (in_array($response['status_code'], [200, 201])) {
+                $body = $response['body'];
 
-        $responseSimplified = [
-            'ASOFTIME' => !empty($response['body']['as_of_time']) ? $response['body']['as_of_time'] : '',
-            'ACCOUNTID' => !empty($response['body']['account_id']) ? $response['body']['account_id'] : '',
-            'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
-            'ERRORS' => [],
-            'BALANCES' => [],
-            'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : '',
-        ];
+                if ($this->api_upgrade) {
+                    $balances = [];
+                    $flatBalances = [];
 
-        // Capture errors if available
-        if (!empty($response['body']['errors']) && is_array($response['body']['errors'])) {
-            $responseSimplified['errors'] = $response['body']['errors'];
-        }
+                    if (!empty($body['balances'])) {
+                        foreach ($body['balances'] as $i => $bal) {
+                            $amount = $bal['total_balance']['value'];
+                            $currency = $bal['currency'];
 
-        if (!empty($response['body']['balances']) && is_array($response['body']['balances'])) {
-            foreach ($response['body']['balances'] as $balance) {
-                if ($returnAllCurrencies || !empty($balance['primary'])) {
-                    $responseSimplified['BALANCES'][] = [
-                        'CURRENCY' => !empty($balance['currency']) ? $balance['currency'] : '',
-                        'TOTALBALANCE' => !empty($balance['total_balance']['value']) ? $balance['total_balance']['value'] : 0,
-                        'AVAILABLEBALANCE' => !empty($balance['available_balance']['value']) ? $balance['available_balance']['value'] : 0,
-                        'WITHHELDBALANCE' => !empty($balance['withheld_balance']['value']) ? $balance['withheld_balance']['value'] : 0,
-                        'PRIMARY' => !empty($balance['primary']) ? 1 : 0,
-                    ];
+                            // Add to BALANCERESULTS array (Classic-style)
+                            $balances[] = [
+                                'L_AMT' => $amount,
+                                'L_CURRENCYCODE' => $currency,
+                            ];
+
+                            // Also add to flattened keys (L_AMT0, L_AMT1, ...)
+                            $flatBalances["L_AMT{$i}"] = $amount;
+                            $flatBalances["L_CURRENCYCODE{$i}"] = $currency;
+                        }
+                    }
+
+                    return array_merge(
+                        $flatBalances,
+                        [
+                            'TIMESTAMP' => $body['as_of_time'] ?? gmdate('c'),
+                            'ACK' => 'Success',
+                            'BALANCERESULTS' => $balances,
+                            'RAWRESPONSE' => $response['raw_response'] ?? [],
+                        ]
+                    );
                 }
-            }
-        }
 
-        return $responseSimplified;
+                // Normal REST-style response
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => $body,
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => $response['body']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 
     function AddBankAccount($DataArray) {
