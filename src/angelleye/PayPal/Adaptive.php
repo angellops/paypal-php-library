@@ -67,6 +67,12 @@ class Adaptive extends PayPal
 	function __construct($DataArray)
 	{
 		parent::__construct($DataArray);
+
+		if (isset($DataArray['Sandbox'])) {
+			$this->Sandbox = $DataArray['Sandbox'];
+		} else {
+			$this->Sandbox = false;
+		}
 		
 		$this->XMLNamespace = 'http://svcs.paypal.com/types/ap';
 		$this->DeviceID = isset($DataArray['DeviceID']) ? $DataArray['DeviceID'] : '';

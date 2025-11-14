@@ -193,10 +193,10 @@ class PayPalREST extends PayPal
                     return array_merge(
                         $flatBalances,
                         [
-                            'TIMESTAMP' => $body['as_of_time'] ?? gmdate('c'),
+                            'TIMESTAMP' => isset($body['as_of_time']) ? $body['as_of_time'] : gmdate('c'),
                             'ACK' => 'Success',
                             'BALANCERESULTS' => $balances,
-                            'RAWRESPONSE' => $response['raw_response'] ?? [],
+                            'RAWRESPONSE' => isset($response['raw_response']) ? $response['raw_response'] : [],
                         ]
                     );
                 }
@@ -417,7 +417,8 @@ class PayPalREST extends PayPal
                     'order_id' => $response['body']['id'],
                     'status' => $response['body']['status'] ?? $response['status_code'],
                     'approval_url' => $this->getApprovalUrl($response['body']['links']),
-                    'full_response' => $response['body']
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
                 ];
             }
 
@@ -425,7 +426,8 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'error' => 'Failed to create order',
                 'status_code' => $response['body']['status'] ?? $response['status_code'],
-                'details' => $response['body']
+                'details' => $response['body'],
+                'raw_response' => $response['raw_response']
             ];
         } catch (\Exception $e) {
             return [
@@ -446,15 +448,17 @@ class PayPalREST extends PayPal
             if ($response['status_code'] === 200) {
                 return [
                     'success' => true,
-                    'order' => $response['body']
+                    'order' => $response['body'],
+                    'raw_response' => $response['raw_response']
                 ];
             }
-
+            
             return [
                 'success' => false,
                 'error' => 'Failed to get order details',
                 'status_code' => $response['body']['status'] ?? $response['status_code'],
-                'details' => $response['body']
+                'details' => $response['body'],
+                'raw_response' => $response['raw_response']
             ];
         } catch (\Exception $e) {
             return [
@@ -477,7 +481,8 @@ class PayPalREST extends PayPal
                     'success' => true,
                     'authorization_id' => $response['body']['purchase_units'][0]['payments']['authorizations'][0]['id'],
                     'status' => $response['body']['status'] ?? $response['status_code'],
-                    'full_response' => $response['body']
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
                 ];
             }
 
@@ -485,7 +490,8 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'error' => 'Failed to authorize order',
                 'status_code' => $response['body']['status'] ?? $response['status_code'],
-                'details' => $response['body']
+                'details' => $response['body'],
+                'raw_response' => $response['raw_response']
             ];
         } catch (\Exception $e) {
             return [
@@ -508,7 +514,8 @@ class PayPalREST extends PayPal
                     'success' => true,
                     'capture_id' => $response['body']['purchase_units'][0]['payments']['captures'][0]['id'],
                     'status' => $response['body']['status'] ?? $response['status_code'],
-                    'full_response' => $response['body']
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
                 ];
             }
 
@@ -516,7 +523,8 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'error' => 'Failed to capture order',
                 'status_code' => $response['body']['status'] ?? $response['status_code'],
-                'details' => $response['body']
+                'details' => $response['body'],
+                'raw_response' => $response['raw_response']
             ];
         } catch (\Exception $e) {
             return [
@@ -653,6 +661,359 @@ class PayPalREST extends PayPal
         }
 
         return $responseSimplified;
+    }
+
+    /**
+     * Creates a PayPal Order (REST API) equivalent to Classic SetExpressCheckout.
+     *
+     * Accepts Classic NVP-style array input ($DataArray), converts it
+     * into a PayPal REST /v2/checkout/orders payload, sends the create
+     * order request, and returns normalized NVP-compatible output.
+     */
+    function SetExpressCheckout($DataArray) {
+        $SECFields = isset($DataArray['SECFields']) ? $DataArray['SECFields'] : [];
+        $payments = isset($DataArray['Payments'][0]) ? $DataArray['Payments'][0] : [];
+        $items = isset($payments['order_items']) ? $payments['order_items'] : [];
+
+        $purchase_items = [];
+        $item_total = 0;
+
+        foreach ($items as $it) {
+            $purchase_items[] = array(
+                "name" => isset($it["name"]) ? $it["name"] : "",
+                "description" => isset($it["desc"]) ? $it["desc"] : "",
+                "quantity" => isset($it["qty"]) ? $it["qty"] : "1",
+                "unit_amount" => [
+                    "currency_code" => isset($payments["currencycode"]) ? $payments["currencycode"] : "USD",
+                    "value" => isset($it["amt"]) ? $it["amt"] : "0.00"
+                ],
+                "category" => !empty($it["itemcategory"]) && strtolower($it["itemcategory"]) === "digital"
+                    ? "DIGITAL_GOODS"
+                    : "PHYSICAL_GOODS"
+            );
+
+            $item_total += (float) (isset($it["amt"]) ? $it["amt"] : 0) * (int) (isset($it["qty"]) ? $it["qty"] : 1);
+        }
+
+        // Amount breakdown
+        $currency = isset($payments["currencycode"]) ? $payments["currencycode"] : "USD";
+
+        $amount = array(
+            "currency_code" => $currency,
+            "value" => isset($payments["amt"]) ? $payments["amt"] : "0.00",
+            "breakdown" => array(
+                "item_total" => array(
+                    "currency_code" => $currency,
+                    "value" => number_format($item_total, 2, '.', '')
+                ),
+                "shipping" => array(
+                    "currency_code" => $currency,
+                    "value" => isset($payments["shippingamt"]) ? $payments["shippingamt"] : "0.00"
+                ),
+                "tax_total" => array(
+                    "currency_code" => $currency,
+                    "value" => isset($payments["taxamt"]) ? $payments["taxamt"] : "0.00"
+                )
+            )
+        );
+
+        $payload = array(
+            "intent" => "CAPTURE",
+            "purchase_units" => array(
+                array(
+                    "amount" => $amount,
+                    "description" => isset($payments["desc"]) ? $payments["desc"] : "",
+                    "items" => $purchase_items
+                )
+            ),
+            "application_context" => array(
+                "return_url" => isset($SECFields["returnurl"]) ? $SECFields["returnurl"] : "",
+                "cancel_url" => isset($SECFields["cancelurl"]) ? $SECFields["cancelurl"] : "",
+                "brand_name" => isset($SECFields["brandname"]) ? $SECFields["brandname"] : "",
+                "landing_page" => strtoupper(isset($SECFields["landingpage"]) ? $SECFields["landingpage"] : "LOGIN"),
+                "shipping_preference" => (isset($SECFields["noshipping"]) && $SECFields["noshipping"] === "1")
+                    ? "NO_SHIPPING"
+                    : "SET_PROVIDED_ADDRESS"
+            )
+        );
+
+        $response = $this->createOrder($payload);
+
+        if ($this->api_upgrade && isset($response['success'])) {
+
+            $response['TOKEN'] = isset($response['order_id']) ? $response['order_id'] : '';
+            $response['REDIRECTURL'] = isset($response['approval_url']) ? $response['approval_url'] : '';
+            $response['ACK'] = 'Success';
+            $response['TIMESTAMP'] = gmdate('Y-m-d\TH:i:s\Z');
+            $response['RAWRESPONSE'] = isset($response['raw_response']) ? $response['raw_response'] : [];
+
+            // Cleanup for backward compatibility
+            unset(
+                $response['success'],
+                $response['order_id'],
+                $response['approval_url'],
+                $response['raw_response']
+            );
+        }
+
+        return $response;
+    }
+
+    /**
+     * Retrieves PayPal Order details (REST API) equivalent to Classic
+     * GetExpressCheckoutDetails. Converts REST order details into
+     * Classic NVP-compatible output.
+     *
+     * Required structure of $DataArray:
+     */
+    function GetExpressCheckoutDetails($DataArray) {
+        $orderId = isset($DataArray['DECPFields']['token']) ? $DataArray['DECPFields']['token'] : '';
+
+        $response = $this->getOrder($orderId);
+
+        if ($this->api_upgrade && isset($response['success'])) {
+            $responseData = array();
+
+            $responseData['TOKEN']  = isset($DataArray['DECPFields']['token']) ? $DataArray['DECPFields']['token'] : '';
+            $responseData['BILLINGAGREEMENTACCEPTEDSTATUS']  = false;
+            $responseData['NOTE']   = isset($DataArray['Payments'][0]['notetext']) ? $DataArray['Payments'][0]['notetext'] : '';
+            $responseData['CHECKOUTSTATUS'] = '';
+            $responseData['TIMESTAMP'] = gmdate('Y-m-d\TH:i:s\Z');
+            $responseData['CORRELATIONID'] = '';
+            $responseData['ACK'] = 'Success';
+
+            $responseData['PAYERID'] = isset($response['order']['payer']['payer_id']) ? $response['order']['payer']['payer_id'] : '';
+            $responseData['PAYERSTATUS'] = isset($response['order']['payment_source']['paypal']['account_status']) ? $response['order']['payment_source']['paypal']['account_status'] : '';
+            $responseData['EMAIL'] = isset($response['order']['payer']['email_address']) ? $response['order']['payer']['email_address'] : '';
+            $responseData['FIRSTNAME'] = isset($response['order']['payer']['name']['given_name']) ? $response['order']['payer']['name']['given_name'] : '';
+            $responseData['LASTNAME'] = isset($response['order']['payer']['name']['surname']) ? $response['order']['payer']['name']['surname'] : '';
+            $responseData['COUNTRYCODE'] = isset($response['order']['payer']['address']['country_code']) ? $response['order']['payer']['address']['country_code'] : '';
+
+            $responseData['DESC']   = isset($DataArray['Payments'][0]['desc']) ? $DataArray['Payments'][0]['desc'] : '';
+            $responseData['CURRENCYCODE'] = isset($DataArray['Payments'][0]['currencycode']) ? $DataArray['Payments'][0]['currencycode'] : '';
+            $responseData['AMT']    = isset($DataArray['Payments'][0]['amt']) ? $DataArray['Payments'][0]['amt'] : '0.00';
+            $responseData['ITEMAMT'] = isset($DataArray['Payments'][0]['itemamt']) ? $DataArray['Payments'][0]['itemamt'] : '0.00';
+            $responseData['SHIPPINGAMT'] = isset($DataArray['Payments'][0]['shippingamt']) ? $DataArray['Payments'][0]['shippingamt'] : '0.00';
+            $responseData['TAXAMT'] = isset($DataArray['Payments'][0]['taxamt']) ? $DataArray['Payments'][0]['taxamt'] : '0.00';
+            $responseData['HANDLINGAMT'] = isset($DataArray['Payments'][0]['handlingamt']) ? $DataArray['Payments'][0]['handlingamt'] : '0.00';
+
+            // PAYMENTREQUEST LEVEL
+            $payment = $DataArray['Payments'][0];
+
+            $responseData['PAYMENTREQUEST_0_AMT']          = isset($payment['amt']) ? $payment['amt'] : '0.00';
+            $responseData['PAYMENTREQUEST_0_CURRENCYCODE'] = isset($payment['currencycode']) ? $payment['currencycode'] : '';
+            $responseData['PAYMENTREQUEST_0_ITEMAMT']      = isset($payment['itemamt']) ? $payment['itemamt'] : '0.00';
+            $responseData['PAYMENTREQUEST_0_SHIPPINGAMT']  = isset($payment['shippingamt']) ? $payment['shippingamt'] : '0.00';
+            $responseData['PAYMENTREQUEST_0_TAXAMT']       = isset($payment['taxamt']) ? $payment['taxamt'] : '0.00';
+            $responseData['PAYMENTREQUEST_0_HANDLINGAMT']  = isset($payment['handlingamt']) ? $payment['handlingamt'] : '0.00';
+            $responseData['PAYMENTREQUEST_0_DESC']         = isset($payment['desc']) ? $payment['desc'] : '';
+            $responseData['PAYMENTREQUEST_0_NOTETEXT']     = isset($payment['notetext']) ? $payment['notetext'] : '';
+
+            // ORDER ITEMS
+            $items = isset($payment['order_items']) ? $payment['order_items'] : array();
+            $orderItemsArray = array();
+
+            foreach ($items as $i => $item) {
+
+                $responseData["L_NAME$i"]    = isset($item['name']) ? $item['name'] : '';
+                $responseData["L_DESC$i"]    = isset($item['desc']) ? $item['desc'] : '';
+                $responseData["L_NUMBER$i"]  = isset($item['number']) ? $item['number'] : '';
+                $responseData["L_QTY$i"]     = isset($item['qty']) ? $item['qty'] : '';
+                $responseData["L_AMT$i"]     = isset($item['amt']) ? $item['amt'] : '';
+                $responseData["L_TAXAMT$i"]  = isset($item['taxamt']) ? $item['taxamt'] : "0.00";
+
+                $responseData["L_PAYMENTREQUEST_0_NAME$i"]   = isset($item['name']) ? $item['name'] : '';
+                $responseData["L_PAYMENTREQUEST_0_DESC$i"]   = isset($item['desc']) ? $item['desc'] : '';
+                $responseData["L_PAYMENTREQUEST_0_NUMBER$i"] = isset($item['number']) ? $item['number'] : '';
+                $responseData["L_PAYMENTREQUEST_0_QTY$i"]    = isset($item['qty']) ? $item['qty'] : '';
+                $responseData["L_PAYMENTREQUEST_0_AMT$i"]    = isset($item['amt']) ? $item['amt'] : '';
+                $responseData["L_PAYMENTREQUEST_0_TAXAMT$i"] = isset($item['taxamt']) ? $item['taxamt'] : "0.00";
+
+                $orderItemsArray[$i] = array(
+                    'L_NAME'   => isset($item['name']) ? $item['name'] : '',
+                    'L_DESC'   => isset($item['desc']) ? $item['desc'] : '',
+                    'L_NUMBER' => isset($item['number']) ? $item['number'] : '',
+                    'L_QTY'    => isset($item['qty']) ? $item['qty'] : '',
+                    'L_AMT'    => isset($item['amt']) ? $item['amt'] : '',
+                    'L_OPTIONSNAME' => isset($item['optionsname']) ? $item['optionsname'] : '',
+                    'L_OPTIONSVALUE' => isset($item['optionsvalue']) ? $item['optionsvalue'] : '',
+                    'L_ITEMWEIGHTVALUE' => isset($item['itemweightvalue']) ? $item['itemweightvalue'] : '',
+                    'L_ITEMWEIGHTUNIT'  => isset($item['itemweightunit']) ? $item['itemweightunit'] : '',
+                    'L_ITEMWIDTHVALUE' => isset($item['itemwidthvalue']) ? $item['itemwidthvalue'] : '',
+                    'L_ITEMWIDTHUNIT'  => isset($item['itemwidthunit']) ? $item['itemwidthunit'] : '',
+                    'L_ITEMHEIGHTVALUE' => isset($item['itemheightvalue']) ? $item['itemheightvalue'] : '',
+                    'L_ITEMHEIGHTUNIT'  => isset($item['itemheightunit']) ? $item['itemheightunit'] : '',
+                    'L_ITEMLENGTHVALUE' => isset($item['itemlengthvalue']) ? $item['itemlengthvalue'] : '',
+                    'L_ITEMLENGTHUNIT'  => isset($item['itemlengthunit']) ? $item['itemlengthunit'] : '',
+                    'L_EBAYITEMNUMBER' => isset($item['ebayitemnumber']) ? $item['ebayitemnumber'] : '',
+                    'L_EBAYITEMAUCTIONTXNID' => isset($item['ebayitemauctiontxnid']) ? $item['ebayitemauctiontxnid'] : '',
+                    'L_EBAYITEMORDERID' => isset($item['ebayitemorderid']) ? $item['ebayitemorderid'] : '',
+                    'L_EBAYITEMCARTID' => isset($item['ebayitemcartid']) ? $item['ebayitemcartid'] : '',
+                    'L_TAXAMT' => isset($item['taxamt']) ? $item['taxamt'] : "0.00",
+                );
+            }
+
+            // PAYMENT REQUEST BLOCK FOR RESPONSE
+            $responseData['PAYMENTS'] = array();
+            $responseData['PAYMENTS'][0] = array(
+                'AMT'          => isset($payment['amt']) ? $payment['amt'] : '0.00',
+                'CURRENCYCODE' => isset($payment['currencycode']) ? $payment['currencycode'] : '',
+                'ITEMAMT'      => isset($payment['itemamt']) ? $payment['itemamt'] : '0.00',
+                'SHIPPINGAMT'  => isset($payment['shippingamt']) ? $payment['shippingamt'] : '0.00',
+                'TAXAMT'       => isset($payment['taxamt']) ? $payment['taxamt'] : '0.00',
+                'HANDLINGAMT'  => isset($payment['handlingamt']) ? $payment['handlingamt'] : '0.00',
+                'DESC'         => isset($payment['desc']) ? $payment['desc'] : '',
+                'NOTETEXT'     => isset($payment['notetext']) ? $payment['notetext'] : '',
+                'ORDERITEMS'   => array_map(
+                    function ($it) {
+                        return array(
+                            'NAME'  => isset($it['L_NAME']) ? $it['L_NAME'] : '',
+                            'DESC'  => isset($it['L_DESC']) ? $it['L_DESC'] : '',
+                            'AMT'   => isset($it['L_AMT']) ? $it['L_AMT'] : '',
+                            'NUMBER'=> isset($it['L_NUMBER']) ? $it['L_NUMBER'] : '',
+                            'QTY'   => isset($it['L_QTY']) ? $it['L_QTY'] : '',
+                            'TAXAMT'=> isset($it['L_TAXAMT']) ? $it['L_TAXAMT'] : '0.00',
+
+                            'OPTIONSNAME' => isset($it['L_OPTIONSNAME']) ? $it['L_OPTIONSNAME'] : '',
+                            'OPTIONSVALUE' => isset($it['L_OPTIONSVALUE']) ? $it['L_OPTIONSVALUE'] : '',
+
+                            'ITEMWEIGHTVALUE' => isset($it['L_ITEMWEIGHTVALUE']) ? $it['L_ITEMWEIGHTVALUE'] : '',
+                            'ITEMWEIGHTUNIT'  => isset($it['L_ITEMWEIGHTUNIT']) ? $it['L_ITEMWEIGHTUNIT'] : '',
+
+                            'ITEMWIDTHVALUE' => isset($it['L_ITEMWIDTHVALUE']) ? $it['L_ITEMWIDTHVALUE'] : '',
+                            'ITEMWIDTHUNIT'  => isset($it['L_ITEMWIDTHUNIT']) ? $it['L_ITEMWIDTHUNIT'] : '',
+
+                            'ITEMHEIGHTVALUE' => isset($it['L_ITEMHEIGHTVALUE']) ? $it['L_ITEMHEIGHTVALUE'] : '',
+                            'ITEMHEIGHTUNIT'  => isset($it['L_ITEMHEIGHTUNIT']) ? $it['L_ITEMHEIGHTUNIT'] : '',
+
+                            'ITEMLENGTHVALUE' => isset($it['L_ITEMLENGTHVALUE']) ? $it['L_ITEMLENGTHVALUE'] : '',
+                            'ITEMLENGTHUNIT'  => isset($it['L_ITEMLENGTHUNIT']) ? $it['L_ITEMLENGTHUNIT'] : '',
+
+                            'EBAYITEMNUMBER' => isset($it['L_EBAYITEMNUMBER']) ? $it['L_EBAYITEMNUMBER'] : '',
+                            'EBAYITEMAUCTIONTXNID' => isset($it['L_EBAYITEMAUCTIONTXNID']) ? $it['L_EBAYITEMAUCTIONTXNID'] : '',
+                            'EBAYITEMORDERID' => isset($it['L_EBAYITEMORDERID']) ? $it['L_EBAYITEMORDERID'] : '',
+                            'EBAYITEMCARTID' => isset($it['L_EBAYITEMCARTID']) ? $it['L_EBAYITEMCARTID'] : '',
+                        );
+                    },
+                    $orderItemsArray
+                )
+            );
+
+            $responseData['FULLRESPONSE'] = isset($response['order']) ? $response['order'] : array();
+            $responseData['RAWRESPONSE'] = isset($response['raw_response']) ? $response['raw_response'] : array();
+        }
+
+        return $this->api_upgrade ? $responseData : $response;
+    }
+
+    /**
+     * Captures a PayPal Order (REST API) equivalent to Classic
+     * DoExpressCheckoutPayment. Converts REST capture response
+     * into Classic PayPal NVP-compatible structure.
+     */
+    function DoExpressCheckoutPayment($DataArray) {
+        $orderId = isset($DataArray['DECPFields']['token']) ? $DataArray['DECPFields']['token'] : '';
+
+        $response = $this->captureOrder($orderId);
+
+        if ($this->api_upgrade && isset($response['success'])) {
+            $responseData = array();
+
+            $responseData['TOKEN']  = isset($response['capture_id']) ? $response['capture_id'] : '';
+            $responseData['BILLINGAGREEMENTACCEPTEDSTATUS']  = false;
+            $responseData['NOTE']   = isset($DataArray['Payments'][0]['notetext']) ? $DataArray['Payments'][0]['notetext'] : '';
+            $responseData['CHECKOUTSTATUS'] = '';
+            $responseData['TIMESTAMP'] = gmdate('Y-m-d\TH:i:s\Z');
+            $responseData['CORRELATIONID'] = '';
+            $responseData['ACK'] = 'Success';
+            $responseData['INSURANCEOPTIONSELECTED'] = 'false';
+            $responseData['SHIPPINGOPTIONISDEFAULT'] = 'false';
+
+            $fullResponse  = isset($response['full_response']) ? $response['full_response'] : array();
+            $payer = isset($fullResponse['payer']) ? $fullResponse['payer'] : array();
+
+            $unit  = isset($fullResponse['purchase_units'][0]) ? $fullResponse['purchase_units'][0] : array();
+
+            $capture = array();
+            if (isset($unit['payments']['captures'][0])) {
+                $capture = $unit['payments']['captures'][0];
+            }
+
+            // Amounts
+            $amount   = isset($capture['amount']['value']) ? $capture['amount']['value'] : '';
+            $currency = isset($capture['amount']['currency_code']) ? $capture['amount']['currency_code'] : '';
+
+            $fee = isset($capture['seller_receivable_breakdown']['paypal_fee']['value']) 
+                    ? $capture['seller_receivable_breakdown']['paypal_fee']['value'] 
+                    : '';
+
+            $gross = isset($capture['seller_receivable_breakdown']['gross_amount']['value']) 
+                    ? $capture['seller_receivable_breakdown']['gross_amount']['value'] 
+                    : '';
+
+            $net = isset($capture['seller_receivable_breakdown']['net_amount']['value']) 
+                ? $capture['seller_receivable_breakdown']['net_amount']['value'] 
+                : '';
+
+            // Tax not provided in REST
+            $tax = '';
+
+            // Protection categories
+            $protectionTypes = '';
+            if (isset($capture['seller_protection']['dispute_categories']) 
+                && is_array($capture['seller_protection']['dispute_categories'])) {
+
+                $protectionTypes = implode(',', $capture['seller_protection']['dispute_categories']);
+            }
+
+            // Build NVP output
+            $responseData = array(
+                "PAYMENTINFO_0_TRANSACTIONID"           => isset($capture['id']) ? $capture['id'] : '',
+                "PAYMENTINFO_0_TRANSACTIONTYPE"         => "cart",
+                "PAYMENTINFO_0_PAYMENTTYPE"             => "instant",
+                "PAYMENTINFO_0_ORDERTIME"               => isset($capture['create_time']) ? $capture['create_time'] : '',
+                "PAYMENTINFO_0_AMT"                     => $amount,
+                "PAYMENTINFO_0_FEEAMT"                  => $fee,
+                "PAYMENTINFO_0_TAXAMT"                  => $tax,
+                "PAYMENTINFO_0_CURRENCYCODE"            => $currency,
+                "PAYMENTINFO_0_PAYMENTSTATUS"           => isset($capture['status']) ? ucfirst(strtolower($capture['status'])) : '',
+                "PAYMENTINFO_0_PENDINGREASON"           => "None",
+                "PAYMENTINFO_0_REASONCODE"              => "None",
+                "PAYMENTINFO_0_PROTECTIONELIGIBILITY"   => isset($capture['seller_protection']['status']) ? $capture['seller_protection']['status'] : '',
+                "PAYMENTINFO_0_PROTECTIONELIGIBILITYTYPE" => $protectionTypes,
+                "PAYMENTINFO_0_SELLERPAYPALACCOUNTID"   => "",
+                "PAYMENTINFO_0_SECUREMERCHANTACCOUNTID" => "",
+                "PAYMENTINFO_0_ERRORCODE"               => 0,
+                "PAYMENTINFO_0_ACK"                     => "Success",
+                "ERRORS"                                => array(),
+                "PAYMENTS"                              => array(
+                    array(
+                        "TRANSACTIONID"      => isset($capture['id']) ? $capture['id'] : '',
+                        "TRANSACTIONTYPE"    => "cart",
+                        "PAYMENTTYPE"        => "instant",
+                        "ORDERTIME"          => isset($capture['create_time']) ? $capture['create_time'] : '',
+                        "AMT"                => $amount,
+                        "FEEAMT"             => $fee,
+                        "SETTLEAMT"          => "",
+                        "TAXAMT"             => $tax,
+                        "EXCHANGERATE"       => "",
+                        "CURRENCYCODE"       => $currency,
+                        "PAYMENTSTATUS"      => isset($capture['status']) ? ucfirst(strtolower($capture['status'])) : '',
+                        "PENDINGREASON"      => "None",
+                        "REASONCODE"         => "None",
+                        "PROTECTIONELIGIBILITY" => isset($capture['seller_protection']['status']) ? $capture['seller_protection']['status'] : '',
+                        "ERRORCODE"          => 0,
+                        "FMFILTERS"          => array(),
+                        "ERRORS"             => array()
+                    )
+                )
+            );
+
+            $responseData['FULLRESPONSE'] = isset($response['full_response']) ? $response['full_response'] : array();
+            $responseData['RAWRESPONSE'] = isset($response['raw_response']) ? $response['raw_response'] : array();
+        }
+
+        return $this->api_upgrade ? $responseData : $response;
     }
 
     /**

@@ -82,7 +82,7 @@ class PayPalClassic extends PayPal
         if (isset($DataArray['Sandbox'])) {
             $this->Sandbox = $DataArray['Sandbox'];
         } else {
-            $this->Sandbox = true;
+            $this->Sandbox = false;
         }
 
         if (isset($DataArray['isAdaptive'])) {
