@@ -1310,7 +1310,18 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v1/identity/oauth2/userinfo?schema=paypalv1.1');
 
-            if ($response['status_code'] === 201) {
+            if (in_array($response['status_code'], [200, 201])) {
+
+                if ($this->api_upgrade) {
+                    return [
+                        'PAL' => isset($response['body']['payer_id']) ? $response['body']['payer_id'] : '',
+                        'TIMESTAMP' => isset($body['as_of_time']) ? $body['as_of_time'] : gmdate('c'),
+                        'ACK' => 'Success',
+                        'full_response' => $response['body'],
+                        'RAWRESPONSE' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                    ];
+                }
+
                 return [
                     'success' => true,
                     'status' => $response['body']['status'] ?? $response['status_code'],
