@@ -1193,7 +1193,20 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionId . '/' . $subscriptionAction, 'POST', $subscriptionReason);
 
-            if ($response['status_code'] === 201) {
+            if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
+
+                if ($this->api_upgrade) {
+                    return [
+                        'success' => true,
+                        'status' => $response['body']['status'] ?? $response['status_code'],
+                        'ACK' => 'Success',
+                        'TIMESTAMP' => gmdate('c'),
+                        'PROFILEID' => isset($subscriptionId) ? $subscriptionId : '',
+                        'L_LONGMESSAGE0' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
+                        'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
+                    ];
+                }
+
                 return [
                     'success' => true,
                     'status' => $response['body']['status'] ?? $response['status_code'],
@@ -1490,6 +1503,16 @@ class PayPalREST extends PayPal
      */
     public function GetRecurringPaymentsProfileDetails( $PayPalRequestData ){
         return $this->GetSubscriptionProfile($PayPalRequestData);
+    }
+
+    /**
+     * Manage recurring payments profile status by delegating to ManageSubscriptionProfile.
+     *
+     * This function is a wrapper that calls the ManageSubscriptionProfile method
+     * to perform actions such as canceling, suspending, or activating a subscription.
+     */
+    public function ManageRecurringPaymentsProfileStatus($DataArray) {
+        return $this->ManageSubscriptionProfile($DataArray);
     }
 
     /**
