@@ -611,6 +611,8 @@ class PayPalREST extends PayPal
     public function DoDirectPayment($paymentData) {
         $paymentsMappedData = [];
 
+        $PaymentAmount = !empty($paymentData['PaymentDetails']['amt']) ? $paymentData['PaymentDetails']['amt'] : 0.00;
+        $PaymentCurrency = !empty($paymentData['PaymentDetails']['currencycode']) ? $paymentData['PaymentDetails']['currencycode'] : '';
         $paymentsMappedData['intent'] = !empty($paymentData['DPFields']['paymentaction']) ? $paymentData['DPFields']['paymentaction'] : 'sale';
         $paymentsMappedData['purchase_units'] = [
             [
@@ -645,12 +647,26 @@ class PayPalREST extends PayPal
 
         // Handle Response
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
-            $responseSimplified = array(
-                'SUCCESS' => true,
-                'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
-                'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
-                'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
-            );
+
+            if( $this->api_upgrade ) {
+                $responseSimplified = array(
+                    'SUCCESS' => true,
+                    'ACK' => 'Success',
+                    'AMT' => $PaymentAmount,
+                    'CURRENCYCODE' => $PaymentCurrency,
+                    'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                    'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
+                    'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                );
+
+            } else {
+                $responseSimplified = array(
+                    'SUCCESS' => true,
+                    'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                    'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
+                    'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                );
+            }
         } else {
             $responseSimplified = array(
                 'SUCCESS' => false,
