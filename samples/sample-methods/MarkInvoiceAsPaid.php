@@ -52,7 +52,7 @@ if( $api_mode === 'rest' ) {
 	$PayPalRequestData = array('MarkInvoiceAsPaidFields' => $MarkInvoiceAsPaidFields);
 	$PayPalResult = $PayPal->Adaptive->MarkInvoiceAsPaid($PayPalRequestData);
 	echo '<pre />';
-	echo "<p><strong>Deprecated Notice:</strong> The classic CreateInvoice method your plugin/theme is using has been deprecated. Please upgrade to the new REST-based implementation to ensure compatibility with future updates.</p>";
+	echo "<p><strong>Deprecated Notice:</strong> The classic MarkInvoiceAsPaid method your plugin/theme is using has been deprecated. Please upgrade to the new REST-based implementation to ensure compatibility with future updates.</p>";
 }
 
 // Write the contents of the response array to the screen for demo purposes.

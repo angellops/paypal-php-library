@@ -35,7 +35,7 @@ if( $api_mode === 'rest' ){
 } else {
 	$PayPalResult = $PayPal->Adaptive->SendInvoice($InvoiceID);
 	echo '<pre />';
-    echo "<p><strong>Deprecated Notice:</strong> The classic CreateRecurringPaymentsProfile method your plugin/theme is using has been deprecated. Please upgrade to the new REST-based implementation to ensure compatibility with future updates.</p>";
+    echo "<p><strong>Deprecated Notice:</strong> The classic SendInvoice method your plugin/theme is using has been deprecated. Please upgrade to the new REST-based implementation to ensure compatibility with future updates.</p>";
 }
 
 print_r($PayPalResult);
