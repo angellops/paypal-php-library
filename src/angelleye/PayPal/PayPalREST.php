@@ -1258,7 +1258,20 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionId, 'PATCH', $patches);
 
-            if ($response['status_code'] === 201) {
+            if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
+
+                if($this->api_upgrade) {
+                    return [
+                        'success' => true,
+                        'status' => $response['body']['status'] ?? $response['status_code'],
+                        'TIMESTAMP' => isset($body['as_of_time']) ? $body['as_of_time'] : gmdate('c'),
+                        'ACK' => 'Success',
+                        'L_LONGMESSAGE0' => 'Patch Operations completed successfully which may not return a body',
+                        'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+                        'RAWRESPONSE' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                    ];
+                }
+
                 return [
                     'success' => true,
                     'status' => $response['body']['status'] ?? $response['status_code'],
