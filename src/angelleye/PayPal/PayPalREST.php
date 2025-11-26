@@ -1361,6 +1361,18 @@ class PayPalREST extends PayPal
             $response = $this->makeRequest('/v1/payments/payouts', 'POST', $DataArray);
 
             if ($response['status_code'] === 201) {
+
+                if( $this->api_upgrade ) {
+                    return [
+                        'ACK' => 'Success',
+                        'TIMESTAMP' => isset($body['as_of_time']) ? $body['as_of_time'] : gmdate('c'),
+                        'success' => true,
+                        'L_LONGMESSAGE' => isset($body['message']) ? $body['message'] : '',
+                        'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                        'full_response' => $response['body'],
+                        'RAWRESPONSE' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                    ];
+                }
                 return [
                     'success' => true,
                     'status' => $response['body']['status'] ?? $response['status_code'],
