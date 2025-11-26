@@ -1291,8 +1291,18 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/payments/authorizations/' . $transactionId . '/reauthorize', 'POST');
+            if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
 
-            if ($response['status_code'] === 200) {
+                if( $this->api_upgrade ) {
+                    return [
+                        'success' => true,
+                        'TIMESTAMP' => '2025-11-26T16:51:14Z',
+                        'ACK' => 'Success',
+                        'L_LONGMESSAGE0' => isset($response['body']['details']['message']) ? $response['body']['details']['message'] : '',
+                        'order' => $response['body'],
+                        'RAWRESPONSE' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                    ];
+                }
                 return [
                     'success' => true,
                     'order' => $response['body']
