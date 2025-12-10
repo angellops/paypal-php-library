@@ -747,9 +747,6 @@ class PayPalREST extends PayPal
                 "cancel_url" => isset($SECFields["cancelurl"]) ? $SECFields["cancelurl"] : "",
                 "brand_name" => isset($SECFields["brandname"]) ? $SECFields["brandname"] : "",
                 "landing_page" => strtoupper(isset($SECFields["landingpage"]) ? $SECFields["landingpage"] : "LOGIN"),
-                "shipping_preference" => (isset($SECFields["noshipping"]) && $SECFields["noshipping"] === "1")
-                    ? "NO_SHIPPING"
-                    : "SET_PROVIDED_ADDRESS"
             )
         );
 
@@ -804,6 +801,11 @@ class PayPalREST extends PayPal
             $responseData['FIRSTNAME'] = isset($response['order']['payer']['name']['given_name']) ? $response['order']['payer']['name']['given_name'] : '';
             $responseData['LASTNAME'] = isset($response['order']['payer']['name']['surname']) ? $response['order']['payer']['name']['surname'] : '';
             $responseData['COUNTRYCODE'] = isset($response['order']['payer']['address']['country_code']) ? $response['order']['payer']['address']['country_code'] : '';
+            
+            // Additional PAYER ADDRESS DETAILS
+            $purchaseUnit = $response['order']['purchase_units'][0];
+            $shipping = isset($purchaseUnit['shipping']) ? $purchaseUnit['shipping'] : [];
+            $responseData['SHIPPINGDATA'] = isset($shipping) ? $shipping : [];
 
             $responseData['DESC']   = isset($DataArray['Payments'][0]['desc']) ? $DataArray['Payments'][0]['desc'] : '';
             $responseData['CURRENCYCODE'] = isset($DataArray['Payments'][0]['currencycode']) ? $DataArray['Payments'][0]['currencycode'] : '';
@@ -935,16 +937,6 @@ class PayPalREST extends PayPal
         if ($this->api_upgrade && isset($response['success'])) {
             $responseData = array();
 
-            $responseData['TOKEN']  = isset($response['capture_id']) ? $response['capture_id'] : '';
-            $responseData['BILLINGAGREEMENTACCEPTEDSTATUS']  = false;
-            $responseData['NOTE']   = isset($DataArray['Payments'][0]['notetext']) ? $DataArray['Payments'][0]['notetext'] : '';
-            $responseData['CHECKOUTSTATUS'] = '';
-            $responseData['TIMESTAMP'] = gmdate('Y-m-d\TH:i:s\Z');
-            $responseData['CORRELATIONID'] = '';
-            $responseData['ACK'] = 'Success';
-            $responseData['INSURANCEOPTIONSELECTED'] = 'false';
-            $responseData['SHIPPINGOPTIONISDEFAULT'] = 'false';
-
             $fullResponse  = isset($response['full_response']) ? $response['full_response'] : array();
             $payer = isset($fullResponse['payer']) ? $fullResponse['payer'] : array();
 
@@ -984,6 +976,15 @@ class PayPalREST extends PayPal
 
             // Build NVP output
             $responseData = array(
+                "TOKEN"                                 => isset($response['capture_id']) ? $response['capture_id'] : '',
+                "BILLINGAGREEMENTACCEPTEDSTATUS"        => false,
+                "NOTE"                                  => isset($DataArray['Payments'][0]['notetext']) ? $DataArray['Payments'][0]['notetext'] : '',
+                "CHECKOUTSTATUS"                        => '',
+                "TIMESTAMP"                             => gmdate('Y-m-d\TH:i:s\Z'),
+                "CORRELATIONID"                         => '',
+                "ACK"                                   => 'Success',
+                "INSURANCEOPTIONSELECTED"               => 'false',
+                "SHIPPINGOPTIONISDEFAULT"               => 'false',
                 "PAYMENTINFO_0_TRANSACTIONID"           => isset($capture['id']) ? $capture['id'] : '',
                 "PAYMENTINFO_0_TRANSACTIONTYPE"         => "cart",
                 "PAYMENTINFO_0_PAYMENTTYPE"             => "instant",

@@ -28,6 +28,6 @@ print_r($GECDResults);
 echo '<br /><br />';
 
 $PaymentResult = $PayPal->captureOrder($orderId);
-echo '<b>DoExpressCheckout</b><br /><pre />';
+echo '<b>DoExpressCheckoutPayment</b><br /><pre />';
 print_r($PaymentResult);
 echo '<br /><br />';

@@ -131,5 +131,6 @@ $PayPalRequest = array(
 
 $_SESSION['PayPalResult'] = $PayPal -> DoExpressCheckoutPayment($PayPalRequest);
 
-echo '<pre />';
+echo '<b>DoExpressCheckoutPayment</b><br /><pre>';
 print_r($_SESSION['PayPalResult']);
+echo '<br /><br /></pre>';

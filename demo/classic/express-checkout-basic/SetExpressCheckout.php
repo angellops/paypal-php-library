@@ -12,11 +12,14 @@ require_once('../../../vendor/autoload.php');
 $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
-	'APIUsername' => $api_username,
+        'PayPalAPIUpgrade' => $api_upgrade,
+        'APIUsername' => $api_username,
 	'APIPassword' => $api_password,
-	'APISignature' => $api_signature, 
+	'APISignature' => $api_signature,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
 	'PrintHeaders' => $print_headers, 
-	'LogResults' => $log_results,
+	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
@@ -76,22 +79,24 @@ $PayPalRequestData = array(
  */
 $PayPalResult = $PayPal->SetExpressCheckout($PayPalRequestData);
 
-/**
- * Now we'll check for any errors returned by PayPal, and if we get an error,
- * we'll save the error details to a session and redirect the user to an 
- * error page to display it accordingly.
- *
- * If all goes well, we save our token in a session variable so that it's
- * readily available for us later, and then redirect the user to PayPal
- * using the REDIRECTURL returned by the SetExpressCheckout() function.
- */
-if($PayPal->APICallSuccessful($PayPalResult['ACK']))
-{
-    $_SESSION['paypal_token'] = isset($PayPalResult['TOKEN']) ? $PayPalResult['TOKEN'] : '';
-    header('Location: ' . $PayPalResult['REDIRECTURL']);
+$redirect_url = '';
+if( $api_mode === 'rest' && !$api_upgrade ) {
+    $redirect_url = $PayPalResult['approval_url'];
+} else {
+    $redirect_url = $PayPalResult['REDIRECTURL'];
 }
-else
-{
+
+$orderId = '';
+if( $api_mode === 'rest' && !$api_upgrade ) {
+    $orderId = $PayPalResult['order_id'];
+} else {
+    $orderId = $PayPalResult['TOKEN'];
+}
+
+if($redirect_url) {
+    $_SESSION['paypal_token'] = $orderId;
+    header('Location: ' . $redirect_url);
+} else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
     header('Location: ../../error.php');
 }
