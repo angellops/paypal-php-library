@@ -980,10 +980,18 @@ class PayPalClassic extends PayPal
     {
 
         if ($this->LogResults) {
+            // Create classic folder path
+            $classic_path = rtrim($log_path, '/') . '/classic/';
+
+            // Create folder if it doesn't exist
+            if (!is_dir($classic_path)) {
+                mkdir($classic_path, 0755, true);
+            }
+
             $timestamp = strtotime('now');
             $timestamp = date('mdY_gi_s_A_', $timestamp);
             $string_data_array = $this->NVPToArray($string_data);
-            $file = $log_path . $timestamp . $filename . '.txt';
+            $file = $classic_path . $timestamp . $filename . '.txt';
             $fh = fopen($file, 'w');
             fwrite($fh, $string_data . chr(13) . chr(13) . print_r($string_data_array, true));
             fclose($fh);
