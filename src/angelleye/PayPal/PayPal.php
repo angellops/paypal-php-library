@@ -46,6 +46,7 @@ class PayPal
     protected string $payPalAPIMode; // 'classic' or 'rest'
     protected bool $Sandbox = true;
     protected ?string $LogPath = null;
+    protected string $ButtonSource = 'AngellEYELLC_SI';
 
     public function __construct(array $config = [])
     {

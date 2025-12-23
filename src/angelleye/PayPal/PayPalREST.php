@@ -18,6 +18,8 @@ class PayPalREST extends PayPal
 
     public function __construct($config)
     {
+        parent::__construct($config);
+
         $this->Sandbox = isset($config['Sandbox']) ? true : false;
 
         // Override base URL for REST API endpoints
@@ -50,11 +52,11 @@ class PayPalREST extends PayPal
      * Get standard headers for API requests
      */
     private function getHeaders($includeAuth = true, $contentType = 'application/json', $requestId = null, $isInvoiceRequest = false)
-    {
+    {;
         $headers = [
-        'Content-Type: ' . $contentType,
-        'Accept: application/json',
-        'Partner-Attribution-Id: AngellEYELLC_Ecom_PHPCatalog'
+            'Content-Type: ' . $contentType,
+            'Accept: application/json',
+            'PayPal-Partner-Attribution-Id: ' . (isset($this->ButtonSource) ? $this->ButtonSource : 'AngellEYELLC_SI')
         ];
 
         if ($includeAuth) {
@@ -84,7 +86,7 @@ class PayPalREST extends PayPal
             'Authorization: Basic ' . $auth,
             'Content-Type: application/x-www-form-urlencoded',
             'Accept: application/json',
-            'Partner-Attribution-Id: AngellEYELLC_Ecom_PHPCatalog'
+            'PayPal-Partner-Attribution-Id: ' . (isset($this->ButtonSource) ? $this->ButtonSource : 'AngellEYELLC_SI')
         ];
     }
 
