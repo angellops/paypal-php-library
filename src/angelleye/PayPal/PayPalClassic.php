@@ -92,7 +92,7 @@ class PayPalClassic extends PayPal
         $this->APIVersion = isset($DataArray['APIVersion']) ? $DataArray['APIVersion'] : '204.0';
         $this->APIMode = isset($DataArray['APIMode']) ? $DataArray['APIMode'] : 'Signature';
         $this->payPalAPIMode = isset($DataArray['payPalAPIMode']) ? $DataArray['payPalAPIMode'] : 'classic';
-        $this->APIButtonSource = 'AngellEYELLC_Ecom_PHPCatalog';
+        $this->APIButtonSource = 'AngellEYELLC_SI';
         $this->PathToCertKeyPEM = '/path/to/cert/pem.txt';
         $this->SSL = isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443' ? true : false;
         $this->APISubject = isset($DataArray['APISubject']) ? $DataArray['APISubject'] : '';
