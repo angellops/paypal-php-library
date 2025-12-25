@@ -1,5 +1,25 @@
 <?php
 require_once('../../../includes/config.php');
+require_once('../../../vendor/autoload.php');
+
+/**
+ * Setup configuration for the PayPal library using vars from the config file.
+ * Then load the PayPal object into $PayPal
+ */
+$PayPalConfig = array(
+	'Sandbox' => $sandbox,
+	'PayPalAPIMode' => $api_mode,
+  'PayPalAPIUpgrade' => $api_upgrade,
+  'APIUsername' => $api_username,
+	'APIPassword' => $api_password,
+	'APISignature' => $api_signature,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
+	'PrintHeaders' => $print_headers, 
+	'LogResults' => $log_results, 
+	'LogPath' => $log_path,
+);
+$PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
 
 /**
  * Here we are building a very simple, static shopping cart to use
@@ -58,6 +78,8 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="../../assets/js/scripts.js"></script>
+<?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
+<script src="<?php echo $sdk_url; ?>"></script>
 </head>
 
 <body>
@@ -72,68 +94,70 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
           <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../../assets/images/paypal-partner-logo.png"/> </div>
         </div>
       </div>
-      <h2 align="center">Shopping Cart</h2>
-      <p class="bg-info">Here we are using a basic shopping cart for display purposes, however, for this basic demo, all we are sending to PayPal is the order total without any line item details. We are assuming that we have not collected any 
+      <?php if( $api_mode === 'classic' ) { ?>
+        <div class="warning-info">
+          <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
+        </div>
+      <?php } ?>
+      <h2 class="main-title"><img src="../../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
+      <p class="main-info">Here we are using a basic shopping cart for display purposes, however, for this basic demo, all we are sending to PayPal is the order total without any line item details. We are assuming that we have not collected any 
       billing or shipping information from the buyer yet because we'll be obtaining those details from PayPal 
       after the user logs in and is returned back to the site.</p>
-      <p class="bg-info">To complete the demo, click the Checkout with PayPal button and use the following credentials to login to PayPal.<br /><br />
-      Email Address:  paypal-buyer@angelleye.com<br />
-      Password:  paypalphp
-      </p>
-      <table class="table table-bordered">
+      <div class="demo-cred">
+        <h2>Demo Credentials</h2>
+        <p>Email: paypal-buyer@angelleye.com</p>
+        <p>Password: paypalphp</p>
+      </div>
+      <table class="table table-items">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
+            <th class="center">ID</th>
+            <th class="center">Name</th>
             <th class="center">Price</th>
             <th class="center">QTY</th>
             <th class="center">Total</th>
           </tr>
         </thead>
         <tbody>
-          <?php
-    foreach($_SESSION['shopping_cart']['items'] as $cart_item) {
-        ?>
+          <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
           <tr>
-            <td><?php echo $cart_item['id']; ?></td>
-            <td><?php echo $cart_item['name']; ?></td>
+            <td class="center"><?php echo $cart_item['id']; ?></td>
+            <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
             <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
-            <td class="center"><?php echo $cart_item['qty']; ?></td>
-            <td class="center"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
+            <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
+            <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
           </tr>
-          <?php
-    }
-    ?>
+          <?php } ?>
         </tbody>
       </table>
       <div class="row clearfix">
         <div class="col-md-4 column"> </div>
-        <div class="col-md-4 column"> </div>
-        <div class="col-md-4 column">
-          <table class="table">
+        <div class="col-md-3 column"> </div>
+        <div class="col-md-5 column">
+          <table class="table table-summary">
             <tbody>
               <tr>
-                <td><strong> Subtotal</strong></td>
-                <td> $<?php echo number_format($_SESSION['shopping_cart']['subtotal'],2); ?></td>
+                <td>Subtotal</td>
+                <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['subtotal'],2); ?></td>
               </tr>
               <tr>
-                <td><strong>Shipping</strong></td>
-                <td>$<?php echo number_format($_SESSION['shopping_cart']['shipping'],2); ?></td>
+                <td>Shipping</td>
+                <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['shipping'],2); ?></td>
               </tr>
               <tr>
-                <td><strong>Handling</strong></td>
-                <td>$<?php echo number_format($_SESSION['shopping_cart']['handling'],2); ?></td>
+                <td>Handling</td>
+                <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['handling'],2); ?></td>
               </tr>
               <tr>
-                <td><strong>Tax</strong></td>
-                <td>$<?php echo number_format($_SESSION['shopping_cart']['tax'],2); ?></td>
+                <td>Tax</td>
+                <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['tax'],2); ?></td>
               </tr>
               <tr>
-                <td><strong>Grand Total</strong></td>
-                <td>$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
+                <td class="font-lightbold total-border-top">Grand Total</td>
+                <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
               </tr>
               <tr>
-                  <td class="center" colspan="2"><a href="SetExpressCheckout.php"><img src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"></a></td>
+                <td class="paypalbtn" colspan="2"><a href="SetExpressCheckout.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a></td>
               </tr>
             </tbody>
           </table>

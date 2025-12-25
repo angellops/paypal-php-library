@@ -98,7 +98,7 @@ class PayPalREST extends PayPal
      * Get OAuth 2.0 access token
      * Caches token for 9 hours to avoid redundant API calls
      */
-    private function getAccessToken()
+    private function getAccessToken( $load_sdk_btn = false )
     {
         // Check if we have a valid cached token
         if ($this->accessToken && $this->tokenExpiry > time()) {
@@ -106,12 +106,16 @@ class PayPalREST extends PayPal
         }
 
         $headers = $this->getOAuthHeaders();
-        $postData = 'grant_type=client_credentials';
+        $postData = ['grant_type' => 'client_credentials'];
+
+        if ($load_sdk_btn) {
+            $postData['response_type'] = 'client_token';
+        }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->base_url . '/v1/oauth2/token');
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -130,6 +134,13 @@ class PayPalREST extends PayPal
         }
 
         throw new \Exception('Failed to get OAuth token: ' . $response);
+    }
+
+    /**
+     * Public method for external access 
+     **/
+    public function fetchAccessToken( $load_sdk_btn = false ){
+        return $this->getAccessToken( $load_sdk_btn );
     }
 
     /**
