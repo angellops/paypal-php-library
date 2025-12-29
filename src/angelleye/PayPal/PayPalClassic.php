@@ -46,7 +46,6 @@ class PayPalClassic extends PayPal
     var $APISignature = '';
     var $APISubject = '';
     var $APIVersion = '';
-    var $APIButtonSource = '';
     var $APIMode = '';
     var $EndPointURL = '';
     var $PathToCertKeyPEM = '';
@@ -94,7 +93,6 @@ class PayPalClassic extends PayPal
         $this->APIVersion = isset($DataArray['APIVersion']) ? $DataArray['APIVersion'] : '204.0';
         $this->APIMode = isset($DataArray['APIMode']) ? $DataArray['APIMode'] : 'Signature';
         $this->payPalAPIMode = isset($DataArray['payPalAPIMode']) ? $DataArray['payPalAPIMode'] : 'classic';
-        $this->APIButtonSource = isset($this->ButtonSource) ? $this->ButtonSource : 'AngellEYELLC_SI';
         $this->PathToCertKeyPEM = '/path/to/cert/pem.txt';
         $this->SSL = isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443' ? true : false;
         $this->APISubject = isset($DataArray['APISubject']) ? $DataArray['APISubject'] : '';
@@ -122,7 +120,7 @@ class PayPalClassic extends PayPal
         }
 
         // Create the NVP credentials string which is required in all calls.
-        $this->NVPCredentials = 'USER=' . $this->APIUsername . '&PWD=' . $this->APIPassword . '&VERSION=' . $this->APIVersion . '&BUTTONSOURCE=' . $this->APIButtonSource;
+        $this->NVPCredentials = 'USER=' . $this->APIUsername . '&PWD=' . $this->APIPassword . '&VERSION=' . $this->APIVersion . '&BUTTONSOURCE=' . $this->ButtonSource;
         $this->NVPCredentials .= $this->APISubject != '' ? '&SUBJECT=' . $this->APISubject : '';
         $this->NVPCredentials .= $this->APIMode == 'Signature' ? '&SIGNATURE=' . $this->APISignature : '';
 
@@ -2908,7 +2906,7 @@ class PayPalClassic extends PayPal
 
         $n = 0;
         $BMButtonVars = isset($DataArray['BMButtonVars']) ? $DataArray['BMButtonVars'] : array();
-        $BMButtonVars['bn'] = $this->APIButtonSource;
+        $BMButtonVars['bn'] = $this->ButtonSource;
         foreach ($BMButtonVars as $BMButtonVarName => $BMButtonVarValue) {
             $BMCreateButtonNVP .= $BMButtonVarValue != '' ? "&L_BUTTONVAR" . $n . "=" . urlencode($BMButtonVarName . "=" . $BMButtonVarValue) : "";
             if ($BMButtonVarValue != '') {
@@ -2967,7 +2965,7 @@ class PayPalClassic extends PayPal
 
         $n = 0;
         $BMButtonVars = isset($DataArray['BMButtonVars']) ? $DataArray['BMButtonVars'] : array();
-        $BMButtonVars['bn'] = $this->APIButtonSource;
+        $BMButtonVars['bn'] = $this->ButtonSource;
         foreach ($BMButtonVars as $BMButtonVarName => $BMButtonVarValue) {
             $BMUpdateButtonNVP .= $BMButtonVarValue != '' ? "&L_BUTTONVAR" . $n . "=" . urlencode($BMButtonVarName . "=" . $BMButtonVarValue) : "";
             if ($BMButtonVarValue != '') {
