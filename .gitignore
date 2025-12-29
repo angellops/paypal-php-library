@@ -1,16 +1,52 @@
-/_notes
-*/_notes
-/temp
-/test
-/includes/config.php
-/.settings
-!empty
-/.idea
+# General Ignored Files
+.DS_Store
+Thumbs.db
+
+# OS-generated files
+*.swp
+*.swo
+*.bak
+
+# PHPStorm and IDE-related files
+.idea/
+*.iml
+*.xml
+.vscode/
+
+# Composer dependencies and related files
+/vendor/
 /composer.lock
-/vendor/*
-# exclude everything
-logs/*
-# exception to the rule
-!logs/.gitkeep 
-/includes
+
+# Node.js (if npm/yarn is used for assets)
+node_modules/
+
+# Temporary files
+*.log
+*.cache
+*.tmp
+/tmp/
+/logs/
+!logs/.gitkeep  # Exclude logs/.gitkeep, keep the directory structure
+
+# Private/sensitive files
+/includes/config.php
+/admin/config.php
+
+# Git merge conflict files
+*.orig
+
+# PHPUnit
+.phpunit.result.cache
+
+# Coverage and build
+/coverage/
+/build/
+
+# PHP-specific files
+.env
+.env.*       # Include files like .env.testing, .env.production
+/phpunit.xml
+/phpunit.xml.dist
+
+# Ignoring nbproject if NetBeans IDE is used
 /nbproject/private/

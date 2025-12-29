@@ -1,29 +1,138 @@
 @charset "utf-8";
 /* CSS Document */
 
+#header {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+#header .column {
+    padding: 0;
+}
+#angelleye_logo img,
+#paypal_partner_logo img {
+    width: 240px;
+}
 #paypal_partner_logo {
-    width: 351px;
-    height: 49px;
-    float:right;
-    margin: 5% 0 3% 0;
+    float: right;
 }
-
+.warning-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 24px;
+    background: #FCF9E7;
+    color: #3F3F3F;
+    font-size: 14px;
+    border-left: 4px solid #F0C100;
+    margin-top: 20px;
+}
+.warning-info .warning-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F0C100;
+    color: #FFF;
+    padding: 2px;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+}
+.main-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+.main-title img {
+    width: 32px;
+    height: 32px;
+}
+.main-info {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+.demo-cred {
+    background: #EFF6FF;
+    padding: 24px;
+    border-left: 4px solid;
+    border-left-color: #3B82F6;
+}
+.demo-cred h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1E3A8A;
+    margin: 0 0 12px 0;
+}
+.demo-cred p {
+    color: #1E40AF;
+    margin-bottom: 4px;
+}
+.table-items {
+    margin: 20px 0;
+}
+.table-items thead {
+    background: #F4f4F4;
+}
+.table-items thead th {
+    text-transform: uppercase;
+    font-weight: 500;
+}
+.table-items thead th:not(:last-child) {
+    border-right: 2px solid #DDD;
+}
+.table-items tbody td:not(:last-child) {
+    border-right: 1px solid #DDD;
+}
+.table-summary tr td {
+    border-top: none !important;
+    padding: 4px !important;
+}
+.table-summary tr td:last-child {
+    text-align: end !important;
+}
+.table-summary tr td.total-border-top {
+    border-top: 2px solid #DDD !important;
+}
+.font-lightbold {
+    font-weight: 500;
+}
+.table-items th,
+.table-items td {
+    font-size: 14px;
+}
 th.center {
-	text-align:center;
+	text-align: center;
 }
-
-td.center{
-	text-align:center;	
+td.center {
+	text-align: center;
 }
-
+.table-summary tr td.button-center {
+    padding: 0 !important;
+}
+.button-center a {
+    background-color: #4F46E5;
+    border-color: #4F46E5;
+    margin: 20px 0 10px;
+}
+.button-center a:hover {
+    background-color: #4338CA;
+    border-color: #4338CA;
+}
+.table-summary .paypalbtn {
+    padding: 0 !important;
+}
+.paypalbtn a {
+    display: block;
+    margin: 20px 0;
+}
 #paypal_errors {
-	margin-top:25px;	
+	margin-top: 25px;
 }
-
 .general_message {
 	margin: 20px 0 20px 0;	
 }
-
 .bg-info {
-	padding:15px;	
+	padding: 15px;	
 }

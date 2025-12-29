@@ -10,15 +10,19 @@ require_once('../../../vendor/autoload.php');
  * Then load the PayPal object into $PayPal
  */
 $PayPalConfig = array(
-					'Sandbox' => $sandbox,
-					'APIUsername' => $api_username,
-					'APIPassword' => $api_password,
-					'APISignature' => $api_signature, 
-					'PrintHeaders' => $print_headers, 
-					'LogResults' => $log_results,
-					'LogPath' => $log_path,
-					);
-$PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
+	'Sandbox' => $sandbox,
+	'PayPalAPIMode' => $api_mode,
+        'PayPalAPIUpgrade' => $api_upgrade,
+        'APIUsername' => $api_username,
+	'APIPassword' => $api_password,
+	'APISignature' => $api_signature,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
+	'PrintHeaders' => $print_headers, 
+	'LogResults' => $log_results, 
+	'LogPath' => $log_path,
+);
+$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 /**
  * Here we are setting up the parameters for a basic Express Checkout flow.
@@ -29,14 +33,14 @@ $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
  * $domain used here is set in the config file.
  */
 $SECFields = array(
-					'maxamt' => number_format($_SESSION['shopping_cart']['grand_total'] * 2,2), 					// The expected maximum total amount the order will be, including S&H and sales tax.
-					'returnurl' => $domain . 'demo/classic/express-checkout-basic/GetExpressCheckoutDetails.php', 							    // Required.  URL to which the customer will be returned after returning from PayPal.  2048 char max.
-					'cancelurl' => $domain . 'demo/classic/express-checkout-basic/', 							    // Required.  URL to which the customer will be returned if they cancel payment on PayPal's site.
-					'hdrimg' => 'https://www.angelleye.com/images/angelleye-paypal-header-750x90.jpg', 			// URL for the image displayed as the header during checkout.  Max size of 750x90.  Should be stored on an https:// server or you'll get a warning message in the browser.
-					'logoimg' => 'https://www.angelleye.com/images/angelleye-logo-190x60.jpg', 					// A URL to your logo image.  Formats:  .gif, .jpg, .png.  190x60.  PayPal places your logo image at the top of the cart review area.  This logo needs to be stored on a https:// server.
-					'brandname' => 'Angell EYE', 							                                // A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.  127 char max.
-					'customerservicenumber' => '816-555-5555', 				                                // Merchant Customer Service number displayed on the PayPal Review page. 16 char max.
-				);
+	'maxamt' => number_format($_SESSION['shopping_cart']['grand_total'] * 2,2), 				// The expected maximum total amount the order will be, including S&H and sales tax.
+	'returnurl' => $domain . 'demo/classic/express-checkout-basic/GetExpressCheckoutDetails.php', 		// Required.  URL to which the customer will be returned after returning from PayPal.  2048 char max.
+	'cancelurl' => $domain . 'demo/classic/express-checkout-basic/', 					// Required.  URL to which the customer will be returned if they cancel payment on PayPal's site.
+	'hdrimg' => 'https://www.angelleye.com/images/angelleye-paypal-header-750x90.jpg', 			// URL for the image displayed as the header during checkout.  Max size of 750x90.  Should be stored on an https:// server or you'll get a warning message in the browser.
+	'logoimg' => 'https://www.angelleye.com/images/angelleye-logo-190x60.jpg', 				// A URL to your logo image.  Formats:  .gif, .jpg, .png.  190x60.  PayPal places your logo image at the top of the cart review area.  This logo needs to be stored on a https:// server.
+	'brandname' => 'Angell EYE', 							                        // A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.  127 char max.
+	'customerservicenumber' => '816-555-5555', 				                                // Merchant Customer Service number displayed on the PayPal Review page. 16 char max.
+);
 
 /**
  * Now we begin setting up our payment(s).
@@ -65,9 +69,9 @@ array_push($Payments, $Payment);
  * Now we gather all of the arrays above into a single array.
  */
 $PayPalRequestData = array(
-					   'SECFields' => $SECFields, 
-					   'Payments' => $Payments,
-					   );
+	'SECFields' => $SECFields, 
+	'Payments' => $Payments,
+);
 
 /**
  * Here we are making the call to the SetExpressCheckout function in the library,
@@ -75,22 +79,24 @@ $PayPalRequestData = array(
  */
 $PayPalResult = $PayPal->SetExpressCheckout($PayPalRequestData);
 
-/**
- * Now we'll check for any errors returned by PayPal, and if we get an error,
- * we'll save the error details to a session and redirect the user to an 
- * error page to display it accordingly.
- *
- * If all goes well, we save our token in a session variable so that it's
- * readily available for us later, and then redirect the user to PayPal
- * using the REDIRECTURL returned by the SetExpressCheckout() function.
- */
-if($PayPal->APICallSuccessful($PayPalResult['ACK']))
-{
-    $_SESSION['paypal_token'] = isset($PayPalResult['TOKEN']) ? $PayPalResult['TOKEN'] : '';
-    header('Location: ' . $PayPalResult['REDIRECTURL']);
+$redirect_url = '';
+if( $api_mode === 'rest' && !$api_upgrade ) {
+    $redirect_url = $PayPalResult['approval_url'];
+} else {
+    $redirect_url = $PayPalResult['REDIRECTURL'];
 }
-else
-{
+
+$orderId = '';
+if( $api_mode === 'rest' && !$api_upgrade ) {
+    $orderId = $PayPalResult['order_id'];
+} else {
+    $orderId = $PayPalResult['TOKEN'];
+}
+
+if($redirect_url) {
+    $_SESSION['paypal_token'] = $orderId;
+    header('Location: ' . $redirect_url);
+} else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
     header('Location: ../../error.php');
 }

@@ -40,6 +40,15 @@ use DOMDocument;
 
 class Adaptive extends PayPal
 {
+	var $APISubject = '';
+	var $APIUsername = '';
+	var $APIPassword = '';
+	var $APISignature = '';
+	var $APIMode = '';
+	var $APIButtonSource = '';
+	var $EndPointURL = '';
+	var $PrintHeaders = '';
+	var $LogResults = '';
 	var $DeveloperAccountEmail = '';
 	var $XMLNamespace = '';
 	var $ApplicationID = '';
@@ -58,6 +67,12 @@ class Adaptive extends PayPal
 	function __construct($DataArray)
 	{
 		parent::__construct($DataArray);
+
+		if (isset($DataArray['Sandbox'])) {
+			$this->Sandbox = $DataArray['Sandbox'];
+		} else {
+			$this->Sandbox = false;
+		}
 		
 		$this->XMLNamespace = 'http://svcs.paypal.com/types/ap';
 		$this->DeviceID = isset($DataArray['DeviceID']) ? $DataArray['DeviceID'] : '';

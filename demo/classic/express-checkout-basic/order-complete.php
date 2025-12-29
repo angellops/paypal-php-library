@@ -45,35 +45,37 @@ require_once('../../../includes/config.php');
           <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../../assets/images/paypal-partner-logo.png"/> </div>
         </div>
       </div>
-      <h2 align="center">Payment Complete!</h2>
-      <p class="bg-info">
-      	We have now reached the final thank you / receipt page and the payment has been processed!  We have added the PayPal transaction ID 
-        to the Billing Information, which was provided in the DoExpressCheckoutPayment response.
-      </p>
-      <table class="table table-bordered">
+      <?php if( $api_mode === 'classic' ) { ?>
+        <div class="warning-info">
+          <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
+        </div>
+      <?php } ?>
+      <h2 class="main-title">Payment Complete!</h2>
+      <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed!  We have added the PayPal transaction ID 
+        to the Billing Information, which was provided in the <strong>DoExpressCheckoutPayment</strong> response.</p>
+      <table class="table table-items table-bordered">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
+            <th class="center">ID</th>
+            <th class="center">Name</th>
             <th class="center">Price</th>
             <th class="center">QTY</th>
             <th class="center">Total</th>
           </tr>
         </thead>
         <tbody>
-          <?php
-    foreach($_SESSION['shopping_cart']['items'] as $cart_item) {
-        ?>
-          <tr>
-            <td><?php echo $cart_item['id']; ?></td>
-            <td><?php echo $cart_item['name']; ?></td>
-            <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
-            <td class="center"><?php echo $cart_item['qty']; ?></td>
-            <td class="center"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
-          </tr>
-          <?php
-    }
-    ?>
+          <?php if(!empty($_SESSION['shopping_cart']['items'])) { 
+            foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+              <tr>
+                <td class="center"><?php echo $cart_item['id']; ?></td>
+                <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
+                <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
+                <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
+                <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
+              </tr>
+          <?php }
+            } 
+          ?>
         </tbody>
       </table>
       <div class="row clearfix">
@@ -81,49 +83,49 @@ require_once('../../../includes/config.php');
           <p><strong>Billing Information</strong></p>
           <p>
           	<?php
-			echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
-			$_SESSION['email'] . '<br />'. 
-			$_SESSION['phone_number'] . '<br />' . 
-			$_SESSION['paypal_transaction_id'];
-			?>
+              echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
+              $_SESSION['email'] . '<br />'. 
+              $_SESSION['phone_number'] . '<br />' . 
+              $_SESSION['paypal_transaction_id'];
+            ?>
           </p>
         </div>
         <div class="col-md-4 column">
           <p><strong>Shipping Information</strong></p>
           <p>
           	<?php 
-			echo $_SESSION['shipping_name'] . '<br />' .
-			$_SESSION['shipping_street'] . '<br />' .
-			$_SESSION['shipping_city'] . ', ' . $_SESSION['shipping_state'] . '  ' . $_SESSION['shipping_zip'] . '<br />' . 
-			$_SESSION['shipping_country_name']; 
-			?>
+              echo $_SESSION['shipping_name'] . '<br />' .
+              $_SESSION['shipping_street'] . '<br />' .
+              $_SESSION['shipping_city'] . ', ' . $_SESSION['shipping_state'] . '  ' . $_SESSION['shipping_zip'] . '<br />' . 
+              $_SESSION['shipping_country_name']; 
+            ?>
           </p>
         </div>
         <div class="col-md-4 column">
-          <table class="table">
+          <table class="table table-summary">
             <tbody>
-            <tr>
-                <td><strong> Subtotal</strong></td>
-                <td> $<?php echo number_format($_SESSION['shopping_cart']['subtotal'],2); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Shipping</strong></td>
-                <td>$<?php echo number_format($_SESSION['shopping_cart']['shipping'],2); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Handling</strong></td>
-                <td>$<?php echo number_format($_SESSION['shopping_cart']['handling'],2); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Tax</strong></td>
-                <td>$<?php echo number_format($_SESSION['shopping_cart']['tax'],2); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Grand Total</strong></td>
-                <td>$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
-            </tr>
               <tr>
-                  <td class="center" colspan="2">&nbsp;</td>
+                <td>Subtotal</td>
+                <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['subtotal'],2); ?></td>
+              </tr>
+              <tr>
+                <td>Shipping</td>
+                <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['shipping'],2); ?></td>
+              </tr>
+              <tr>
+                <td>Handling</td>
+                <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['handling'],2); ?></td>
+              </tr>
+              <tr>
+                <td>Tax</td>
+                <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['tax'],2); ?></td>
+              </tr>
+              <tr>
+                <td class="font-lightbold total-border-top">Grand Total</td>
+                <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
+              </tr>
+              <tr>
+                <td class="center" colspan="2">&nbsp;</td>
               </tr>
             </tbody>
           </table>

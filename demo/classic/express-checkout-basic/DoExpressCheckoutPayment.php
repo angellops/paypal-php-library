@@ -11,14 +11,18 @@ require_once('../../../vendor/autoload.php');
  */
 $PayPalConfig = array(
     'Sandbox' => $sandbox,
+	'PayPalAPIMode' => $api_mode,
+    'PayPalAPIUpgrade' => $api_upgrade,
     'APIUsername' => $api_username,
-    'APIPassword' => $api_password,
-    'APISignature' => $api_signature,
-    'PrintHeaders' => $print_headers,
-    'LogResults' => $log_results,
-    'LogPath' => $log_path,
+	'APIPassword' => $api_password,
+	'APISignature' => $api_signature,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
+	'PrintHeaders' => $print_headers, 
+	'LogResults' => $log_results, 
+	'LogPath' => $log_path,
 );
-$PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
+$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 /**
  * Now we'll setup the request params for the final call in the Express Checkout flow.
@@ -71,9 +75,9 @@ array_push($Payments, $Payment);
  * Now we gather all of the arrays above into a single array.
  */
 $PayPalRequestData = array(
-					   'DECPFields' => $DECPFields, 
-					   'Payments' => $Payments, 
-					   );
+    'DECPFields' => $DECPFields, 
+    'Payments' => $Payments, 
+);
 
 /**
  * Here we are making the call to the DoExpressCheckoutPayment function in the library,
@@ -90,8 +94,7 @@ $PayPalResult = $PayPal->DoExpressCheckoutPayment($PayPalRequestData);
  * later into session variables, and then redirect to our final
  * thank you / receipt page.
  */
-if($PayPal->APICallSuccessful($PayPalResult['ACK']))
-{
+if( $api_mode === 'classic' && $PayPal->APICallSuccessful($PayPalResult['ACK']) ) {
     /**
      * Once again, since Express Checkout allows for multiple payments in a single transaction,
      * the DoExpressCheckoutPayment response is setup to provide data for each potential payment.
@@ -119,9 +122,21 @@ if($PayPal->APICallSuccessful($PayPalResult['ACK']))
     }
 
     header('Location: order-complete.php');
-}
-else
-{
+} elseif( $api_mode === 'rest' && $PayPalResult['success'] ) {
+    $_SESSION['paypal_transaction_id'] = isset( $PayPalResult['capture_id'] ) ? $PayPalResult['capture_id'] : '';
+
+    $captures = ( $PayPalResult['purchase_units'][0]['payments']['captures'][0] ) ? $PayPalResult['purchase_units'][0]['payments']['captures'][0] : [];
+    $_SESSION['paypal_fee'] = isset( $captures['seller_receivable_breakdown']['paypal_fee']['value'] ) ? $captures['seller_receivable_breakdown']['paypal_fee']['value'] : 0.00;
+    
+    header('Location: order-complete.php');
+} elseif( $api_mode === 'rest' && $api_upgrade && $PayPalResult['ACK'] && strtoupper($PayPalResult['ACK']) === 'SUCCESS' ) {
+    $payments_info = isset( $PayPalResult['PAYMENTS'][0] ) ? $PayPalResult['PAYMENTS'][0] : [];
+
+    $_SESSION['paypal_transaction_id'] = isset($payments_info['TRANSACTIONID']) ? $payments_info['TRANSACTIONID'] : '';
+    $_SESSION['paypal_fee'] = isset($payments_info['FEEAMT']) ? $payments_info['FEEAMT'] : '0.00';
+    
+    header('Location: order-complete.php');
+} else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
     header('Location: ../../error.php');
 }
