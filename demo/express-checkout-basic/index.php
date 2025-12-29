@@ -1,6 +1,6 @@
 <?php
-require_once('../../../includes/config.php');
-require_once('../../../vendor/autoload.php');
+require_once('../../includes/config.php');
+require_once('../../vendor/autoload.php');
 
 /**
  * Setup configuration for the PayPal library using vars from the config file.
@@ -62,22 +62,22 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
 <!--append ‘#!watch’ to the browser URL, then refresh the page. -->
 
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-<link href="../../assets/css/style.css" rel="stylesheet">
+<link href="../assets/css/style.css" rel="stylesheet">
 
 <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
 <!--[if lt IE 9]>
-    <script src="../../assets/js/html5shiv.js"></script>
+    <script src="../assets/js/html5shiv.js"></script>
     <![endif]-->
 
 <!-- Fav and touch icons -->
-<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../assets/images/apple-touch-icon-144-precomposed.png">
-<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../assets/images/apple-touch-icon-114-precomposed.png">
-<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../assets/images/apple-touch-icon-72-precomposed.png">
-<link rel="apple-touch-icon-precomposed" href="../../assets/images/apple-touch-icon-57-precomposed.png">
-<link rel="shortcut icon" href="../../assets/images/favicon.png">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/images/apple-touch-icon-144-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/images/apple-touch-icon-114-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/images/apple-touch-icon-72-precomposed.png">
+<link rel="apple-touch-icon-precomposed" href="../assets/images/apple-touch-icon-57-precomposed.png">
+<link rel="shortcut icon" href="../assets/images/favicon.png">
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="../../assets/js/scripts.js"></script>
+<script type="text/javascript" src="../assets/js/scripts.js"></script>
 <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
 <script src="<?php echo $sdk_url; ?>"></script>
 </head>
@@ -88,10 +88,10 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <div class="col-md-12 column">
       <div id="header" class="row clearfix">
         <div class="col-md-6 column">
-          <div id="angelleye_logo"> <a href="/"><img alt="Angell EYE PayPal PHP Class Library Demo" src="../../assets/images/logo.png"></a> </div>
+          <div id="angelleye_logo"> <a href="/"><img alt="Angell EYE PayPal PHP Class Library Demo" src="../assets/images/logo.png"></a> </div>
         </div>
         <div class="col-md-6 column">
-          <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../../assets/images/paypal-partner-logo.png"/> </div>
+          <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/> </div>
         </div>
       </div>
       <?php if( $api_mode === 'classic' ) { ?>
@@ -99,7 +99,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
           <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
         </div>
       <?php } ?>
-      <h2 class="main-title"><img src="../../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
+      <h2 class="main-title"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
       <p class="main-info">Here we are using a basic shopping cart for display purposes, however, for this basic demo, all we are sending to PayPal is the order total without any line item details. We are assuming that we have not collected any 
       billing or shipping information from the buyer yet because we'll be obtaining those details from PayPal 
       after the user logs in and is returned back to the site.</p>

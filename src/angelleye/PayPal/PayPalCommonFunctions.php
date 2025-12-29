@@ -36,7 +36,7 @@ class PayPalCommonFunctions
 
         <script>
                 async function initPayPalV6() {
-                        const res = await fetch('../../../src/angelleye/PayPal/api/token.php');
+                        const res = await fetch('../../src/angelleye/PayPal/api/token.php');
                         const { token } = await res.json();
 
                         await paypal.createInstance({

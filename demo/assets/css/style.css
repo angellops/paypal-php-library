@@ -27,6 +27,9 @@
     border-left: 4px solid #F0C100;
     margin-top: 20px;
 }
+.warning-info.demo-warning-info {
+    margin-top: 0;
+}
 .warning-info .warning-icon {
     display: flex;
     align-items: center;
@@ -45,6 +48,9 @@
     gap: 10px;
     margin: 20px 0;
 }
+.main-title.demo-title {
+    justify-content: flex-start;
+}
 .main-title img {
     width: 32px;
     height: 32px;
@@ -52,6 +58,9 @@
 .main-info {
     font-size: 16px;
     margin-bottom: 20px;
+}
+.main-info p {
+    margin-bottom: 4px;
 }
 .demo-cred {
     background: #EFF6FF;

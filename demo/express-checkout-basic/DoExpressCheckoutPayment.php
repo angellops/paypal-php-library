@@ -2,8 +2,8 @@
 /**
  * Include our config file and the PayPal library.
  */
-require_once('../../../includes/config.php');
-require_once('../../../vendor/autoload.php');
+require_once('../../includes/config.php');
+require_once('../../vendor/autoload.php');
 
 /**
  * Setup configuration for the PayPal library using vars from the config file.
