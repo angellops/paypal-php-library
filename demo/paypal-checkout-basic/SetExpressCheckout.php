@@ -79,6 +79,18 @@ $PayPalRequestData = array(
  */
 $PayPalResult = $PayPal->SetExpressCheckout($PayPalRequestData);
 
+/**
+ * Based on the selected API mode, extract the appropriate redirect URL
+ * and order identifier from the SetExpressCheckout response.
+ *
+ * - For REST mode (when API upgrade is disabled), PayPal returns an
+ *   `approval_url` for redirection and an `order_id` to track the transaction.
+ * - For Classic mode (or when API upgrade is enabled), PayPal returns a
+ *   `REDIRECTURL` for redirection and a `TOKEN` that represents the checkout session.
+ *
+ * These values are normalized into $redirect_url and $orderId so the
+ * remaining flow can work consistently regardless of API mode.
+ */
 $redirect_url = '';
 if( $api_mode === 'rest' && !$api_upgrade ) {
     $redirect_url = $PayPalResult['approval_url'];
@@ -93,6 +105,15 @@ if( $api_mode === 'rest' && !$api_upgrade ) {
     $orderId = $PayPalResult['TOKEN'];
 }
 
+/**
+ * Now we'll check for any errors returned by PayPal, and if we get an error,
+ * we'll save the error details to a session and redirect the user to an 
+ * error page to display it accordingly.
+ *
+ * If all goes well, we save our token in a session variable so that it's
+ * readily available for us later, and then redirect the user to PayPal
+ * using the REDIRECTURL returned by the SetExpressCheckout() function.
+ */
 if($redirect_url) {
     $_SESSION['paypal_token'] = $orderId;
     header('Location: ' . $redirect_url);

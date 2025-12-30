@@ -90,18 +90,18 @@
                     <div class="thumbnail">
                         <img alt="PayPal Express Checkout Line Items Integration" src="assets/images/paypal-express-checkout-with-line-items.jpg">
                         <?php
-                        $DIR = '\express-checkout-line-items';
+                        $DIR = '/paypal-checkout-line-items';
                         $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
                         ?>
                         <div class="caption">
-                            <h3>Express Checkout</h3>
+                            <h3>PayPal Checkout</h3>
                             <h4>w/ Line Items</h4>
                             <p>Here we expand on our basic Express Checkout demo to add individual order items to the
                                 API requests so that the data is available within PayPal's checkout review pages
                                 transaction details.</p>
                             <p align="center">
                                 <?php if ($DIR_exists) : ?>
-                                    <a class="btn btn-primary" href="express-checkout-line-items/" target="_blank">Launch Demo</a>
+                                    <a class="btn btn-primary" href="paypal-checkout-line-items/" target="_blank">Launch Demo</a>
                                 <?php else: ?>
                                     <a class="btn btn-success"
                                        href="https://www.angelleye.com/product/paypal-express-checkout-php-line-items-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
