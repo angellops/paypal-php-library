@@ -209,5 +209,5 @@ if( $api_mode === 'classic' && $PayPal->APICallSuccessful($PayPalResult['ACK']) 
     header('Location: review.php');
 } else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
-    header('Location: ../../error.php');
+    header('Location: ../error.php');
 }

@@ -119,5 +119,5 @@ if($redirect_url) {
     header('Location: ' . $redirect_url);
 } else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
-    header('Location: ../../error.php');
+    header('Location: ../error.php');
 }

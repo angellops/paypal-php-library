@@ -1222,60 +1222,51 @@ class PayPalREST extends PayPal
                 if( $this->api_upgrade ) {
 
                     $fullResponse = $response['body'];
-                    if( !empty( $fullResponse['subscriptions'] ) ){
-                        foreach( $fullResponse['subscriptions'] as $key => $value ){
-                            $subscriptionRes = $this->makeRequest('/v1/billing/subscriptions/' . $value['id'], 'GET');
+                    $givenName = ! empty( $fullResponse['subscriber']['name']['given_name'] ) ? $fullResponse['subscriber']['name']['given_name'] : '';
+                    $surname = ! empty( $fullResponse['subscriber']['name']['surname'] ) ? $fullResponse['subscriber']['name']['surname'] : '';
+                    $phone_number = ! empty( $fullResponse['subscriber']['phone_number'] ) ? $fullResponse['subscriber']['phone_number'] : '';
+                    $payer_id = ! empty( $fullResponse['subscriber']['payer_id'] ) ? $fullResponse['subscriber']['payer_id'] : '';
+                    $subscriberName = !empty( $givenName ) ? $givenName . ' ' . $surname : $surname;
 
-                            $giventName = ! empty( $subscriptionRes['body']['subscriber']['name']['given_name'] ) ? $subscriptionRes['body']['subscriber']['name']['given_name'] : '';
-                            $surname = ! empty( $subscriptionRes['body']['subscriber']['name']['surname'] ) ? $subscriptionRes['body']['subscriber']['name']['surname'] : '';
-                            $subscriberName = !empty( $giventName ) ? $giventName . ' ' . $surname : $surname;
-
-                            $responseData = array(
-                                'TIMESTAMP'             => ! empty( $subscriptionRes['body']['update_time'] ) ? $subscriptionRes['body']['update_time'] : gmdate('c'),
-                                'ACK'                   => !empty( $subscriptionRes['status_code'] ) && \in_array($subscriptionRes['status_code'],['200','201']) ? 'Success' : 'Failure',
-                                'STATUS'                => ! empty( $subscriptionRes['body']['status'] ) ? $subscriptionRes['body']['status'] : '-', 
-                                'PROFILEID'             => ! empty( $subscriptionRes['body']['id'] ) ? $subscriptionRes['body']['id'] : '-',
-                                'DESC'                  => ! empty( $subscriptionRes['body']['status_change_note'] ) ? $subscriptionRes['body']['status_change_note'] : '',
-                                'SUBSCRIBERNAME'        => $subscriberName,
-                                'PROFILESTARTDATE'      => ! empty( $subscriptionRes['body']['start_time'] ) ? $subscriptionRes['body']['start_time'] : '',
-                                'NEXTBILLINGDATE'       => ! empty( $subscriptionRes['body']['billing_info']['next_billing_time'] ) ? $subscriptionRes['body']['billing_info']['next_billing_time'] : '',
-                                'NUMCYCLESCOMPLETED'    => ! empty( $subscriptionRes['body']['billing_info']['cycle_executions'][0]['cycles_completed'] ) ? $subscriptionRes['body']['billing_info']['cycle_executions'][0]['cycles_completed'] : '',
-                                'NUMCYCLESREMAINING'    => ! empty( $subscriptionRes['body']['billing_info']['cycle_executions'][0]['cycles_remaining'] ) ? $subscriptionRes['body']['billing_info']['cycle_executions'][0]['cycles_remaining'] : '',
-                                'OUTSTANDINGBALANCE'    => ! empty( $subscriptionRes['body']['billing_info']['outstanding_balance']['value'] ) ? $subscriptionRes['body']['billing_info']['outstanding_balance']['value'] : '',
-                                'FAILEDPAYMENTCOUNT'    => ! empty( $subscriptionRes['body']['billing_info']['failed_payments_count'] ) ? $subscriptionRes['body']['billing_info']['failed_payments_count'] : '',
-                                'LASTPAYMENTDATE'       => ! empty( $subscriptionRes['body']['billing_info']['last_payment']['time'] ) ? $subscriptionRes['body']['billing_info']['last_payment']['time'] : '',
-                                'LASTPAYMENTAMT'        => ! empty( $subscriptionRes['body']['billing_info']['last_payment']['amount']['value'] ) ? $subscriptionRes['body']['billing_info']['last_payment']['amount']['value'] : '',
-                                'SHIPTONAME'            => ! empty( $subscriptionRes['body']['subscriber']['shipping_address']['name']['full_name'] ) ? $subscriptionRes['body']['subscriber']['shipping_address']['name']['full_name'] : '',
-                                'SHIPTOSTREET'          => ! empty( $subscriptionRes['body']['subscriber']['shipping_address']['address']['address_line_1'] ) ? $subscriptionRes['body']['subscriber']['shipping_address']['address']['address_line_1'] : '',
-                                'SHIPTOCITY'            => ! empty( $subscriptionRes['body']['subscriber']['shipping_address']['address']['admin_area_2'] ) ? $subscriptionRes['body']['subscriber']['shipping_address']['address']['admin_area_2'] : '',
-                                'SHIPTOSTATE'           => ! empty( $subscriptionRes['body']['subscriber']['shipping_address']['address']['admin_area_1'] ) ? $subscriptionRes['body']['subscriber']['shipping_address']['address']['admin_area_1'] : '',
-                                'SHIPTOZIP'             => ! empty( $subscriptionRes['body']['subscriber']['shipping_address']['address']['postal_code'] ) ? $subscriptionRes['body']['subscriber']['shipping_address']['address']['postal_code'] : '',
-                                'SHIPTOCOUNTRYCODE'     => ! empty( $subscriptionRes['body']['subscriber']['shipping_address']['address']['country_code'] ) ? $subscriptionRes['body']['subscriber']['shipping_address']['address']['country_code'] : '',
-                                'SHIPTOCOUNTRY'         => ! empty( $subscriptionRes['body']['subscriber']['shipping_address']['address']['country_code'] ) ? $subscriptionRes['body']['subscriber']['shipping_address']['address']['country_code'] : '',
-                                'SHIPADDRESSOWNER'      => ! empty( $subscriptionRes['body']['subscriber']['tenant'] ) ? $subscriptionRes['body']['subscriber']['tenant'] : '',
-                                'CURRENCYCODE'          => ! empty( $subscriptionRes['body']['billing_info']['last_payment']['amount']['currency_code'] ) ? $subscriptionRes['body']['billing_info']['last_payment']['amount']['currency_code'] : '',
-                                'AMT'                   => ! empty( $subscriptionRes['body']['billing_info']['last_payment']['amount']['value'] ) ? $subscriptionRes['body']['billing_info']['last_payment']['amount']['value'] : '', 
-                                'REGULARAMT'            => ! empty( $subscriptionRes['body']['billing_info']['last_payment']['amount']['value'] ) ? $subscriptionRes['body']['billing_info']['last_payment']['amount']['value'] : '',
-                                'SUBSCRIBEREMAIL'       => ! empty( $subscriptionRes['body']['subscriber']['email_address'] ) ? $subscriptionRes['body']['subscriber']['email_address'] : '',
-                                'FULLRESPONSE'          => ! empty( $subscriptionRes['body'] ) ? $subscriptionRes['body'] : [],
-                                'RAWRESPONSE'           => ! empty( $subscriptionRes['raw_response'] ) ? $subscriptionRes['raw_response'] : [],
-                            );
-
-                            $fullResponse['subscriptions'][$key] = $responseData;
-                        }
-                    }
-
-                    $result = [
-                        'success'         => true,
-                        'subscription_id' => isset($response['body']['id']) ? $response['body']['id'] : '',
-                        'status'          => $response['body']['status'] ?? $response['status_code'],
-                        'full_response'   => $fullResponse
-                    ];
+                    $responseData = array(
+                        'TIMESTAMP'             => ! empty( $fullResponse['update_time'] ) ? $fullResponse['update_time'] : gmdate('c'),
+                        'ACK'                   => !empty( $response['status_code'] ) && \in_array($response['status_code'],['200','201']) ? 'Success' : 'Failure',
+                        'STATUS'                => ! empty( $fullResponse['status'] ) ? $fullResponse['status'] : '-', 
+                        'PROFILEID'             => ! empty( $fullResponse['id'] ) ? $fullResponse['id'] : '-',
+                        'DESC'                  => ! empty( $fullResponse['status_change_note'] ) ? $fullResponse['status_change_note'] : '',
+                        'FIRSTNAME'             => $givenName,
+                        'LASTNAME'              => $surname,
+                        'SUBSCRIBERNAME'        => $subscriberName,
+                        'PHONENUMBER'           => $phone_number,
+                        'PAYERID'               => $payer_id,
+                        'PROFILESTARTDATE'      => ! empty( $fullResponse['start_time'] ) ? $fullResponse['start_time'] : '',
+                        'NEXTBILLINGDATE'       => ! empty( $fullResponse['billing_info']['next_billing_time'] ) ? $fullResponse['billing_info']['next_billing_time'] : '',
+                        'NUMCYCLESCOMPLETED'    => ! empty( $fullResponse['billing_info']['cycle_executions'][0]['cycles_completed'] ) ? $fullResponse['billing_info']['cycle_executions'][0]['cycles_completed'] : '',
+                        'NUMCYCLESREMAINING'    => ! empty( $fullResponse['billing_info']['cycle_executions'][0]['cycles_remaining'] ) ? $fullResponse['billing_info']['cycle_executions'][0]['cycles_remaining'] : '',
+                        'OUTSTANDINGBALANCE'    => ! empty( $fullResponse['billing_info']['outstanding_balance']['value'] ) ? $fullResponse['billing_info']['outstanding_balance']['value'] : '',
+                        'FAILEDPAYMENTCOUNT'    => ! empty( $fullResponse['billing_info']['failed_payments_count'] ) ? $fullResponse['billing_info']['failed_payments_count'] : '',
+                        'LASTPAYMENTDATE'       => ! empty( $fullResponse['billing_info']['last_payment']['time'] ) ? $fullResponse['billing_info']['last_payment']['time'] : '',
+                        'LASTPAYMENTAMT'        => ! empty( $fullResponse['billing_info']['last_payment']['amount']['value'] ) ? $fullResponse['billing_info']['last_payment']['amount']['value'] : '',
+                        'SHIPTONAME'            => ! empty( $fullResponse['subscriber']['shipping_address']['name']['full_name'] ) ? $fullResponse['subscriber']['shipping_address']['name']['full_name'] : '',
+                        'SHIPTOSTREET'          => ! empty( $fullResponse['subscriber']['shipping_address']['address']['address_line_1'] ) ? $fullResponse['subscriber']['shipping_address']['address']['address_line_1'] : '',
+                        'SHIPTOCITY'            => ! empty( $fullResponse['subscriber']['shipping_address']['address']['admin_area_2'] ) ? $fullResponse['subscriber']['shipping_address']['address']['admin_area_2'] : '',
+                        'SHIPTOSTATE'           => ! empty( $fullResponse['subscriber']['shipping_address']['address']['admin_area_1'] ) ? $fullResponse['subscriber']['shipping_address']['address']['admin_area_1'] : '',
+                        'SHIPTOZIP'             => ! empty( $fullResponse['subscriber']['shipping_address']['address']['postal_code'] ) ? $fullResponse['subscriber']['shipping_address']['address']['postal_code'] : '',
+                        'SHIPTOCOUNTRYCODE'     => ! empty( $fullResponse['subscriber']['shipping_address']['address']['country_code'] ) ? $fullResponse['subscriber']['shipping_address']['address']['country_code'] : '',
+                        'SHIPTOCOUNTRY'         => ! empty( $fullResponse['subscriber']['shipping_address']['address']['country_code'] ) ? $fullResponse['subscriber']['shipping_address']['address']['country_code'] : '',
+                        'SHIPADDRESSOWNER'      => ! empty( $fullResponse['subscriber']['tenant'] ) ? $fullResponse['subscriber']['tenant'] : '',
+                        'CURRENCYCODE'          => ! empty( $fullResponse['billing_info']['last_payment']['amount']['currency_code'] ) ? $fullResponse['billing_info']['last_payment']['amount']['currency_code'] : '',
+                        'AMT'                   => ! empty( $fullResponse['billing_info']['last_payment']['amount']['value'] ) ? $fullResponse['billing_info']['last_payment']['amount']['value'] : '', 
+                        'REGULARAMT'            => ! empty( $fullResponse['billing_info']['last_payment']['amount']['value'] ) ? $fullResponse['billing_info']['last_payment']['amount']['value'] : '',
+                        'SUBSCRIBEREMAIL'       => ! empty( $fullResponse['subscriber']['email_address'] ) ? $fullResponse['subscriber']['email_address'] : '',
+                        'FULLRESPONSE'          => ! empty( $fullResponse ) ? $fullResponse : [],
+                        'RAWRESPONSE'           => ! empty( $response['raw_response'] ) ? $response['raw_response'] : [],
+                    );
 
                     // call logger
-                    $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $result);
+                    $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseData);
 
-                    return $result;
+                    return $responseData;
                 }
 
                 // Log Response
@@ -1700,7 +1691,7 @@ class PayPalREST extends PayPal
                         "shipping_preference" => "SET_PROVIDED_ADDRESS",
                         "user_action" => "SUBSCRIBE_NOW",
                         'return_url' => $domain . 'samples/rest/GetRecurringPaymentsProfileDetails.php',
-                'cancel_url' => $domain . 'samples/rest/', 
+                        'cancel_url' => $domain . 'samples/rest/', 
                 )
         );
 
