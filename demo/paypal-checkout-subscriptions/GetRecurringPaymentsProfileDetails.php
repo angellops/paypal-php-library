@@ -56,4 +56,3 @@ if( $PayPalResult['success'] || ( $api_upgrade && $PayPalResult['ACK'] && strtou
         $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
         header('Location: ../error.php');
 }
-

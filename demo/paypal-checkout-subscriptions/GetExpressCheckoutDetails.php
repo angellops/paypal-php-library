@@ -22,18 +22,6 @@ $PayPalConfig = array(
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
-$DECPFields = array(
-    'token' => $_SESSION['paypal_token'], 								// Required.  A timestamped token, the value of which was returned by a previous SetExpressCheckout call.
-    'payerid' => '', 							                        // Required.  Unique PayPal customer id of the payer.  Returned by GetExpressCheckoutDetails, or if you used SKIPDETAILS it's returned in the URL back to your RETURNURL.
-);
-
-/**
- * Now we gather all of the arrays above into a single array.
- */
-$PayPalRequestData = array(
-    'DECPFields' => $DECPFields, 
-);
-
 /*
  * Here we call GetExpressCheckoutDetails to obtain payer information from PayPal
  */
@@ -68,19 +56,6 @@ if( $PayPal->APICallSuccessful($PayPalResult['ACK']) ) {
     $_SESSION['email'] = isset($PayPalResult['EMAIL']) ? $PayPalResult['EMAIL'] : '';
     $_SESSION['first_name'] = isset($PayPalResult['FIRSTNAME']) ? $PayPalResult['FIRSTNAME'] : '';
     $_SESSION['last_name'] = isset($PayPalResult['LASTNAME']) ? $PayPalResult['LASTNAME'] : '';
-
-    $payments = $PayPal->GetPayments($PayPalResult);
-
-    foreach($payments as $payment)
-    {
-        $_SESSION['shipping_name'] = isset($payment['SHIPTONAME']) ? $payment['SHIPTONAME'] : '';
-        $_SESSION['shipping_street'] = isset($payment['SHIPTOSTREET']) ? $payment['SHIPTOSTREET'] : '';
-        $_SESSION['shipping_city'] = isset($payment['SHIPTOCITY']) ? $payment['SHIPTOCITY'] : '';
-        $_SESSION['shipping_state'] = isset($payment['SHIPTOSTATE']) ? $payment['SHIPTOSTATE'] : '';
-        $_SESSION['shipping_zip'] = isset($payment['SHIPTOZIP']) ? $payment['SHIPTOZIP'] : '';
-        $_SESSION['shipping_country_code'] = isset($payment['SHIPTOCOUNTRYCODE']) ? $payment['SHIPTOCOUNTRYCODE'] : '';
-        $_SESSION['shipping_country_name'] = isset($payment['SHIPTOCOUNTRYNAME']) ? $payment['SHIPTOCOUNTRYNAME'] : '';   
-    }
 
     /**
      * Now we will send the application flow direction to CreateRecurringPaymentsProfile

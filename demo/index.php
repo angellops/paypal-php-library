@@ -87,7 +87,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="thumbnail">
-                                <img alt="PayPal Express Checkout Line Items Integration" src="assets/images/paypal-express-checkout-with-line-items.jpg">
+                                <img alt="PayPal Checkout Line Items Integration" src="assets/images/paypal-express-checkout-with-line-items.jpg">
                                 <?php
                                 $DIR = '/paypal-checkout-line-items';
                                 $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
@@ -233,7 +233,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="thumbnail">
-                                <img alt="Express Checkout Recurring Payment" src="assets/images/express-checkout-recurring-payments.jpg">
+                                <img alt="PayPal Checkout Subscriptions" src="assets/images/express-checkout-recurring-payments.jpg">
                                 <?php
                                 $DIR = '/paypal-checkout-subscriptions';
                                 $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
@@ -256,20 +256,19 @@
                         </div>
                         <div class="col-md-4">
                             <div class="thumbnail">
-                                <img alt="Express Checkout Shipped Items + Recurring Payment" src="assets/images/express-checkout-shipped-items-recurring-payments.jpg">
+                                <img alt="PayPal Checkout Shipped Items + Recurring Payment" src="assets/images/express-checkout-shipped-items-recurring-payments.jpg">
                                 <?php
-                                $DIR = '\express-checkout-shipped-items-recurring-payments';
+                                $DIR = '/paypal-checkout-subscriptions-shipped';
                                 $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
                                 ?>
                                 <div class="caption">
-                                    <h3>Express Checkout</h3>
+                                    <h3>PayPal Checkout</h3>
                                     <h4>Shipped Items + Subscription</h4>
-                                    <p>Learn how to implement Express Checkout with shipped items and Subscription / Recurring
+                                    <p>Learn how to implement PayPal Checkout with shipped items and Subscription / Recurring
                                         Payments together on a single order.</p>
                                     <p align="center">
                                         <?php if ($DIR_exists) : ?>
-                                            <a class="btn btn-primary"
-                                            href="express-checkout-shipped-items-recurring-payments/" target="_blank">Launch Demo</a>
+                                            <a class="btn btn-primary" href="paypal-checkout-subscriptions-shipped/" target="_blank">Launch Demo</a>
                                         <?php else: ?>
                                             <a class="btn btn-success"
                                             href="https://www.angelleye.com/product/paypal-express-checkout-php-recurring-payments-shipped-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"

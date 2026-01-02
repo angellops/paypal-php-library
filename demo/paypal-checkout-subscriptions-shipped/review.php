@@ -4,7 +4,7 @@ require_once('../../includes/config.php');
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PayPal Checkout Subscriptions Demo | Order Complete | PHP Class Library | Angell EYE</title>
+    <title>PayPal Checkout Shipped Items + Recurring Payments Demo | Order Review | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -44,22 +44,48 @@ require_once('../../includes/config.php');
               <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/> </div>
             </div>
           </div>
-          <h2 class="main-title">Payment Complete!</h2>
-          <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed and the subscription profile has been generated!  We have added the PayPal Profile ID to the Billing Information, which was returned in the <strong><?php echo ( $api_mode !== 'rest' ) ? 'CreateRecurringPaymentsProfile' : 'GetRecurringPaymentsProfileDetails' ; ?></strong> response.</p>
+          <?php if( $api_mode === 'classic' ) { ?>
+            <div class="warning-info">
+              <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
+            </div>
+          <?php } ?>
+          <h2 class="main-title">Order Review</h2>
+          <p class="main-info">Here we display a final review to the buyer now that we've calculated shipping, handling, and tax. The billing and shipping information provided here is what we obtained in the GetExpressCheckoutDetails response. We have also displayed the subscription information again with a final break-down of everything for the one-time and recurring payments.</p>
+          <p class="main-info">Nothing has been processed at this point!  When the Complete Checkout button is clicked it will trigger the call to DoExpressCheckoutPayment to process the $38.97 one-time payment.  If this succeeds, it will then process the CreateRecurringPaymentsProfile request to create the subscription profile.</p>
           <table class="table table-items table-bordered">
             <thead>
               <tr>
+                <th class="center">ID</th>
                 <th class="center">Name</th>
-                <th class="center">Amount</th>
+                <th class="center">Price</th>
+                <th class="center">QTY</th>
+                <th class="center">Total</th>
               </tr>
             </thead>
             <tbody>
               <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
               <tr>
+                <td class="center"><?php echo $cart_item['id']; ?></td>
                 <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
-                <td class="center"><?php echo number_format($cart_item['amt'],2) ?></td>
+                <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
+                <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
+                <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
               </tr>
               <?php } ?>
+            </tbody>
+          </table>
+          <table class="table table-items table-bordered">
+            <thead>
+              <tr>
+                <th class="center">Subscription Period</th>
+                <th class="center">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="center"><?php echo $_SESSION['shopping_cart']['subscription']['billing_period']; ?></td>
+                <td class="center font-lightbold"><?php echo "$".$_SESSION['shopping_cart']['subscription']['amount']; ?></td>
+              </tr>
             </tbody>
           </table>
           <div class="row clearfix">
@@ -69,13 +95,20 @@ require_once('../../includes/config.php');
                 <?php
                   echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
                   $_SESSION['email'] . '<br />'. 
-                  $_SESSION['phone_number'] . '<br />' . 
-                  'Recurring Payment Profile ID: ' .$_SESSION['RecurringProfileId'];
+                  $_SESSION['phone_number'] . '<br />';
                 ?>
               </p>
             </div>
             <div class="col-md-4 column">
-              &nbsp;
+              <p><strong>Shipping Information</strong></p>
+              <p>
+                <?php 
+                  echo $_SESSION['shipping_name'] . '<br />' .
+                  $_SESSION['shipping_street'] . '<br />' .
+                  $_SESSION['shipping_city'] . ', ' . $_SESSION['shipping_state'] . '  ' . $_SESSION['shipping_zip'] . '<br />' . 
+                  $_SESSION['shipping_country_name']; 
+                ?>
+              </p>
             </div>
             <div class="col-md-4 column">
               <table class="table table-summary">
@@ -85,11 +118,23 @@ require_once('../../includes/config.php');
                     <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['subtotal'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="font-lightbold total-border-top">Grand Total</td>
-                    <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?> one-time <br />and $10.00 / mo there-after.</td>
+                    <td>Shipping</td>
+                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['shipping'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="center" colspan="2">&nbsp;</td>
+                    <td>Handling</td>
+                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['handling'],2); ?></td>
+                  </tr>
+                  <tr>
+                    <td>Tax</td>
+                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['tax'],2); ?></td>
+                  </tr>
+                  <tr>
+                    <td class="font-lightbold total-border-top">Grand Total</td>
+                    <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
+                  </tr>
+                  <tr>
+                    <td class="button-center" colspan="2"><a href="CreateRecurringPaymentsProfile.php" class="btn btn-success btn-lg" role="button">Complete Checkout</a></td>
                   </tr>
                 </tbody>
               </table>
@@ -100,6 +145,3 @@ require_once('../../includes/config.php');
     </div>
   </body>
 </html>
-<?php
-session_destroy();
-?>

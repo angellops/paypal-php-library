@@ -51,7 +51,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>PayPal Express Checkout w/ Line Items Demo | PHP Class Library | Angell EYE</title>
+        <title>PayPal Checkout w/ Line Items Demo | PHP Class Library | Angell EYE</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
         <meta name="author" content="">
