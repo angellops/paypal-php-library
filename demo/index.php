@@ -138,18 +138,18 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="thumbnail">
-                                <img alt="Express Checkout Billing Agreement" src="assets/images/paypal-express-checkout-billing-agreement.jpg">
+                                <img alt="PayPal Checkout Vaulting (Billing Agreement)" src="assets/images/paypal-express-checkout-billing-agreement.jpg">
                                 <?php
-                                $DIR = '\express-checkout-billing-agreement';
+                                $DIR = '/paypal-checkout-vaulting';
                                 $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
                                 ?>
                                 <div class="caption">
-                                    <h3>Express Checkout Billing Agreement</h3>
-                                    <h4>Billing Agreement</h4>
-                                    <p>Learn how to implement Billing Agreement into PayPal Express Checkout.</p>
+                                    <h3>PayPal Checkout</h3>
+                                    <h4>Vaulting (Billing Agreement)</h4>
+                                    <p>Learn how to implement Vaulting (Billing Agreement) into PayPal Checkout.</p>
                                     <p align="center">
                                         <?php if ($DIR_exists) : ?>
-                                            <a class="btn btn-primary" href="express-checkout-billing-agreement/" target="_blank">Launch Demo</a>
+                                            <a class="btn btn-primary" href="paypal-checkout-vaulting/" target="_blank">Launch Demo</a>
                                         <?php else: ?>
                                             <a class="btn btn-success"
                                             href="https://www.angelleye.com/product/paypal-express-checkout-php-billing-agreement-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
