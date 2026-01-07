@@ -161,6 +161,29 @@
                         </div>
                         <div class="col-md-4">
                             <div class="thumbnail">
+                                <img alt="PayPal Partner Referral Merchant Onboarding" src="assets/images/paypal-express-parrallel-payments.jpg">
+                                <?php
+                                $DIR = '/paypal-partner-referral-merchant-onboarding';
+                                $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
+                                ?>
+                                <div class="caption">
+                                    <h3>PayPal Partner Referral</h3>
+                                    <h4>Merchant Onboarding</h4>
+                                    <p>Learn how to implement Merchant Onboarding into PayPal Partner Referral.</p>
+                                    <p align="center">
+                                        <?php if ($DIR_exists) : ?>
+                                            <a class="btn btn-primary" href="paypal-partner-referral-merchant-onboarding/" target="_blank">Launch Demo</a>
+                                        <?php else: ?>
+                                            <a class="btn btn-success"
+                                            href="#"
+                                            target="_blank">Buy Now</a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="thumbnail">
                                 <img alt="PayPal Checkout Multiparty" src="assets/images/paypal-express-parrallel-payments.jpg">
                                 <?php
                                 $DIR = '/paypal-checkout-multiparty';
@@ -182,6 +205,9 @@
                                 </div>
                             </div>
                         </div>
+                        
+                    </div>
+                    <div class="row">
                         <div class="col-md-4">
                             <div class="thumbnail">
                                 <img alt="Express checkout 3rd Party No Permissions" src="assets/images/paypal-express-3rd-party-no-permissions-required.jpg">
@@ -205,8 +231,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-4">
                             <div class="thumbnail">
                                 <img alt="Express Checkout In-Context" src="assets/images/paypal-express-checkout-in-context.jpg">
@@ -254,6 +278,8 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-4">
                             <div class="thumbnail">
                                 <img alt="PayPal Checkout Shipped Items + Recurring Payment" src="assets/images/express-checkout-shipped-items-recurring-payments.jpg">
@@ -279,8 +305,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-4">
                             <div class="thumbnail">
                                 <img alt="PayPal Payments Pro PayFlow Basic Integration" src="assets/images/paypal-payments-pro-payflow.jpg">
@@ -330,6 +354,8 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-4">
                             <div class="thumbnail">
                                 <img alt="Website Payments Pro 3.0 - DoDirectPayment" src="assets/images/paypal-dodirectpayment-credit-cart-checkout.jpg"/>

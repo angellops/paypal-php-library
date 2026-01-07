@@ -13,6 +13,7 @@ class PayPalREST extends PayPal
     private $tokenExpiry;
     private $client_id;
     private $client_secret;
+    private $merchant_id;
     private $api_upgrade;
     private $base_url;
     private $LogResults;
@@ -32,6 +33,7 @@ class PayPalREST extends PayPal
         // Set REST-specific credentials
         $this->client_id = isset($config['ClientID']) ? $config['ClientID'] : '';
         $this->client_secret = isset($config['ClientSecret']) ? $config['ClientSecret'] : '';
+        $this->merchant_id = isset($config['MerchantID']) ? $config['MerchantID'] : '';
         $this->api_upgrade = isset($config['PayPalAPIUpgrade']) ? $config['PayPalAPIUpgrade'] : FALSE;
         $this->LogResults = isset($config['LogResults']) ? $config['LogResults'] : false;
         $this->LogPath = isset($config['LogPath']) ? $config['LogPath'] : '/logs/';
@@ -1630,6 +1632,80 @@ class PayPalREST extends PayPal
             $paypalRequestId = uniqid('pprid_', true);
 
             $response = $this->makeRequest('/v3/vault/payment-tokens', 'POST', $vaultPaymentData, $paypalRequestId);
+
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to create setup token',
+                'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'full_response' => $response['body'],
+                'raw_response' => $response['raw_response']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Create a PayPal merchant onboarding (partner referral).
+     *
+     * This method initiates the PayPal Partner Referrals API call
+     * to onboard a new merchant under the partner account.
+     */
+    public function createMerchantOnboarding($DataArray) {
+        try {
+            $response = $this->makeRequest('/v2/customer/partner-referrals', 'POST', $DataArray);
+
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to create setup token',
+                'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'full_response' => $response['body'],
+                'raw_response' => $response['raw_response']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Verify merchant onboarding status with PayPal.
+     *
+     * This method checks whether a merchant has successfully completed
+     * the onboarding flow and granted the requested permissions/scopes.
+     */
+    public function verifyMerchantOnboarding($merchantId) {
+        try {
+            $response = $this->makeRequest('/v1/customer/partners/' . $this->merchant_id . '/merchant-integrations/' . $merchantId);
 
             // Log Response
             $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);

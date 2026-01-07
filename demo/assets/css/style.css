@@ -55,6 +55,24 @@
     width: 32px;
     height: 32px;
 }
+.pp-ref-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 40px 0;
+}
+.pp-ref-card {
+    background: #FFF;
+    max-width: 560px;
+    padding: 32px 24px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+}
+.pp-ref-card .pp-ref-logo {
+    width: 160px;
+    margin: 20px 0;
+}
 .main-info {
     font-size: 16px;
     margin-bottom: 20px;
@@ -93,6 +111,16 @@
 }
 .table-items tbody td:not(:last-child) {
     border-right: 1px solid #DDD;
+}
+.table-items tbody ul {
+    padding-left: 16px;
+    margin-bottom: 0;
+}
+.table-items tbody td ul li:not(:last-child) {
+    margin-bottom: 8px;
+}
+.merchant-title {
+    margin: 0;
 }
 .table-summary tr td {
     border-top: none !important;
