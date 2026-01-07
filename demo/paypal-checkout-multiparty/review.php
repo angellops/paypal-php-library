@@ -1,58 +1,10 @@
 <?php
 require_once('../../includes/config.php');
-require_once('../../vendor/autoload.php');
-
-/**
- * Setup configuration for the PayPal library using vars from the config file.
- * Then load the PayPal object into $PayPal
- */
-$PayPalConfig = array(
-	'Sandbox' => $sandbox,
-	'PayPalAPIMode' => $api_mode,
-  'PayPalAPIUpgrade' => $api_upgrade,
-  'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
-	'ClientID' => $rest_client_id,
-	'ClientSecret' => $rest_client_secret,
-	'PrintHeaders' => $print_headers, 
-	'LogResults' => $log_results, 
-	'LogPath' => $log_path,
-);
-$PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
-
-/**
- * Here we are building a very simple, static shopping cart to use
- * throughout this demo.  In most cases, you will working with a dynamic
- * shopping cart system of some sort.
- */
-$_SESSION['subscription_name'] = 'Angell EYE Monthly Subscription Demo';
-$_SESSION['billingperiod']='Month';
-$_SESSION['billingfrequency']='1';
-$_SESSION['totalbillingcycles']='0';
-
-$_SESSION['items'][0] = array(   
-  'name' => 'One-Time Setup Fee',   
-  'amt' => '50.00'
-);
-$_SESSION['items'][1] = array(   
-  'name' => 'Monthly Subscription',   
-  'amt' => '10.00'
-);
-
-$_SESSION['shopping_cart'] = array(
-	'items' => $_SESSION['items'],	
-  'subtotal' => $_SESSION['items'][0]['amt'],
-	'shipping' => 0,
-	'handling' => 0,
-	'tax' => 0,
-);
-$_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
 ?>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PayPal Checkout Subscriptions Demo | PHP Class Library | Angell EYE</title>
+    <title>PayPal Checkout - Multiparty | Order Review | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -79,8 +31,6 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../assets/js/scripts.js"></script>
-    <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
-    <script src="<?php echo $sdk_url; ?>"></script>
   </head>
   <body>
     <div class="container">
@@ -99,33 +49,54 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
             </div>
           <?php } ?>
-          <h2 class="main-title"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
-          <p class="main-info">Here we have a basic shopping cart for display purposes that breaks down a one-time setup fee to go with a monthly subscription.  The one-time fee is considered an "Initial Amount" on the subscription profile and will be processed immediately. The monthly amount will be processed separately at its given interval.</p>
-          <div class="demo-cred">
-            <h2>Demo Credentials</h2>
-            <p>Email: paypal-buyer@angelleye.com</p>
-            <p>Password: paypalphp</p>
-          </div>
-          <table class="table table-items">
+          <h2 class="main-title">Order Review</h2>
+          <p class="main-info">Here we display a final review to the buyer now that we've calculated shipping, handling, and tax. The billing and shipping information provided here is what we obtained in the GetExpressCheckoutDetails response.</p>
+          <p class="main-info">The payment has not been processed at this point because we have not yet called the final DoExpressCheckoutPayment API. That is what will happen when we click the "Complete Order" button below.</p>
+          <table class="table table-items table-bordered">
             <thead>
               <tr>
+                <th class="center">ID</th>
                 <th class="center">Name</th>
-                <th class="center">Amount</th>
+                <th class="center">Price</th>
+                <th class="center">QTY</th>
+                <th class="center">Total</th>
               </tr>
             </thead>
             <tbody>
               <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
               <tr>
+                <td class="center"><?php echo $cart_item['id']; ?></td>
                 <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
-                <td class="center">$<?php echo number_format($cart_item['amt'],2) ?></td>
+                <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
+                <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
+                <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
               </tr>
               <?php } ?>
             </tbody>
           </table>
           <div class="row clearfix">
-            <div class="col-md-4 column"> </div>
-            <div class="col-md-3 column"> </div>
-            <div class="col-md-5 column">
+            <div class="col-md-4 column">
+              <p><strong>Billing Information</strong></p>
+              <p>
+                <?php
+                  echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
+                  $_SESSION['email'] . '<br />'. 
+                  $_SESSION['phone_number'] . '<br />';
+                ?>
+              </p>
+            </div>
+            <div class="col-md-4 column">
+              <p><strong>Shipping Information</strong></p>
+              <p>
+                <?php 
+                  echo $_SESSION['shipping_name'] . '<br />' .
+                  $_SESSION['shipping_street'] . '<br />' .
+                  $_SESSION['shipping_city'] . ', ' . $_SESSION['shipping_state'] . '  ' . $_SESSION['shipping_zip'] . '<br />' . 
+                  $_SESSION['shipping_country_name']; 
+                ?>
+              </p>
+            </div>
+            <div class="col-md-4 column">
               <table class="table table-summary">
                 <tbody>
                   <tr>
@@ -133,13 +104,23 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                     <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['subtotal'],2); ?></td>
                   </tr>
                   <tr>
-                    <tr>
-                      <td class="font-lightbold total-border-top">Grand Total</td>
-                      <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?> one-time <br />and $10.00 / mo there-after.</td>
-                    </tr>
+                    <td>Shipping</td>
+                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['shipping'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="paypalbtn" colspan="2"><a href="<?php echo ( $api_mode === 'classic' ) ? 'SetExpressCheckout.php' : 'CreateRecurringPaymentsProfile.php' ; ?>"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a></td>
+                    <td>Handling</td>
+                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['handling'],2); ?></td>
+                  </tr>
+                  <tr>
+                    <td>Tax</td>
+                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['tax'],2); ?></td>
+                  </tr>
+                  <tr>
+                    <td class="font-lightbold total-border-top">Grand Total</td>
+                    <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
+                  </tr>
+                  <tr>
+                    <td class="button-center" colspan="2"><a href="DoExpressCheckoutPayment.php" class="btn btn-success btn-lg" role="button">Complete Order</a></td>
                   </tr>
                 </tbody>
               </table>

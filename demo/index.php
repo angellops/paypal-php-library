@@ -161,18 +161,18 @@
                         </div>
                         <div class="col-md-4">
                             <div class="thumbnail">
-                                <img alt="Express Checkout Parallel Payments" src="assets/images/paypal-express-parrallel-payments.jpg">
+                                <img alt="PayPal Checkout Multiparty" src="assets/images/paypal-express-parrallel-payments.jpg">
                                 <?php
-                                $DIR = '\express-checkout-parallel-payments';
+                                $DIR = '/paypal-checkout-multiparty';
                                 $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
                                 ?>
                                 <div class="caption">
-                                    <h3>Express Checkout Parallel Payments</h3>
-                                    <h4>Parallel Payments</h4>
-                                    <p>Learn how to implement Parallel Payments into PayPal Express Checkout.</p>
+                                    <h3>PayPal Checkout Multiparty</h3>
+                                    <h4>Multiparty</h4>
+                                    <p>Learn how to implement Multiparty into PayPal Checkout.</p>
                                     <p align="center">
                                         <?php if ($DIR_exists) : ?>
-                                            <a class="btn btn-primary" href="express-checkout-parallel-payments/" target="_blank">Launch Demo</a>
+                                            <a class="btn btn-primary" href="paypal-checkout-multiparty/" target="_blank">Launch Demo</a>
                                         <?php else: ?>
                                             <a class="btn btn-success"
                                             href="https://www.angelleye.com/product/paypal-express-checkout-php-parallel-payments-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
