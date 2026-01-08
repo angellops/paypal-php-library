@@ -59,7 +59,6 @@ require_once('../../includes/config.php');
             $verifiedMerchantData = $_SESSION['verified_merchant_data'];
 
             $merchantId   = isset($verifiedMerchantData['merchant_id']) ? $verifiedMerchantData['merchant_id'] : '';
-            $trackingId   = isset($verifiedMerchantData['tracking_id']) ? $verifiedMerchantData['tracking_id'] : '';
             $legalName    = isset($verifiedMerchantData['legal_name']) ? $verifiedMerchantData['legal_name'] : '';
             $email        = isset($verifiedMerchantData['primary_email']) ? $verifiedMerchantData['primary_email'] : '';
             $emailConfirm = !empty($verifiedMerchantData['primary_email_confirmed']) ? 'YES' : 'NO';
@@ -72,10 +71,6 @@ require_once('../../includes/config.php');
               <tr>
                 <th>Merchant ID:</th>
                 <td><?php echo $merchantId; ?></td>
-              </tr>
-              <tr>
-                <th>Tracking ID:</th>
-                <td><?php echo $trackingId; ?></td>
               </tr>
               <tr>
                 <th>Legal Name:</th>
