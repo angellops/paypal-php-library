@@ -695,7 +695,7 @@ class PayPalREST extends PayPal
 
         $PaymentAmount = !empty($paymentData['PaymentDetails']['amt']) ? $paymentData['PaymentDetails']['amt'] : 0.00;
         $PaymentCurrency = !empty($paymentData['PaymentDetails']['currencycode']) ? $paymentData['PaymentDetails']['currencycode'] : '';
-        $paymentsMappedData['intent'] = !empty($paymentData['DPFields']['paymentaction']) ? $paymentData['DPFields']['paymentaction'] : 'sale';
+        $paymentsMappedData['intent'] = !empty($paymentData['DPFields']['restintent']) ? $paymentData['DPFields']['restintent'] : 'CAPTURE';
         $paymentsMappedData['purchase_units'] = [
             [
                 'amount' => [
@@ -705,10 +705,18 @@ class PayPalREST extends PayPal
             ]
         ];
 
+        /**
+         * Expiry conversion (MMYYYY → YYYY-MM)
+         */
+        $expiry = !empty($paymentData['CCDetails']['expdate']) ? $paymentData['CCDetails']['expdate'] : '';
+        if (strlen($expiry) === 6) {
+            $expiry = substr($expiry, 2, 4) . '-' . substr($expiry, 0, 2);
+        }
+
         $paymentsMappedData['payment_source'] = [
             'card' => [
                 'number' => !empty($paymentData['CCDetails']['acct']) ? $paymentData['CCDetails']['acct'] : '',
-                'expiry' => !empty($paymentData['CCDetails']['expdate']) ? $paymentData['CCDetails']['expdate'] : '',
+                'expiry' => $expiry,
                 'security_code' => !empty($paymentData['CCDetails']['cvv2']) ? $paymentData['CCDetails']['cvv2'] : '',
                 'name' => (!empty($paymentData['PayerName']['firstname']) ? $paymentData['PayerName']['firstname'] : '') . ' ' . (!empty($paymentData['PayerName']['lastname']) ? $paymentData['PayerName']['lastname'] : ''),
                 'billing_address' => [
@@ -717,6 +725,10 @@ class PayPalREST extends PayPal
                     'admin_area_1' => !empty($paymentData['BillingAddress']['state']) ? $paymentData['BillingAddress']['state'] : '',
                     'postal_code' => !empty($paymentData['BillingAddress']['zip']) ? $paymentData['BillingAddress']['zip'] : '',
                     'country_code' => !empty($paymentData['BillingAddress']['countrycode']) ? $paymentData['BillingAddress']['countrycode'] : ''
+                ],
+                'experience_context' => [
+                    'payment_method_preference' => 'IMMEDIATE_PAYMENT_REQUIRED',
+                    'user_action' => 'PAY_NOW'
                 ]
             ]  
         ];
@@ -735,6 +747,7 @@ class PayPalREST extends PayPal
                     'SUCCESS' => true,
                     'ACK' => 'Success',
                     'AMT' => $PaymentAmount,
+                    'TRANSACTIONID' => !empty($response['body']['id']) ? $response['body']['id'] : '',
                     'CURRENCYCODE' => $PaymentCurrency,
                     'STATUSCODE' => !empty($response['status_code']) ? $response['status_code'] : 0,
                     'RESPONSE' => !empty($response['body']) ? $response['body'] : [],
@@ -825,11 +838,14 @@ class PayPalREST extends PayPal
             ];
 
             $purchase_unit = [
-                "reference_id" => isset($payments['paymentrequestid']) ? $payments['paymentrequestid'] : 'PU_' . $index,
                 "amount" => $amount,
                 "description" => isset($payments['desc']) ? $payments['desc'] : "",
                 "items" => $purchase_items
             ];
+
+            if( !empty($payments['paymentrequestid']) ) {
+                $purchase_unit['reference_id'] = $payments['paymentrequestid'];
+            }
 
             if (isset($payments['sellerpaypalaccountid']) && !empty($payments['sellerpaypalaccountid'])) {
                 $purchase_unit['payee'] = [

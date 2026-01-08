@@ -20,6 +20,7 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 $DPFields = array(
 	'paymentaction' => 'Sale', 				// How you want to obtain payment.  Authorization indicates the payment is a basic auth subject to settlement with Auth & Capture.  Sale indicates that this is a final sale for which you are requesting payment.  Default is Sale.
+	'restintent' => 'CAPTURE',				// REST only.  Payment intent.  Allowed values are:  authorize, order, and capture.  Default is capture.
 	'ipaddress' => $_SERVER['REMOTE_ADDR'], 		// Required.  IP address of the payer's browser.
 	'returnfmfdetails' => '1' 				// Flag to determine whether you want the results returned by FMF.  1 or 0.  Default is 0.
 );
@@ -122,7 +123,7 @@ $PayPalRequestData = array(
 
 $PayPalResult = $PayPal->DoDirectPayment($PayPalRequestData);
 
-if( $api_mode === 'rest' ){
+if( $api_mode === 'rest' && !$api_upgrade ) {
 	$_SESSION['transaction_id'] = isset($PayPalResult['RESPONSE']['id']) ? $PayPalResult['RESPONSE']['id'] : '';
 } else {
 	$_SESSION['transaction_id'] = isset($PayPalResult['TRANSACTIONID']) ? $PayPalResult['TRANSACTIONID'] : '';

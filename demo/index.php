@@ -307,6 +307,31 @@
                         </div>
                         <div class="col-md-4">
                             <div class="thumbnail">
+                                <img alt="PayPal Checkout Advanced Credit Cards" src="assets/images/paypal-dodirectpayment-credit-cart-checkout.jpg">
+                                <?php
+                                $DIR = '/paypal-checkout-advanced-credit-cards';
+                                $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
+                                ?>
+                                <div class="caption">
+                                    <h3>PayPal Checkout Advanced Credit Cards</h3>
+                                    <h4>Advanced Credit Cards</h4>
+                                    <p>Accept direct credit card payments on your website from
+                                        buyers who do not have a PayPal account. PayPal processes the payment in the
+                                        background.</p>
+                                    <p align="center">
+                                        <?php if ($DIR_exists) : ?>
+                                            <a class="btn btn-primary" href="paypal-checkout-advanced-credit-cards/" target="_blank">Launch Demo</a>
+                                        <?php else: ?>
+                                            <a class="btn btn-success"
+                                            href="https://www.angelleye.com/product/paypal-payments-pro-payflow-php-basic-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
+                                            target="_blank">Buy Now</a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="thumbnail">
                                 <img alt="PayPal Payments Pro PayFlow Basic Integration" src="assets/images/paypal-payments-pro-payflow.jpg">
                                 <?php
                                 $DIR = '\payflow-credit-card-checkout-basic';
@@ -330,6 +355,8 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-4">
                             <div class="thumbnail">
                                 <img alt="PayPal Payments Pro PayFlow Recurring Billing Integration" src="assets/images/paypal-payments-pro-payflow-recurring-billing.jpg">
@@ -354,8 +381,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-4">
                             <div class="thumbnail">
                                 <img alt="Website Payments Pro 3.0 - DoDirectPayment" src="assets/images/paypal-dodirectpayment-credit-cart-checkout.jpg"/>
