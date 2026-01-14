@@ -332,6 +332,31 @@
                         </div>
                         <div class="col-md-4">
                             <div class="thumbnail">
+                                <img alt="PayPal Pay Later" src="assets/images/paypal-payments-pro-payflow.jpg">
+                                <?php
+                                $DIR = '/paypal-pay-later';
+                                $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
+                                ?>
+                                <div class="caption">
+                                    <h3>PayPal Pay Later</h3>
+                                    <h4>Pay Later</h4>
+                                    <p>PayPal Pay Later as a user-friendly payment option, integrated using the Web SDK v6 which allowing users to understand pricing, manage their cart, and complete checkout with minimal cognitive load.</p>
+                                    <p align="center">
+                                        <?php if ($DIR_exists) : ?>
+                                            <a class="btn btn-primary" href="paypal-pay-later/" target="_blank">Launch Demo</a>
+                                        <?php else: ?>
+                                            <a class="btn btn-success"
+                                            href="https://www.angelleye.com/product/paypal-payments-pro-payflow-php-basic-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
+                                            target="_blank">Buy Now</a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="thumbnail">
                                 <img alt="PayPal Payments Pro PayFlow Basic Integration" src="assets/images/paypal-payments-pro-payflow.jpg">
                                 <?php
                                 $DIR = '\payflow-credit-card-checkout-basic';
@@ -355,8 +380,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-4">
                             <div class="thumbnail">
                                 <img alt="PayPal Payments Pro PayFlow Recurring Billing Integration" src="assets/images/paypal-payments-pro-payflow-recurring-billing.jpg">
