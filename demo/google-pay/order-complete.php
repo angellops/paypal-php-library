@@ -9,7 +9,7 @@ if ($api_mode === 'classic') {
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PayPal Pay Later Demo | Order Review | PHP Class Library | Angell EYE</title>
+    <title>Google Pay Demo | Order Complete | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -49,18 +49,11 @@ if ($api_mode === 'classic') {
               <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/> </div>
             </div>
           </div>
-          <?php if( $api_mode === 'classic' ) { ?>
-            <div class="warning-info">
-              <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
-            </div>
-          <?php } ?>
-          <h2 class="main-title">Order Review</h2>
-          <p class="main-info">Here we display a final review to the buyer now that we've calculated shipping, handling, and tax. The billing and shipping information provided here is what we obtained in the <strong>getOrder</strong> response.</p>
-          <p class="main-info">The payment has not been processed at this point because we have not yet called the final <strong>captureOrder</strong> API. That is what will happen when we click the "<strong>Complete Order</strong>" button below.</p>
+          <h2 class="main-title">Payment Complete!</h2>
+          <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed!  We have added the Google Pay transaction ID to the Billing Information, which was provided in the <strong>getOrder</strong> response.</p>
           <table class="table table-items table-bordered">
             <thead>
               <tr>
-                <th class="center">Image</th>
                 <th class="center">ID</th>
                 <th class="center">Name</th>
                 <th class="center">Price</th>
@@ -69,16 +62,18 @@ if ($api_mode === 'classic') {
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($_SESSION['shopping_cart']['items'] as $id => $item) { ?>
-              <tr class="cart-item">
-                <td class="center cart-item-image"><img src="../assets/images/product.png" alt="Product Image"></td>
-                <td class="center"><?php echo $id; ?></td>
-                <td class="center font-lightbold"><?php echo $item['name']; ?></td>
-                <td class="center">$<?php echo number_format($item['price'],2); ?></td>
-                <td class="center font-lightbold"><?php echo $item['qty']; ?></td>
-                <td class="center font-lightbold line-total">$<span><?php echo number_format($item['qty'] * $item['price'],2); ?></span></td>
-              </tr>
-              <?php } ?>
+              <?php if(!empty($_SESSION['shopping_cart']['items'])) { 
+                foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+                  <tr>
+                    <td class="center"><?php echo $cart_item['id']; ?></td>
+                    <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
+                    <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
+                    <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
+                    <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
+                  </tr>
+              <?php }
+                } 
+              ?>
             </tbody>
           </table>
           <div class="row clearfix">
@@ -88,7 +83,8 @@ if ($api_mode === 'classic') {
                 <?php
                   echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
                   $_SESSION['email'] . '<br />'. 
-                  $_SESSION['phone_number'] . '<br />';
+                  $_SESSION['phone_number'] . '<br />' . 
+                  $_SESSION['paypal_transaction_id'];
                 ?>
               </p>
             </div>
@@ -127,7 +123,7 @@ if ($api_mode === 'classic') {
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="button-center" colspan="2"><a href="captureOrder.php" class="btn btn-success btn-lg" role="button">Complete Order</a></td>
+                    <td class="center" colspan="2">&nbsp;</td>
                   </tr>
                 </tbody>
               </table>
@@ -138,3 +134,6 @@ if ($api_mode === 'classic') {
     </div>
   </body>
 </html>
+<?php
+session_destroy();
+?>

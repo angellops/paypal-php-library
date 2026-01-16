@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     async function initPayPalMessages() {
         try {
-            const res = await fetch('../../src/angelleye/PayPal/api/token.php');
+            const res = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_client_token');
             const { token } = await res.json();
 
             const sdkInstance = await paypal.createInstance({

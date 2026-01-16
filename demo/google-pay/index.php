@@ -1,15 +1,38 @@
 <?php
 require_once('../../includes/config.php');
+require_once('../../vendor/autoload.php');
 
-// Redirect to Pay Later Product Page if API mode is classic
-if ($api_mode === 'classic') {
-  header('Location: ./');
-}
+/**
+ * Here we are building a very simple, static shopping cart to use
+ * throughout this demo.  In most cases, you will working with a dynamic
+ * shopping cart system of some sort.
+ */
+$_SESSION['items'][0] = array(
+  'id' => '123-ABC',
+  'name' => 'Widget',
+  'qty' => '2',
+  'price' => '9.99',
+);
+
+$_SESSION['items'][1] = array(
+  'id' => 'XYZ-456',
+  'name' => 'Gadget',
+  'qty' => '1',
+  'price' => '4.99',
+);
+$_SESSION['shopping_cart'] = array(
+	'items' => $_SESSION['items'],
+	'subtotal' => 24.97,
+	'shipping' => 0,
+	'handling' => 0,
+	'tax' => 0,
+);
+$_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
 ?>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PayPal Pay Later Demo | Order Review | PHP Class Library | Angell EYE</title>
+    <title>Google Pay Demo | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -36,6 +59,10 @@ if ($api_mode === 'classic') {
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../assets/js/scripts.js"></script>
+    <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
+    <script src="<?php echo $sdk_url; ?>"></script>
+    <script src="https://pay.google.com/gp/p/js/pay.js"></script>
+    <script src="googlepay.js"></script>
   </head>
   <body>
     <div class="container">
@@ -54,13 +81,11 @@ if ($api_mode === 'classic') {
               <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
             </div>
           <?php } ?>
-          <h2 class="main-title">Order Review</h2>
-          <p class="main-info">Here we display a final review to the buyer now that we've calculated shipping, handling, and tax. The billing and shipping information provided here is what we obtained in the <strong>getOrder</strong> response.</p>
-          <p class="main-info">The payment has not been processed at this point because we have not yet called the final <strong>captureOrder</strong> API. That is what will happen when we click the "<strong>Complete Order</strong>" button below.</p>
-          <table class="table table-items table-bordered">
+          <h2 class="main-title"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
+          <p class="main-info">Here we are using a basic shopping cart for display purposes, however, for this basic demo, all we are sending to PayPal is the order total without any line item details. We are assuming that we have not collected any billing or shipping information from the buyer yet because we'll be obtaining those details from PayPal after the user logs in and is returned back to the site.</p>
+          <table class="table table-items">
             <thead>
               <tr>
-                <th class="center">Image</th>
                 <th class="center">ID</th>
                 <th class="center">Name</th>
                 <th class="center">Price</th>
@@ -69,41 +94,21 @@ if ($api_mode === 'classic') {
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($_SESSION['shopping_cart']['items'] as $id => $item) { ?>
-              <tr class="cart-item">
-                <td class="center cart-item-image"><img src="../assets/images/product.png" alt="Product Image"></td>
-                <td class="center"><?php echo $id; ?></td>
-                <td class="center font-lightbold"><?php echo $item['name']; ?></td>
-                <td class="center">$<?php echo number_format($item['price'],2); ?></td>
-                <td class="center font-lightbold"><?php echo $item['qty']; ?></td>
-                <td class="center font-lightbold line-total">$<span><?php echo number_format($item['qty'] * $item['price'],2); ?></span></td>
+              <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+              <tr>
+                <td class="center"><?php echo $cart_item['id']; ?></td>
+                <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
+                <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
+                <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
+                <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
               </tr>
               <?php } ?>
             </tbody>
           </table>
           <div class="row clearfix">
-            <div class="col-md-4 column">
-              <p><strong>Billing Information</strong></p>
-              <p>
-                <?php
-                  echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
-                  $_SESSION['email'] . '<br />'. 
-                  $_SESSION['phone_number'] . '<br />';
-                ?>
-              </p>
-            </div>
-            <div class="col-md-4 column">
-              <p><strong>Shipping Information</strong></p>
-              <p>
-                <?php 
-                  echo $_SESSION['shipping_name'] . '<br />' .
-                  $_SESSION['shipping_street'] . '<br />' .
-                  $_SESSION['shipping_city'] . ', ' . $_SESSION['shipping_state'] . '  ' . $_SESSION['shipping_zip'] . '<br />' . 
-                  $_SESSION['shipping_country_name']; 
-                ?>
-              </p>
-            </div>
-            <div class="col-md-4 column">
+            <div class="col-md-4 column"> </div>
+            <div class="col-md-3 column"> </div>
+            <div class="col-md-5 column">
               <table class="table table-summary">
                 <tbody>
                   <tr>
@@ -127,7 +132,7 @@ if ($api_mode === 'classic') {
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="button-center" colspan="2"><a href="captureOrder.php" class="btn btn-success btn-lg" role="button">Complete Order</a></td>
+                    <td class="paypalbtn" colspan="2"><div id="googlepay-button-container" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>"></div></td>
                   </tr>
                 </tbody>
               </table>

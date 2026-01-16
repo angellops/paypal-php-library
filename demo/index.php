@@ -430,6 +430,54 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="thumbnail">
+                                <img alt="GooglePay" src="assets/images/paypal-payments-pro-payflow.jpg">
+                                <?php
+                                $DIR = '/google-pay';
+                                $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
+                                ?>
+                                <div class="caption">
+                                    <h3>Google Pay</h3>
+                                    <h4>Google Pay Payment</h4>
+                                    <p>Google Pay integration using Web SDK v6, demonstrating a JS-driven payment flow where only pricing is passed to initiate checkout.</p>
+                                    <p align="center">
+                                        <?php if ($DIR_exists) : ?>
+                                            <a class="btn btn-primary" href="google-pay/" target="_blank">Launch Demo</a>
+                                        <?php else: ?>
+                                            <a class="btn btn-success"
+                                            href="https://www.angelleye.com/product/paypal-payments-pro-payflow-php-basic-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
+                                            target="_blank">Buy Now</a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="thumbnail">
+                                <img alt="Apple Pay" src="assets/images/paypal-payments-pro-payflow.jpg">
+                                <?php
+                                $DIR = '/apple-pay';
+                                $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
+                                ?>
+                                <div class="caption">
+                                    <h3>Apple Pay</h3>
+                                    <h4>Apple Pay Payment</h4>
+                                    <p>Apple Pay integration using Web SDK v6, demonstrating a JS-driven payment flow where only pricing is passed to initiate checkout.</p>
+                                    <p align="center">
+                                        <?php if ($DIR_exists) : ?>
+                                            <a class="btn btn-primary" href="apple-pay/" target="_blank">Launch Demo</a>
+                                        <?php else: ?>
+                                            <a class="btn btn-success"
+                                            href="https://www.angelleye.com/product/paypal-payments-pro-payflow-php-basic-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
+                                            target="_blank">Buy Now</a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

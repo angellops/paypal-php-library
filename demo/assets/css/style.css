@@ -347,3 +347,6 @@ body.cart-page .quantity-controls {
 .disabled {
     pointer-events: none;
 }
+#googlepay-button-container {
+    margin-top: 20px;
+}
