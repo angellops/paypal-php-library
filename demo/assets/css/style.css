@@ -344,3 +344,6 @@ body.cart-page .quantity-controls {
     text-align: right;
     margin-top: 10px;
 }
+.disabled {
+    pointer-events: none;
+}

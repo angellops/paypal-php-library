@@ -5,6 +5,11 @@
 require_once('../../includes/config.php');
 require_once('../../vendor/autoload.php');
 
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
+
 /**
  * Setup configuration for the PayPal library using vars from the config file.
  * Then load the PayPal object into $PayPal

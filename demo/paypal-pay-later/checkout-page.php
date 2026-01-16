@@ -21,6 +21,11 @@ $PayPalConfig = array(
 );
 $PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
 
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
+
 /**
  * Empty Cart Logic
  * If the 'empty' button was clicked, clear all items and redirect to refresh the UI.
@@ -107,11 +112,6 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/> </div>
             </div>
           </div>
-          <?php if( $api_mode === 'classic' ) { ?>
-            <div class="warning-info">
-              <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
-            </div>
-          <?php } ?>
           <div class="heading-wrapper">
             <h2 class="heading">Checkout</h2>
             <a class="cart-link" href="cart-page.php">

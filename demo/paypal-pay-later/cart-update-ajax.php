@@ -3,6 +3,11 @@
 require_once('../../includes/config.php');
 require_once('../../vendor/autoload.php');
 
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
+
 // Capture and decode the incoming JSON payload from the request body
 $data = json_decode(file_get_contents('php://input'), true);
 

@@ -1,5 +1,10 @@
 <?php
 require_once('../../includes/config.php');
+
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
 ?>
 <html lang="en">
   <head>
@@ -44,11 +49,6 @@ require_once('../../includes/config.php');
               <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/> </div>
             </div>
           </div>
-          <?php if( $api_mode === 'classic' ) { ?>
-            <div class="warning-info">
-              <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
-            </div>
-          <?php } ?>
           <h2 class="main-title">Payment Complete!</h2>
           <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed! We have added the PayPal transaction IDs (one for each transaction in the Parallel Payment split) to the Billing Information, which was provided in the <strong>captureOrder</strong> response.</p>
           <table class="table table-items table-bordered">

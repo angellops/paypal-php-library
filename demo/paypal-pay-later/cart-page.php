@@ -21,6 +21,11 @@ $PayPalConfig = array(
 );
 $PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
 
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
+
 // Check if the form with the name/button 'add' has been submitted via POST
 if (isset($_POST['add'])) {
   $PayPalCommonFunctions->add_to_cart($_POST['id'], $_POST['name'], $_POST['price'], (int)$_POST['qty']);
@@ -83,11 +88,6 @@ $cart = $PayPalCommonFunctions->get_cart();
               <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/> </div>
             </div>
           </div>
-          <?php if( $api_mode === 'classic' ) { ?>
-            <div class="warning-info">
-              <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
-            </div>
-          <?php } ?>
           <form method="post" action="checkout-page.php">
             <div class="heading-wrapper">
               <h2 class="main-title heading"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>

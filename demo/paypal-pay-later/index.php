@@ -60,7 +60,7 @@ require_once('../../vendor/autoload.php');
           <?php } ?>
           <div class="heading-wrapper">
             <h2 class="heading">Shop</h2>
-            <a class="cart-link" href="cart-page.php">
+            <a class="cart-link <?php echo ( $api_mode === 'classic' ) ? 'disabled' : '' ?>" href="cart-page.php">
               Go to Cart
               <img src="../assets/images/right.svg" alt="Right Arrow Icon">
             </a>
@@ -89,7 +89,7 @@ require_once('../../vendor/autoload.php');
                   <input type="hidden" name="qty" value="1">
                 </div>
               </div>
-              <button type="submit" name="add" class="add-btn">Add to Cart</button>
+              <button type="submit" name="add" class="add-btn" <?php echo ( $api_mode === 'classic' ) ? 'disabled' : '' ?>>Add to Cart</button>
             </form>
             <form method="post" action="cart-page.php" class="product-card">
               <img src="../assets/images/product.png" alt="Product Image" class="product-image">
@@ -112,7 +112,7 @@ require_once('../../vendor/autoload.php');
                   <input type="hidden" name="qty" value="1">
                 </div>
               </div>
-              <button type="submit" name="add" class="add-btn">Add to Cart</button>
+              <button type="submit" name="add" class="add-btn" <?php echo ( $api_mode === 'classic' ) ? 'disabled' : '' ?>>Add to Cart</button>
             </form>
           </div>
         </div>
