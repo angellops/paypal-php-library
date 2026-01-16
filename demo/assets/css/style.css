@@ -347,6 +347,11 @@ body.cart-page .quantity-controls {
 .disabled {
     pointer-events: none;
 }
-#googlepay-button-container {
+#googlepay-button-container,
+#applepay-button-container {
     margin-top: 20px;
+}
+#applepay-button-container {
+    color: #b00020;
+    font-style: italic;
 }

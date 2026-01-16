@@ -32,7 +32,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Google Pay Demo | PHP Class Library | Angell EYE</title>
+    <title>Apple Pay Demo | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -61,8 +61,8 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <script type="text/javascript" src="../assets/js/scripts.js"></script>
     <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
     <script src="<?php echo $sdk_url; ?>"></script>
-    <script src="https://pay.google.com/gp/p/js/pay.js"></script>
-    <script src="googlepay.js"></script>
+    <script src="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js"></script>
+    <script src="applepay.js"></script>
   </head>
   <body>
     <div class="container">
@@ -82,7 +82,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
             </div>
           <?php } ?>
           <h2 class="main-title"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
-          <p class="main-info">Here we are using a basic shopping cart purely for display purposes. Only the final order total is sent to Google Pay, without any line-item breakdown. Billing and shipping details are securely collected by Google Pay during authorization and returned to the site after the payment is completed.</p>
+          <p class="main-info">Here we are using a basic shopping cart for display purposes. The payment request sent to Apple Pay contains only the total amount, with no individual line-item details. Billing and shipping information is collected by Apple Pay during checkout and made available to the site once the user authorizes the payment.</p>
           <table class="table table-items">
             <thead>
               <tr>
@@ -132,7 +132,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="paypalbtn" colspan="2"><div id="googlepay-button-container" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>"></div></td>
+                    <td class="paypalbtn" colspan="2"><div id="applepay-button-container" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>"></div></td>
                   </tr>
                 </tbody>
               </table>

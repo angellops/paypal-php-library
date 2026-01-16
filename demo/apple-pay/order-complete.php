@@ -1,38 +1,15 @@
 <?php
 require_once('../../includes/config.php');
-require_once('../../vendor/autoload.php');
 
-/**
- * Here we are building a very simple, static shopping cart to use
- * throughout this demo.  In most cases, you will working with a dynamic
- * shopping cart system of some sort.
- */
-$_SESSION['items'][0] = array(
-  'id' => '123-ABC',
-  'name' => 'Widget',
-  'qty' => '2',
-  'price' => '9.99',
-);
-
-$_SESSION['items'][1] = array(
-  'id' => 'XYZ-456',
-  'name' => 'Gadget',
-  'qty' => '1',
-  'price' => '4.99',
-);
-$_SESSION['shopping_cart'] = array(
-	'items' => $_SESSION['items'],
-	'subtotal' => 24.97,
-	'shipping' => 0,
-	'handling' => 0,
-	'tax' => 0,
-);
-$_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
 ?>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Google Pay Demo | PHP Class Library | Angell EYE</title>
+    <title>Apple Pay Demo | Order Complete | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -59,10 +36,6 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../assets/js/scripts.js"></script>
-    <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
-    <script src="<?php echo $sdk_url; ?>"></script>
-    <script src="https://pay.google.com/gp/p/js/pay.js"></script>
-    <script src="googlepay.js"></script>
   </head>
   <body>
     <div class="container">
@@ -76,14 +49,9 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/> </div>
             </div>
           </div>
-          <?php if( $api_mode === 'classic' ) { ?>
-            <div class="warning-info">
-              <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
-            </div>
-          <?php } ?>
-          <h2 class="main-title"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
-          <p class="main-info">Here we are using a basic shopping cart purely for display purposes. Only the final order total is sent to Google Pay, without any line-item breakdown. Billing and shipping details are securely collected by Google Pay during authorization and returned to the site after the payment is completed.</p>
-          <table class="table table-items">
+          <h2 class="main-title">Payment Complete!</h2>
+          <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed! We have added the Apple Pay transaction ID to the Billing Information, which was provided in the <strong>getOrder</strong> response.</p>
+          <table class="table table-items table-bordered">
             <thead>
               <tr>
                 <th class="center">ID</th>
@@ -94,21 +62,44 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               </tr>
             </thead>
             <tbody>
-              <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
-              <tr>
-                <td class="center"><?php echo $cart_item['id']; ?></td>
-                <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
-                <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
-                <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
-                <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
-              </tr>
-              <?php } ?>
+              <?php if(!empty($_SESSION['shopping_cart']['items'])) { 
+                foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+                  <tr>
+                    <td class="center"><?php echo $cart_item['id']; ?></td>
+                    <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
+                    <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
+                    <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
+                    <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
+                  </tr>
+              <?php }
+                } 
+              ?>
             </tbody>
           </table>
           <div class="row clearfix">
-            <div class="col-md-4 column"> </div>
-            <div class="col-md-3 column"> </div>
-            <div class="col-md-5 column">
+            <div class="col-md-4 column">
+              <p><strong>Billing Information</strong></p>
+              <p>
+                <?php
+                  echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
+                  $_SESSION['email'] . '<br />'. 
+                  $_SESSION['phone_number'] . '<br />' . 
+                  $_SESSION['paypal_transaction_id'];
+                ?>
+              </p>
+            </div>
+            <div class="col-md-4 column">
+              <p><strong>Shipping Information</strong></p>
+              <p>
+                <?php 
+                  echo $_SESSION['shipping_name'] . '<br />' .
+                  $_SESSION['shipping_street'] . '<br />' .
+                  $_SESSION['shipping_city'] . ', ' . $_SESSION['shipping_state'] . '  ' . $_SESSION['shipping_zip'] . '<br />' . 
+                  $_SESSION['shipping_country_name']; 
+                ?>
+              </p>
+            </div>
+            <div class="col-md-4 column">
               <table class="table table-summary">
                 <tbody>
                   <tr>
@@ -132,7 +123,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="paypalbtn" colspan="2"><div id="googlepay-button-container" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>"></div></td>
+                    <td class="center" colspan="2">&nbsp;</td>
                   </tr>
                 </tbody>
               </table>
@@ -143,3 +134,6 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     </div>
   </body>
 </html>
+<?php
+session_destroy();
+?>

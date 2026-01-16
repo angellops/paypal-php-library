@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             );
 
-            document.getElementById("googlepay-button-container").appendChild(button);
+            gpayButtonContainer.appendChild(button);
         } catch (error) {
             console.error(`Initialization error: ${error.message}`);
         }
