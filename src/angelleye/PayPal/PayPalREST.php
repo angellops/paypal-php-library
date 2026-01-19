@@ -451,10 +451,10 @@ class PayPalREST extends PayPal
     /**
      * Create an order (replaces SetExpressCheckout)
      */
-    public function createOrder($orderData)
+    public function createOrder($orderData, $paypalRequestId = null)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData);
+            $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -1643,7 +1643,6 @@ class PayPalREST extends PayPal
      */
     public function createVaultPaymentToken($DataArray) {
         try {
-            $setupToken = ( !empty($DataArray) && $DataArray['setup_token'] ) ? $DataArray['setup_token'] : '';
             $vaultPaymentData = ( !empty($DataArray) && $DataArray['vault_payment_data'] ) ? $DataArray['vault_payment_data'] : [];
             $paypalRequestId = uniqid('pprid_', true);
 
@@ -1656,6 +1655,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'vault_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
                     'full_response' => $response['body'],
                     'raw_response' => $response['raw_response']
                 ];
