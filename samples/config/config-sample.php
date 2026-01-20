@@ -120,6 +120,7 @@ $payflow_partner = $sandbox ? 'SANDBOX_PAYFLOW_PARTNER' : 'LIVE_PAYFLOW_PARTNER'
  */
 $rest_client_id = $sandbox ? 'SANDBOX_CLIENT_ID' : 'LIVE_CLIENT_ID';
 $rest_client_secret = $sandbox ? 'SANDBOX_SECRET_ID' : 'LIVE_SECRET_ID';
+$rest_merchant_id = $sandbox ? 'SANDBOX_MERCHANT_ID' : 'LIVE_MERCHANT_ID';
 
 /**
  * PayPal Finance Portal API
