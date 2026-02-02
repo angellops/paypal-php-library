@@ -52,14 +52,11 @@ $PayPalRequestData = [
         ]
     ]],
     'products' => [ 
-        'EXPRESS_CHECKOUT',                                 // Requests Express Checkout capability for the onboarded merchant.
         'PAYMENT_METHODS',                                  // Requests Payment Methods capability for the onboarded merchant.
-        'ADVANCED_VAULTING'                                 // Needed for saving payment methods
     ], 
     'capabilities' => [
         'APPLE_PAY',                                        // Allows the partner to process payments via Apple Pay.
         'GOOGLE_PAY',                                       // Allows the partner to process payments via Google Pay.
-        'PAYPAL_WALLET_VAULTING_ADVANCED'                   // Allows the partner to use advanced vaulting features for PayPal Wallet.
     ],
     'legal_consents' => [[
         'type' => 'SHARE_DATA_CONSENT',                     // Merchant consents to share account data with the partner.
@@ -80,6 +77,11 @@ $PayPalRequestData = [
  * the required permissions to the partner application.
  */
 $PayPalResult = $PayPal->createMerchantOnboarding($PayPalRequestData);
+
+echo '<pre>';
+print_r($PayPalResult);
+echo '</pre>';
+exit;
 
 $redirect_url = '';
 if( $PayPalResult['success'] ) {
