@@ -124,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const sdkInstance = await paypal.createInstance({
                 clientToken: token,
                 components: ["paypal-payments"],
+                pageType: 'checkout',
             });
 
             const messagesInstance = sdkInstance.createPayPalMessages();

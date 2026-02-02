@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const sdkInstance = await window.paypal.createInstance({
                 clientToken: token,
                 components: ["applepay-payments"],
+                pageType: 'checkout',
             });
 
             const applePaySession = sdkInstance.createApplePayOneTimePaymentSession();

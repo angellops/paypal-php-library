@@ -131,6 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const sdkInstance = await window.paypal.createInstance({
                 clientToken: token,
                 components: ["googlepay-payments"],
+                pageType: 'checkout',
             });
 
             const googlePaySession = sdkInstance.createGooglePayOneTimePaymentSession();
