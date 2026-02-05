@@ -16,6 +16,17 @@
 #paypal_partner_logo {
     float: right;
 }
+.accept-text {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 4px;
+}
+.paypal-text {
+    color: #003087;
+}
+.venmo-text {
+    color: #008CFF;
+}
 .warning-info {
     display: flex;
     align-items: center;

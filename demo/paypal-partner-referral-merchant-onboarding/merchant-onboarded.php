@@ -41,10 +41,19 @@ require_once('../../includes/config.php');
         <div class="col-md-12 column">
           <div id="header" class="row clearfix">
             <div class="col-md-6 column">
-              <div id="angelleye_logo"> <a href="/"><img alt="Angell EYE PayPal PHP Class Library Demo" src="../assets/images/logo.png"></a> </div>
+              <div id="angelleye_logo">
+                <a href="/">
+                  <img alt="Angell EYE PayPal PHP Class Library Demo" src="../assets/images/logo.png">
+                </a>
+              </div>
             </div>
             <div class="col-md-6 column">
-              <div id="paypal_partner_logo"> <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/> </div>
+              <div id="paypal_partner_logo">
+                <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/>
+                <div class="accept-text">
+                  We accept <strong class="paypal-text">PayPal</strong> and <strong class="venmo-text">Venmo</strong>
+                </div>
+              </div>
             </div>
           </div>
           <?php if( $api_mode === 'classic' ) { ?>
