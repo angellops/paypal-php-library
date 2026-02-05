@@ -70,6 +70,9 @@ $breakdown = [
  */
 $orderPayload = [
     'intent' => 'CAPTURE',
+    'payment_method' => [
+        'payer_selected' => 'PAYPAL',
+    ],
     'purchase_units' => [
         [
             'amount' => [
@@ -79,6 +82,9 @@ $orderPayload = [
             ],
             'items' => $items
         ]
+    ],
+    'payer' => [
+        'email_address' => $_SESSION['buyer_email']
     ],
     'application_context' => [
         'return_url' => $domain . 'demo/paypal-pay-later/getOrder.php',

@@ -2,6 +2,9 @@
 require_once('../../includes/config.php');
 require_once('../../vendor/autoload.php');
 
+// Set buyer email in session
+$_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
+
 /**
  * Here we are building a very simple, static shopping cart to use
  * throughout this demo.  In most cases, you will working with a dynamic
@@ -132,7 +135,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="paypalbtn" colspan="2"><div id="applepay-button-container" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>"></div></td>
+                    <td class="paypalbtn" colspan="2"><div id="applepay-button-container" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>" data-email="<?php echo $_SESSION['buyer_email']; ?>"></div></td>
                   </tr>
                 </tbody>
               </table>

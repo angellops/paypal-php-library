@@ -47,6 +47,11 @@ $SECFields = array(
 	'customerservicenumber' => '816-555-5555', 				                                	// Merchant Customer Service number displayed on the PayPal Review page. 16 char max.
 );
 
+// Buyer email fetched from session
+$PayerData = array(
+	'buyeremail' => $_SESSION['buyer_email']							// buyer email address
+);
+
 /**
  * Now we begin setting up our payment(s).
  *
@@ -78,6 +83,7 @@ if( $api_mode === 'rest' ) {
 $PayPalRequestData = array(
 	'SECFields' => $SECFields, 
 	'Payments' => $Payments,
+	'PayerData' => $PayerData,
 );
 
 /**

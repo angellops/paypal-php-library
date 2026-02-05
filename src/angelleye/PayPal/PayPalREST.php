@@ -788,6 +788,7 @@ class PayPalREST extends PayPal
     function SetExpressCheckout($DataArray) {
         $SECFields = isset($DataArray['SECFields']) ? $DataArray['SECFields'] : [];
         $paymentsList = isset($DataArray['Payments']) ? $DataArray['Payments'] : [];
+        $payerData = isset($DataArray['PayerData']) ? $DataArray['PayerData'] : [];
 
         $purchase_units = [];
 
@@ -859,6 +860,9 @@ class PayPalREST extends PayPal
         $payload = [
             "intent" => "CAPTURE",
             "purchase_units" => $purchase_units,
+            "payment_method" => [
+                "payer_selected" => "PAYPAL",
+            ],
             "application_context" => [
                 "return_url" => isset($SECFields['returnurl']) ? $SECFields['returnurl'] : "",
                 "cancel_url" => isset($SECFields['cancelurl']) ? $SECFields['cancelurl'] : "",
@@ -866,6 +870,12 @@ class PayPalREST extends PayPal
                 "landing_page" => strtoupper(isset($SECFields['landingpage']) ? $SECFields['landingpage'] : "LOGIN")
             ]
         ];
+
+        if( !empty($payerData) && !empty($payerData['buyeremail']) ) {
+            $payload['payer'] = [
+                "email_address" => $payerData['buyeremail']
+            ];
+        }
 
         $response = $this->createOrder($payload);
 

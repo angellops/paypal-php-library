@@ -3,10 +3,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if ( !gpayButtonContainer ) return;
 
     const purchaseAmount = gpayButtonContainer.dataset.amount;
+    const buyerEmail = gpayButtonContainer.dataset.email;
 
     async function createOrder(purchaseAmount) {
         const orderPayload = {
             intent: "CAPTURE",
+            payer: {
+                email_address: buyerEmail,
+            },
             purchase_units: [
                 {
                     amount: {

@@ -41,6 +41,11 @@ $SECFields = array(
     'brandname' => 'Angell EYE'							                                // A label that overrides the business name in the PayPal account on the PayPal hosted checkout pages.  127 char max.
 );
 
+// Buyer email fetched from session
+$PayerData = array(
+	'buyeremail' => $_SESSION['buyer_email']							// buyer email address
+);
+
 /**
  * Now we begin setting up our payment(s).
  *
@@ -95,6 +100,7 @@ array_push($Payments, $Payment);
 $PayPalRequestData = array(
     'SECFields' => $SECFields, 
     'Payments' => $Payments,
+	'PayerData' => $PayerData,
 );
 
 /**

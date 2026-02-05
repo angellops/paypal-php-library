@@ -21,6 +21,9 @@ $PayPalConfig = array(
 );
 $PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
 
+// Set buyer email in session
+$_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
+
 /**
  * Define PayPal receiver identifiers for parallel payments.
  *

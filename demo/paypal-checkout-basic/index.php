@@ -21,16 +21,19 @@ $PayPalConfig = array(
 );
 $PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
 
+// Set buyer email in session
+$_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
+
 /**
  * Here we are building a very simple, static shopping cart to use
  * throughout this demo.  In most cases, you will working with a dynamic
  * shopping cart system of some sort.
  */
 $_SESSION['items'][0] = array(
-    'id' => '123-ABC',
-    'name' => 'Widget',
-    'qty' => '2',
-    'price' => '9.99',
+  'id' => '123-ABC',
+  'name' => 'Widget',
+  'qty' => '2',
+  'price' => '9.99',
 );
 
 $_SESSION['items'][1] = array(
