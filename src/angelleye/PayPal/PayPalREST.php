@@ -860,9 +860,6 @@ class PayPalREST extends PayPal
         $payload = [
             "intent" => "CAPTURE",
             "purchase_units" => $purchase_units,
-            "payment_method" => [
-                "payer_selected" => "PAYPAL",
-            ],
             "application_context" => [
                 "return_url" => isset($SECFields['returnurl']) ? $SECFields['returnurl'] : "",
                 "cancel_url" => isset($SECFields['cancelurl']) ? $SECFields['cancelurl'] : "",

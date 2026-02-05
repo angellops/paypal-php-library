@@ -83,9 +83,6 @@ $orderPayload = [
             'items' => $items
         ]
     ],
-    'payer' => [
-        'email_address' => $_SESSION['buyer_email']
-    ],
     'application_context' => [
         'return_url' => $domain . 'demo/paypal-pay-later/getOrder.php',
         'cancel_url' => $domain . 'demo/paypal-pay-later/',
