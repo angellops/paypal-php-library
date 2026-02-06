@@ -24,6 +24,25 @@ $PayPalConfig = array(
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
+// Initialize an empty array to store payment capabilities
+$capabilities = [];
+
+// Retrieve the buyer's country code from the session (e.g., 'US', 'FR')
+$country = $_SESSION['buyer_country'];
+
+// Define the list of countries where Apple Pay and Google Pay are supported
+$acdcCountries = ['US', 'GB', 'DE', 'FR', 'AU'];
+
+/**
+ * Check if the buyer's country is in the supported list.
+ * If true, enable digital wallets; otherwise, keep the capabilities list empty.
+ */
+if (in_array($country, $acdcCountries)) {
+    $capabilities = ['APPLE_PAY', 'GOOGLE_PAY'];
+} else {
+    $capabilities = [];
+}
+
 /**
  * Here we are setting up the parameters required to initiate
  * PayPal Partner Referral (Merchant Onboarding).
@@ -54,10 +73,6 @@ $PayPalRequestData = [
     'products' => [ 
         'PAYMENT_METHODS',                                  // Requests Payment Methods capability for the onboarded merchant.
     ], 
-    'capabilities' => [
-        'APPLE_PAY',                                        // Allows the partner to process payments via Apple Pay.
-        'GOOGLE_PAY',                                       // Allows the partner to process payments via Google Pay.
-    ],
     'legal_consents' => [[
         'type' => 'SHARE_DATA_CONSENT',                     // Merchant consents to share account data with the partner.
         'granted' => true                                   // Consent must be explicitly granted for onboarding to succeed.
@@ -67,6 +82,14 @@ $PayPalRequestData = [
         'return_url_description' => 'Return after onboarding'                                                       // Description shown to the merchant during the onboarding flow.
     ]
 ];
+
+/**
+ * If the capabilities array is not empty, add it to the PayPal request data.
+ * This prevents sending an empty 'capabilities' key in the API call.
+ */
+if (!empty($capabilities)) {
+    $PayPalRequestData['capabilities'] = $capabilities;
+}
 
 /**
  * Initiates the PayPal Partner Merchant Onboarding flow.

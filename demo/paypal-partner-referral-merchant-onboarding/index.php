@@ -1,4 +1,8 @@
-<?php require_once('../../includes/config.php'); ?>
+<?php 
+require_once('../../includes/config.php'); 
+
+$_SESSION['buyer_country'] = 'US';
+?>
 <html lang="en">
   <head>
     <meta charset="utf-8">
