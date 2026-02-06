@@ -3,6 +3,14 @@
  * Include our config file.
  */
 require_once('../../includes/config.php'); 
+
+if (isset($_POST['disconnect'])) {
+  unset($_SESSION['verified_merchant_data']);
+}
+
+if( !isset( $_SESSION['verified_merchant_data'] ) ) {
+  header('Location: ./');
+}
 ?>
 <html lang="en">
   <head>
@@ -66,6 +74,18 @@ require_once('../../includes/config.php');
           <p class="main-info">Below is the information returned by PayPal, which was provided in the <strong>verifyMerchantOnboarding</strong> response, for the newly onboarded merchant.</p>
           <?php if( isset( $_SESSION['verified_merchant_data'] ) ) {
             $verifiedMerchantData = $_SESSION['verified_merchant_data'];
+
+            if(!$verifiedMerchantData['primary_email_confirmed']) { ?>
+              <div class="warning-info onboarded-warning">
+                <span class="warning-icon">!</span>Please confirm your PayPal email.
+              </div>
+            <?php } 
+
+            if(!$verifiedMerchantData['payments_receivable']) { ?>
+              <div class="warning-info onboarded-warning">
+                <span class="warning-icon">!</span>Your PayPal account cannot receive payments.
+              </div>
+            <?php }
 
             $merchantId   = isset($verifiedMerchantData['merchant_id']) ? $verifiedMerchantData['merchant_id'] : '';
             $legalName    = isset($verifiedMerchantData['legal_name']) ? $verifiedMerchantData['legal_name'] : '';
@@ -136,12 +156,12 @@ require_once('../../includes/config.php');
                 </td>
               </tr>
             </table> 
+            <form method="post">
+              <button type="submit" name="disconnect" class="btn btn-danger">Disconnect from PayPal</button>
+            </form>
           <?php } ?>
         </div>
       </div>
     </div>
   </body>
 </html>
-<?php
-session_destroy();
-?>

@@ -41,6 +41,9 @@
 .warning-info.demo-warning-info {
     margin-top: 0;
 }
+.warning-info.onboarded-warning {
+    margin-bottom: 20px;
+}
 .warning-info .warning-icon {
     display: flex;
     align-items: center;
