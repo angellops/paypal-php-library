@@ -868,9 +868,19 @@ class PayPalREST extends PayPal
             ]
         ];
 
-        if( !empty($payerData) && !empty($payerData['buyeremail']) ) {
+        $user_email = ''
+        $is_returning = false;
+        if( is_user_logged_in() ) {
+            $current_user = wp_get_current_user();
+            if( $current_user instanceof WP_User && !empty( $current_user->user_email ) ) {
+                $user_email = $current_user->user_email;
+                $is_returning = true;
+            }
+        }
+
+        if( $is_returning || !empty($payerData) ) {
             $payload['payer'] = [
-                "email_address" => $payerData['buyeremail']
+                "email_address" => ($is_returning && !empty( $user_email )) ? $user_email : ((!empty($payerData) && !empty($payerData['buyeremail'])) ? $payerData['buyeremail'] : '')
             ];
         }
 
