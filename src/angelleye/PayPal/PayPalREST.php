@@ -860,6 +860,9 @@ class PayPalREST extends PayPal
         $payload = [
             "intent" => "CAPTURE",
             "purchase_units" => $purchase_units,
+            "payment_method" => [
+                "payer_selected" => "PAYPAL",
+            ],
             "application_context" => [
                 "return_url" => isset($SECFields['returnurl']) ? $SECFields['returnurl'] : "",
                 "cancel_url" => isset($SECFields['cancelurl']) ? $SECFields['cancelurl'] : "",
@@ -868,19 +871,9 @@ class PayPalREST extends PayPal
             ]
         ];
 
-        $user_email = ''
-        $is_returning = false;
-        if( is_user_logged_in() ) {
-            $current_user = wp_get_current_user();
-            if( $current_user instanceof WP_User && !empty( $current_user->user_email ) ) {
-                $user_email = $current_user->user_email;
-                $is_returning = true;
-            }
-        }
-
-        if( $is_returning || !empty($payerData) ) {
+        if( !empty($payerData) && !empty($payerData['buyeremail']) ) {
             $payload['payer'] = [
-                "email_address" => ($is_returning && !empty( $user_email )) ? $user_email : ((!empty($payerData) && !empty($payerData['buyeremail'])) ? $payerData['buyeremail'] : '')
+                "email_address" => $payerData['buyeremail']
             ];
         }
 
