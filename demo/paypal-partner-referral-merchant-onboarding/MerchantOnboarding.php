@@ -78,11 +78,6 @@ $PayPalRequestData = [
  */
 $PayPalResult = $PayPal->createMerchantOnboarding($PayPalRequestData);
 
-echo '<pre>';
-print_r($PayPalResult);
-echo '</pre>';
-exit;
-
 $redirect_url = '';
 if( $PayPalResult['success'] ) {
     if( isset( $PayPalResult['full_response']['links'] ) )
