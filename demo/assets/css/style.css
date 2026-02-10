@@ -378,9 +378,7 @@ body.cart-page .quantity-controls {
 }
 #googlepay-button-container,
 #applepay-button-container {
-    margin-top: 20px;
-}
-#applepay-button-container {
-    color: #b00020;
     font-style: italic;
+    color: #b00020;
+    margin-top: 20px;
 }

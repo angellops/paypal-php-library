@@ -3,44 +3,58 @@ document.addEventListener("DOMContentLoaded", function () {
     if ( !applepayButtonContainer ) return;
 
     const purchaseAmount = applepayButtonContainer.dataset.amount;
-    const buyerEmail = gpayButtonContainer.dataset.email;
+    const buyerEmail = applepayButtonContainer.dataset.email;
 
     async function createOrder(purchaseAmount) {
-        const orderPayload = {
-            intent: "CAPTURE",
-            payer: {
-                email_address: buyerEmail,
-            },
-            purchase_units: [
-                {
-                    amount: {
-                        currency_code: "USD",
-                        value: purchaseAmount,
-                        breakdown: {
-                            item_total: {
-                                currency_code: "USD",
-                                value: purchaseAmount,
+        try {
+            const orderPayload = {
+                intent: "CAPTURE",
+                payer: {
+                    email_address: buyerEmail,
+                },
+                purchase_units: [
+                    {
+                        amount: {
+                            currency_code: "USD",
+                            value: purchaseAmount,
+                            breakdown: {
+                                item_total: {
+                                    currency_code: "USD",
+                                    value: purchaseAmount,
+                                },
                             },
                         },
                     },
-                },
-            ],
-        };
+                ],
+            };
 
-        const response = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_create_order', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(orderPayload)
-        })
+            const response = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_create_order', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderPayload)
+            })
 
-        const data = await response.json();
-        return data.id;
+            const data = await response.json();
+
+            if (!data.id) {
+                throw new Error(data.message || "Unable to create PayPal order.");
+            }
+
+            return data.id;
+        } catch (err) {
+            showPaypalError(err.message);
+            throw err;
+        }
+    }
+
+    function showPaypalError(message) {
+        applepayButtonContainer.innerHTML = message;
     }
 
     async function init() {
         try {
             if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
-                applepayButtonContainer.innerHTML = "<p>Apple Pay is not available on this device or browser. Please use Safari on macOS or iOS.</p>";
+                showPaypalError("Apple Pay is not available on this device or browser. Please use Safari on macOS or iOS.");
                 return;
             }
 
@@ -102,7 +116,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                 session.completeMerchantValidation(payload.merchantSession);
                             })
                             .catch((err) => {
-                                console.error(`Merchant validation error: ${err.message}`);
+                                showPaypalError(err.message || "Apple Pay merchant validation failed.");
+                                console.error(err);
                                 session.abort();
                             });
                     };
@@ -135,10 +150,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             if (captureResult.status === "COMPLETED") {
                                 window.location.href = `getOrder.php?order_id=${createdOrder}`;
+                                session.completePayment({status: window.ApplePaySession.STATUS_SUCCESS});
+                            } else {
+                                throw new Error("Payment capture failed.");
                             }
-
-                            session.completePayment({status: window.ApplePaySession.STATUS_SUCCESS});
                         } catch (err) {
+                            showPaypalError(err.message || "Apple Pay payment failed.");
+                            console.error(err);
                             session.completePayment({status: window.ApplePaySession.STATUS_FAILURE});
                         }
                     };
@@ -156,7 +174,8 @@ document.addEventListener("DOMContentLoaded", function () {
             applePayBtn.addEventListener("click", onApplePayButtonClick);
             applepayButtonContainer.appendChild(applePayBtn);
         } catch (error) {
-            console.error(`Initialization error: ${error.message}`);
+            showPaypalError(error.statusMessage || "Failed to initialize Apple Pay.");
+            console.error(error);
         }
     }
     init();

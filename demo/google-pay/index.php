@@ -145,7 +145,6 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                   </tr>
                   <tr>
                     <td class="paypalbtn" colspan="2">
-                      <div id="paypalError"></div>
                       <div id="googlepay-button-container" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>" data-email="<?php echo $_SESSION['buyer_email']; ?>"></div>
                     </td>
                   </tr>

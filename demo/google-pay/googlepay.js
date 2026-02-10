@@ -57,11 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showPaypalError(message) {
-        const errorDiv = document.getElementById("paypalError");
-        if (!errorDiv) return;
-
-        errorDiv.innerHTML = message;
-        errorDiv.style.display = "block";
+        gpayButtonContainer.innerHTML = message;
     }
 
     function getGoogleTransactionInfo(purchaseAmount, countryCode) {

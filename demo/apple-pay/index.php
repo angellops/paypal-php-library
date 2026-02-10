@@ -144,7 +144,9 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="paypalbtn" colspan="2"><div id="applepay-button-container" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>" data-email="<?php echo $_SESSION['buyer_email']; ?>"></div></td>
+                    <td class="paypalbtn" colspan="2">
+                      <div id="applepay-button-container" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>" data-email="<?php echo $_SESSION['buyer_email']; ?>"></div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
