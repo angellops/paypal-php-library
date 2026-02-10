@@ -78,6 +78,7 @@ foreach ($_SESSION['shopping_cart']['items'] as $cart_item) {
         'amt' => $cart_item['price'], // Cost of item.
         'number' => $cart_item['id'], // Item number.  127 char max.
         'qty' => $cart_item['qty'], // Item qty on order.  Any positive integer.
+        'itemcategory' => $cart_item['category'], // Item category.  127 char max.
     );
     array_push($PaymentOrderItems, $Item);
 }

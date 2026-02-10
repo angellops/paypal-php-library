@@ -34,6 +34,7 @@ $_SESSION['items'][0] = array(
     'name' => 'Widget',
     'qty' => '2',
     'price' => '9.99',
+    'category' => 'DONATION',
 );
 
 $_SESSION['items'][1] = array(
@@ -41,6 +42,7 @@ $_SESSION['items'][1] = array(
     'name' => 'Gadget',
     'qty' => '1',
     'price' => '4.99',
+    'category' => 'DONATION',
 );
 $_SESSION['shopping_cart'] = array(
     'items' => $_SESSION['items'],
@@ -171,7 +173,12 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                                         <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                                     </tr>
                                     <tr>
-                                        <td class="paypalbtn" colspan="2"><a href="SetExpressCheckout.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a></td>
+                                        <td class="paypalbtn" colspan="2">
+                                            <a href="SetExpressCheckout.php">
+                                                <h4 class="donate-label">Donate with PayPal</h4>
+                                                <?php $PayPalCommonFunctions->renderPayPalButton(); ?>
+                                            </a>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

@@ -6,45 +6,62 @@ document.addEventListener("DOMContentLoaded", function () {
     const buyerEmail = gpayButtonContainer.dataset.email;
 
     async function createOrder(purchaseAmount) {
-        const orderPayload = {
-            intent: "CAPTURE",
-            payer: {
-                email_address: buyerEmail,
-            },
-            purchase_units: [
-                {
-                    amount: {
-                        currency_code: "USD",
-                        value: purchaseAmount,
-                        breakdown: {
-                            item_total: {
-                                currency_code: "USD",
-                                value: purchaseAmount,
+        try {
+            const orderPayload = {
+                intent: "CAPTURE",
+                payer: {
+                    email_address: buyerEmail,
+                },
+                purchase_units: [
+                    {
+                        amount: {
+                            currency_code: "USD",
+                            value: purchaseAmount,
+                            breakdown: {
+                                item_total: {
+                                    currency_code: "USD",
+                                    value: purchaseAmount,
+                                },
                             },
                         },
                     },
-                },
-            ],
-            payment_source: {
-                google_pay: {
-                    experience_context: {
-                        brand_name: "AngellEYE Payment Demo",
-                        locale: "en-US",
-                        landing_page: "LOGIN",
-                        user_action: "PAY_NOW",
+                ],
+                payment_source: {
+                    google_pay: {
+                        experience_context: {
+                            brand_name: "AngellEYE Payment Demo",
+                            locale: "en-US",
+                            landing_page: "LOGIN",
+                            user_action: "PAY_NOW",
+                        },
                     },
                 },
-            },
-        };
+            };
 
-        const response = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_create_order', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(orderPayload)
-        })
+            const response = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_create_order', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderPayload)
+            })
 
-        const data = await response.json();
-        return data.id;
+            const data = await response.json();
+            if (!data.id) {
+                throw new Error(data.message || "Unable to create PayPal order.");
+            }
+            
+            return data.id;
+        } catch (error) {
+            showPaypalError(error.message);
+            throw error;
+        }
+    }
+
+    function showPaypalError(message) {
+        const errorDiv = document.getElementById("paypalError");
+        if (!errorDiv) return;
+
+        errorDiv.innerHTML = message;
+        errorDiv.style.display = "block";
     }
 
     function getGoogleTransactionInfo(purchaseAmount, countryCode) {
@@ -87,7 +104,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const paymentDataRequest = await getGooglePaymentDataRequest(purchaseAmount, googlePayConfig);
             paymentsClient.loadPaymentData(paymentDataRequest);
         } catch (error) {
-            console.error(`Error processing Google Pay payment: ${error.message}`);
+            showPaypalError(error.message || "Google Pay payment failed.");
+            console.error(error);
         }
     }
 
@@ -101,25 +119,28 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             if (status === "PAYER_ACTION_REQUIRED") {
-                console.warn("3DS Flow Required - additional authentication needed");
+                showPaypalError("Additional authentication is required to complete the payment.");
+                return { transactionState: "ERROR" };
+            } 
+
+            const response = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_capture_order', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id }),
+            });
+
+            const captureResult = await response.json();
+
+            if (captureResult.status === "COMPLETED") {
+                window.location.href = `getOrder.php?order_id=${id}`;
             } else {
-                console.log("Capturing payment...");
-                const response = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_capture_order', {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id }),
-                });
-
-                const captureResult = await response.json();
-
-                if (captureResult.status === "COMPLETED") {
-                    window.location.href = `getOrder.php?order_id=${id}`;
-                }
+                throw new Error("Payment capture failed.");
             }
 
             return { transactionState: "SUCCESS" };
         } catch (err) {
-            console.error(`Payment authorization error: ${err.message}`);
+            showPaypalError(err.message || "Payment authorization failed.");
+            console.error(err);
             return {
                 transactionState: "ERROR",
                 error: { message: err.message },
@@ -163,7 +184,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             gpayButtonContainer.appendChild(button);
         } catch (error) {
-            console.error(`Initialization error: ${error.message}`);
+            showPaypalError(error.statusMessage || "Failed to initialize Google Pay.");
+            console.error(error);
         }
     }
 

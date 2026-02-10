@@ -190,6 +190,15 @@ td.center {
 #paypal_errors {
 	margin-top: 25px;
 }
+.donate-label {
+    font-weight: 400;
+    color: #003087;
+    margin: 6px 0;
+	padding-right: 36px;
+}
+.paypalbtn a:has(.donate-label):hover {
+    text-decoration: none;
+}
 .general_message {
 	margin: 20px 0 20px 0;	
 }

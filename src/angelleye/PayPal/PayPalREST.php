@@ -810,9 +810,15 @@ class PayPalREST extends PayPal
                         "value" => number_format($amt, 2, '.', '')
                     ],
                     "category" =>
-                        (isset($it['itemcategory']) && strtolower($it['itemcategory']) === 'digital')
-                            ? "DIGITAL_GOODS"
-                            : "PHYSICAL_GOODS"
+                        isset($it['itemcategory'])
+                            ? (strtolower($it['itemcategory']) === 'digital'
+                                ? 'DIGITAL_GOODS'
+                                : (strtolower($it['itemcategory']) === 'physical'
+                                    ? 'PHYSICAL_GOODS'
+                                    : $it['itemcategory']
+                                )
+                            )
+                            : ""
                 ];
                 $item_total += ($amt * $qty);
             }
