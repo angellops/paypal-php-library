@@ -181,6 +181,12 @@ td.center {
     display: block;
     margin: 20px 0;
 }
+#paypalError {
+    display: none;
+    color: #D43F3A;
+    margin-top: 20px;
+    text-align: left;
+}
 #paypal_errors {
 	margin-top: 25px;
 }

@@ -32,20 +32,38 @@ class PayPalCommonFunctions
         <!-- PayPal JS SDK v6 Web Core -->
         <script async src="<?php echo $sdk_url; ?>" onload="initPayPalV6()"> </script>
 
+        <div id="paypalError"></div>
         <paypal-button id="paypalBtn" type="pay" hidden></paypal-button>
 
         <script>
             async function initPayPalV6() {
-                const res = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_client_token');
-                const { token } = await res.json();
+                const errorEl = document.getElementById('paypalError');
+                const btnEl   = document.getElementById('paypalBtn');
+                try {
+                    const res = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_client_token');
+                    if (!res.ok) {
+                        throw new Error('Failed to fetch PayPal client token');
+                    }
 
-                await paypal.createInstance({
-                    clientToken: token,
-                    components: ['paypal-payments'],
-                    pageType: 'checkout'
-                });
+                    const data = await res.json();
+                    if (!data.token) {
+                        throw new Error(data.message || 'PayPal client token missing');
+                    }
 
-                document.getElementById('paypalBtn').removeAttribute('hidden');
+                    await paypal.createInstance({
+                        clientToken: data.token,
+                        components: ['paypal-payments'],
+                        pageType: 'checkout'
+                    });
+
+                    btnEl.removeAttribute('hidden');
+                } catch (err) {
+                    console.error('PayPal init error:', err);
+
+                    // show error message
+                    errorEl.textContent = err.message || 'Unable to load PayPal. Please try again.';
+                    errorEl.style.display = 'block';
+                }
             }
         </script>
         <?php 
