@@ -716,14 +716,69 @@ class PayPalREST extends PayPal
     public function DoDirectPayment($paymentData) {
         $paymentsMappedData = [];
 
+        $OrderItems = !empty($paymentData['OrderItems']) ? $paymentData['OrderItems'] : [];
         $PaymentAmount = !empty($paymentData['PaymentDetails']['amt']) ? $paymentData['PaymentDetails']['amt'] : 0.00;
-        $PaymentCurrency = !empty($paymentData['PaymentDetails']['currencycode']) ? $paymentData['PaymentDetails']['currencycode'] : '';
+        $PaymentSubTotal = !empty($_SESSION['shopping_cart']['subtotal']) ? number_format($_SESSION['shopping_cart']['subtotal'], 2) : 0.00;
+        $PaymentShipping = !empty($paymentData['PaymentDetails']['shippingamt']) ? $paymentData['PaymentDetails']['shippingamt'] : 0.00;
+        $PaymentHandling = !empty($paymentData['PaymentDetails']['handlingamt']) ? $paymentData['PaymentDetails']['handlingamt'] : 0.00;
+        $PaymentTax = !empty($paymentData['PaymentDetails']['taxamt']) ? $paymentData['PaymentDetails']['taxamt'] : 0.00;
+        $PaymentCurrency = !empty($paymentData['PaymentDetails']['currencycode']) ? $paymentData['PaymentDetails']['currencycode'] : 'USD';
+        
+        $line_items = [];
+        foreach ($OrderItems as $item) {
+            $line_items[] = [
+                'name' => substr($item['name'], 0, 127),       
+                'sku'  => substr($item['number'], 0, 127),     
+                'unit_amount' => [
+                    'currency_code' => $PaymentCurrency,
+                    'value' => number_format($item['amt'], 2)                    
+                ],
+                'quantity' => (string)$item['qty'],               
+                'category' => 'PHYSICAL_GOODS',
+                'commodity_code' => '86101700',          
+                'tax' => [
+                    'currency_code' => $PaymentCurrency,
+                    'value' => '0.00'
+                ]
+            ];
+        }
+        
         $paymentsMappedData['intent'] = !empty($paymentData['DPFields']['restintent']) ? $paymentData['DPFields']['restintent'] : 'CAPTURE';
         $paymentsMappedData['purchase_units'] = [
             [
+                'reference_id' => 'ORDER-' . strtoupper(uniqid()),
+                'invoice_id' => 'INV-' . strtoupper(uniqid()),
                 'amount' => [
-                    'currency_code' => !empty($paymentData['PaymentDetails']['currencycode']) ? $paymentData['PaymentDetails']['currencycode'] : '',
+                    'currency_code' => $PaymentCurrency,
                     'value' => !empty($paymentData['PaymentDetails']['amt']) ? $paymentData['PaymentDetails']['amt'] : 0.00,
+                    'breakdown' => [
+                        'item_total' => [
+                            'currency_code' => $PaymentCurrency,
+                            'value' => $PaymentSubTotal
+                        ],
+                        'shipping' => [
+                            'currency_code' => $PaymentCurrency,
+                            'value' => $PaymentShipping
+                        ],
+                        'handling' => [
+                            'currency_code' => $PaymentCurrency,
+                            'value' => $PaymentHandling
+                        ],
+                        'tax_total' => [
+                            'currency_code' => $PaymentCurrency,
+                            'value' => $PaymentTax
+                        ]
+                    ]
+                ],
+                'items' => $line_items,
+                'shipping' => [
+                    'address' => [
+                        'address_line_1' => $_SESSION['billing']['street'],
+                        'admin_area_2'   => $_SESSION['billing']['city'],
+                        'admin_area_1'   => $_SESSION['billing']['state'],
+                        'postal_code'    => $_SESSION['billing']['zip'],
+                        'country_code'   => $_SESSION['billing']['countrycode']
+                    ]
                 ]
             ]
         ];
@@ -742,15 +797,20 @@ class PayPalREST extends PayPal
                 'expiry' => $expiry,
                 'security_code' => !empty($paymentData['CCDetails']['cvv2']) ? $paymentData['CCDetails']['cvv2'] : '',
                 'name' => (!empty($paymentData['PayerName']['firstname']) ? $paymentData['PayerName']['firstname'] : '') . ' ' . (!empty($paymentData['PayerName']['lastname']) ? $paymentData['PayerName']['lastname'] : ''),
-                'vault' => [
-                    'store_in_vault' => 'ON_SUCCESS'
-                ],
                 'billing_address' => [
                     'address_line_1' => !empty($paymentData['BillingAddress']['street']) ? $paymentData['BillingAddress']['street'] : '',
                     'admin_area_2' => !empty($paymentData['BillingAddress']['city']) ? $paymentData['BillingAddress']['city'] : '',
                     'admin_area_1' => !empty($paymentData['BillingAddress']['state']) ? $paymentData['BillingAddress']['state'] : '',
                     'postal_code' => !empty($paymentData['BillingAddress']['zip']) ? $paymentData['BillingAddress']['zip'] : '',
                     'country_code' => !empty($paymentData['BillingAddress']['countrycode']) ? $paymentData['BillingAddress']['countrycode'] : ''
+                ],
+                'attributes' => [
+                    'verification' => [
+                        'method' => 'SCA_ALWAYS' // Forces 3DS flow presentation
+                    ]
+                ],
+                'vault' => [
+                    'store_in_vault' => 'ON_SUCCESS'
                 ],
                 'experience_context' => [
                     'payment_method_preference' => 'IMMEDIATE_PAYMENT_REQUIRED',

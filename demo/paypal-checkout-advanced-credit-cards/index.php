@@ -27,8 +27,8 @@ $PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfi
  */
 $_SESSION['card_details'] = array(
 	'creditcardtype' => 'Visa', 		        // Type of credit card.  Visa, MasterCard, Discover, Amex, Maestro, Solo.  If Maestro or Solo, the currency code must be GBP.  In addition, either start date or issue number must be specified.
-	'accountnumber' => '4716392328094345', 		// Credit card number.  No spaces or punctuation.
-	'expiry' => '022026', 			            // Credit card expiration date.  Format is MMYYYY
+	'accountnumber' => '4111111111111111', 		// Credit card number.  No spaces or punctuation.
+	'expiry' => '122026', 			            // Credit card expiration date.  Format is MMYYYY
 	'cvv' => '456', 			                // Requirements determined by your PayPal account settings.  Security digits for credit card.
 );
 
@@ -143,6 +143,12 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                     <?php } ?>
                     <h2 class="main-title"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
                     <p class="main-info">Accept credit and debit card payments directly on your site using PayPal Checkout Advanced Credit Cards and REST APIs.</p>
+                    <div class="demo-cred">
+                        <h2>Demo Credentials</h2>
+                        <p>Card Number: <?php echo $_SESSION['card_details']['accountnumber']; ?></p>
+                        <p>Card Expiry: <?php echo $_SESSION['card_details']['expiry']; ?></p>
+                        <p>Card CVV: <?php echo $_SESSION['card_details']['cvv']; ?></p>
+                    </div>
                     <table class="table table-items">
                         <thead>
                             <tr>
