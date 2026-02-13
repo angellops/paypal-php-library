@@ -181,6 +181,15 @@ td.center {
     display: block;
     margin: 20px 0;
 }
+.paypalbtn.vaulting-btns {
+    padding-top: 16px !important;
+}
+.paypalbtn.vaulting-btns a {
+    margin: 10px 0;
+}
+.paypalbtn a:hover {
+    text-decoration: none;
+}
 #paypalError {
     display: none;
     color: #D43F3A;

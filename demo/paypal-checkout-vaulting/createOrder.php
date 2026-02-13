@@ -15,6 +15,7 @@ $PayPalConfig = array(
     'PayPalAPIUpgrade' => $api_upgrade,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
+    'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
@@ -46,9 +47,17 @@ $orderPayload = [
             ]
         ]
     ],
+    'customer' => [
+        'id' => $_SESSION['paypal_customer_id']
+    ],
     'payment_source' => [
         'paypal' => [
-            'vault_id' => $_SESSION['paypal_vault_token']
+            'vault_id' => $_SESSION['paypal_vault_token'],
+            'stored_credential' => [
+                'payment_initiator' => 'MERCHANT',
+                'payment_type' => 'RECURRING',
+                'usage' => 'SUBSEQUENT'
+            ]
         ]
     ]
 ];
@@ -61,7 +70,7 @@ $paypalRequestId = uniqid('pprid_', true);
 /**
  * Create PayPal order
  */
-$PayPalResult = $PayPal->createOrder($orderPayload, $paypalRequestId);
+$PayPalResult = $PayPal->createOrder($orderPayload, $paypalRequestId, true);
 
 /**
  * Handle PayPal response

@@ -19,7 +19,7 @@ class PayPalCommonFunctions
     /**
      * Render the PayPal payment button
      */
-    public function renderPayPalButton()
+    public function renderPayPalButton($enableVenmo = false)
     {
         if ($this->config['PayPalAPIMode'] !== 'rest') {
             echo '<img src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif">';
@@ -33,12 +33,19 @@ class PayPalCommonFunctions
         <script async src="<?php echo $sdk_url; ?>" onload="initPayPalV6()"> </script>
 
         <div id="paypalError"></div>
-        <paypal-button id="paypalBtn" type="pay" hidden></paypal-button>
+        <?php if ($enableVenmo && $this->config['PayPalAPIMode'] === 'rest'): ?><a href="./SetExpressCheckout.php?paywith=paypal"><?php endif; ?>
+            <paypal-button id="paypalBtn" type="pay" hidden></paypal-button>
+        <?php if ($enableVenmo && $this->config['PayPalAPIMode'] === 'rest'): ?></a><?php endif; ?>
+
+        <?php if ($enableVenmo): ?>
+            <a href="./SetExpressCheckout.php?paywith=venmo"><venmo-button id="venmoBtn" type="pay" hidden></venmo-button></a>
+        <?php endif; ?>
 
         <script>
             async function initPayPalV6() {
                 const errorEl = document.getElementById('paypalError');
                 const btnEl   = document.getElementById('paypalBtn');
+                const venmoEl = document.getElementById('venmoBtn');
                 try {
                     const res = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_client_token');
                     if (!res.ok) {
@@ -52,11 +59,12 @@ class PayPalCommonFunctions
 
                     await paypal.createInstance({
                         clientToken: data.token,
-                        components: ['paypal-payments'],
+                        components: ['paypal-payments', 'venmo-payments'],
                         pageType: 'checkout'
                     });
 
                     btnEl.removeAttribute('hidden');
+                    if (venmoEl) venmoEl.removeAttribute('hidden');
                 } catch (err) {
                     console.error('PayPal init error:', err);
 

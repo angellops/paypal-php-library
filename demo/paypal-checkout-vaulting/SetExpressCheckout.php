@@ -18,8 +18,9 @@ $PayPalConfig = array(
 	'APISignature' => $api_signature,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
-	'PrintHeaders' => $print_headers, 
-	'LogResults' => $log_results, 
+	'MerchantID' => $rest_merchant_id,
+	'PrintHeaders' => $print_headers,
+	'LogResults' => $log_results,
 	'LogPath' => $log_path,
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
@@ -118,6 +119,7 @@ if( $api_mode === 'classic' ) {
 
 	if( $PayPalResult['success'] ) {
 		$_SESSION['paypal_setup_token'] = isset($PayPalResult['setup_token']) ? $PayPalResult['setup_token'] : '';
+		$_SESSION['paypal_customer_id'] = isset($PayPalResult['customer_id']) ? $PayPalResult['customer_id'] : '';
 		header('Location: ' . $PayPalResult['approval_url']);
 	}
 } else

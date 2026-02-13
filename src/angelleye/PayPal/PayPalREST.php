@@ -57,8 +57,8 @@ class PayPalREST extends PayPal
     /**
      * Get standard headers for API requests
      */
-    private function getHeaders($includeAuth = true, $contentType = 'application/json', $requestId = null, $isInvoiceRequest = false)
-    {;
+    private function getHeaders($includeAuth = true, $contentType = 'application/json', $requestId = null, $isInvoiceRequest = false, $includeAuthAssertion = true)
+    {
         $headers = [
             'Content-Type: ' . $contentType,
             'Accept: application/json',
@@ -72,6 +72,10 @@ class PayPalREST extends PayPal
 
         if (!empty($requestId)) {
             $headers[] = 'PayPal-Request-Id: ' . $requestId;
+        }
+
+        if ($includeAuthAssertion) {
+            $headers[] = 'PayPal-Auth-Assertion: ' . $this->paypalAuthAssertion();
         }
 
         if ($isInvoiceRequest) {
@@ -148,9 +152,9 @@ class PayPalREST extends PayPal
     /**
      * Make authenticated REST API request
      */
-    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null, $isInvoiceRequest = false)
+    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null, $isInvoiceRequest = false, $includeAuth = false)
     {
-        $headers = $this->getHeaders(true, 'application/json', $requestId, $isInvoiceRequest);
+        $headers = $this->getHeaders(true, 'application/json', $requestId, $isInvoiceRequest, $includeAuth);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->base_url . $endpoint);
@@ -172,6 +176,25 @@ class PayPalREST extends PayPal
             'body' => json_decode($response, true),
             'raw_response' => $response
         ];
+    }
+
+    /**
+     * Generate a PayPal-Auth-Assertion token.
+     *
+     * @access  public
+     * @return  string  A dot-separated JWT string containing the header and payload.
+     */
+    public function paypalAuthAssertion() {
+        $temp = array(
+            "alg" => "none"
+        );
+        $returnData = base64_encode(json_encode($temp)) . '.';
+        $temp = array(
+            "iss" => $this->client_id,
+            "payer_id" => $this->merchant_id
+        );
+        $returnData .= base64_encode(json_encode($temp)) . '.';
+        return $returnData;
     }
 
     /**
@@ -451,10 +474,10 @@ class PayPalREST extends PayPal
     /**
      * Create an order (replaces SetExpressCheckout)
      */
-    public function createOrder($orderData, $paypalRequestId = null)
+    public function createOrder($orderData, $paypalRequestId = null, $includeAuth = false)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId);
+            $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId, false, $includeAuth);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -719,6 +742,9 @@ class PayPalREST extends PayPal
                 'expiry' => $expiry,
                 'security_code' => !empty($paymentData['CCDetails']['cvv2']) ? $paymentData['CCDetails']['cvv2'] : '',
                 'name' => (!empty($paymentData['PayerName']['firstname']) ? $paymentData['PayerName']['firstname'] : '') . ' ' . (!empty($paymentData['PayerName']['lastname']) ? $paymentData['PayerName']['lastname'] : ''),
+                'vault' => [
+                    'store_in_vault' => 'ON_SUCCESS'
+                ],
                 'billing_address' => [
                     'address_line_1' => !empty($paymentData['BillingAddress']['street']) ? $paymentData['BillingAddress']['street'] : '',
                     'admin_area_2' => !empty($paymentData['BillingAddress']['city']) ? $paymentData['BillingAddress']['city'] : '',
@@ -1574,7 +1600,7 @@ class PayPalREST extends PayPal
                 ]
             ];
 
-            $response = $this->makeRequest('/v3/vault/setup-tokens', 'POST', $payloadData);
+            $response = $this->makeRequest('/v3/vault/setup-tokens', 'POST', $payloadData, null, false, true);
 
             // Log Response
             $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
@@ -1583,6 +1609,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'setup_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                    'customer_id' => isset($response['body']['customer']['id']) ? $response['body']['customer']['id'] : '',
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'approval_url' => $this->getApprovalUrl($response['body']['links']),
                     'full_response' => $response['body'],
@@ -1617,7 +1644,7 @@ class PayPalREST extends PayPal
      */
     public function getVaultSetupTokenDetails($setupToken) {
         try {
-            $response = $this->makeRequest('/v3/vault/setup-tokens/' . urlencode($setupToken), 'GET');
+            $response = $this->makeRequest('/v3/vault/setup-tokens/' . urlencode($setupToken), 'GET', null, null, false, true);
 
             // Log Response
             $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
@@ -1662,7 +1689,7 @@ class PayPalREST extends PayPal
             $vaultPaymentData = ( !empty($DataArray) && $DataArray['vault_payment_data'] ) ? $DataArray['vault_payment_data'] : [];
             $paypalRequestId = uniqid('pprid_', true);
 
-            $response = $this->makeRequest('/v3/vault/payment-tokens', 'POST', $vaultPaymentData, $paypalRequestId);
+            $response = $this->makeRequest('/v3/vault/payment-tokens', 'POST', $vaultPaymentData, $paypalRequestId, false, true);
 
             // Log Response
             $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);

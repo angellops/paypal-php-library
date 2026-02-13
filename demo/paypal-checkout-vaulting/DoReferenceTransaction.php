@@ -18,8 +18,9 @@ $PayPalConfig = array(
 	'APISignature' => $api_signature,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
-	'PrintHeaders' => $print_headers, 
-	'LogResults' => $log_results, 
+	'MerchantID' => $rest_merchant_id,
+	'PrintHeaders' => $print_headers,
+	'LogResults' => $log_results,
 	'LogPath' => $log_path,
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);

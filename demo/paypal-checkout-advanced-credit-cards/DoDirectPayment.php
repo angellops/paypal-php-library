@@ -13,7 +13,8 @@ $PayPalConfig = array(
 	'LogPath' => $log_path,
 	'PayPalAPIUpgrade' => $api_upgrade,
     'ClientID' => $rest_client_id,
-    'ClientSecret' => $rest_client_secret
+    'ClientSecret' => $rest_client_secret,
+    'MerchantID' => $rest_merchant_id
 );
 
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);

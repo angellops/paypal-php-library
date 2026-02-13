@@ -15,6 +15,7 @@ $PayPalConfig = array(
 	'APISignature' => $api_signature,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
+	'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
