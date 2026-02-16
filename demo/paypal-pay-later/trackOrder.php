@@ -1,0 +1,61 @@
+<?php
+/**
+ * Include our config file and the PayPal library.
+ */
+require_once('../../includes/config.php');
+require_once('../../vendor/autoload.php');
+
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
+
+/**
+ * Setup configuration for the PayPal library using vars from the config file.
+ * Then load the PayPal object into $PayPal
+ */
+$PayPalConfig = array(
+	'Sandbox' => $sandbox,
+	'PayPalAPIMode' => $api_mode,
+    'PayPalAPIUpgrade' => $api_upgrade,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
+	'PrintHeaders' => $print_headers, 
+	'LogResults' => $log_results, 
+	'LogPath' => $log_path,
+);
+$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
+
+$items = [];
+foreach ($_SESSION['shopping_cart']['items'] as $id => $item) {
+    $items[] = [
+        'name' => $item['name'],
+        'quantity' => $item['qty'],
+    ];
+}
+
+$trackingPayload = [
+    'capture_id' => $_SESSION['paypal_transaction_id'],
+    'tracking_number' => '443844607820',
+    'status' => 'SHIPPED',
+    'carrier' => 'OTHER', // Examples: FEDEX, DHL, USPS, UPS
+    'carrier_name_other' => 'In-Store Pickup / Local Delivery', // Use if carrier is 'OTHER'
+    'notify_payer' => false,
+    'items' => $items
+];
+
+$PayPalTrackData = [
+    'OrderID' => $_SESSION['paypal_token'],
+    'TrackData' => $trackingPayload
+];
+
+$PayPalResult = $PayPal->trackOrder($PayPalTrackData);
+
+if( $PayPalResult['success'] ) {
+    $_SESSION['paypal_tracking_status'] = $PayPalResult['tracking_status'];
+    $_SESSION['paypal_tracking_ids'] = $PayPalResult['tracking_ids'];
+    header('Location: order-tracking.php');
+} else {
+    $_SESSION['paypal_errors'] = $PayPalResult['error'];
+    header('Location: ../error.php');
+}

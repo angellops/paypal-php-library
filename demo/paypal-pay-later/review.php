@@ -136,7 +136,10 @@ if ($api_mode === 'classic') {
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="button-center" colspan="2"><a href="captureOrder.php" class="btn btn-success btn-lg" role="button">Complete Order</a></td>
+                    <td class="button-center" colspan="2">
+                      <a href="updateOrder.php" class="btn btn-success btn-lg" style="margin-right: 8px;" role="button">Update Order</a>
+                      <a href="captureOrder.php" class="btn btn-success btn-lg" role="button">Complete Order</a>
+                    </td>
                   </tr>
                 </tbody>
               </table>

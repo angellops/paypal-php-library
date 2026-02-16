@@ -30,18 +30,17 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
  * Build PayPal items array from shopping cart session
  */
 $items = [];
+$currency = 'USD';
 foreach ($_SESSION['shopping_cart']['items'] as $id => $item) {
     $items[] = [
         'name' => $item['name'],
         'unit_amount' => [
-            'currency_code' => 'USD',
+            'currency_code' => $currency,
             'value' => number_format($item['price'], 2, '.', '')
         ],
         'quantity' => (string) $item['qty']
     ];
 }
-
-$currency = 'USD';
 
 /**
  * Amount breakdown required for Pay Later and order validation
@@ -65,6 +64,8 @@ $breakdown = [
     ]
 ];
 
+$_SESSION['reference_id'] = uniqid('ORDER-');
+
 /**
  * Create PayPal order payload
  */
@@ -75,19 +76,38 @@ $orderPayload = [
     ],
     'purchase_units' => [
         [
+            'reference_id' => $_SESSION['reference_id'],
+            'invoice_id'   => uniqid('INV-'),
             'amount' => [
                 'currency_code' => $currency,
                 'value' => number_format($_SESSION['shopping_cart']['grand_total'], 2, '.', ''),
                 'breakdown' => $breakdown
             ],
-            'items' => $items
+            'items' => $items,
+            'shipping' => [
+                'name' => [
+                    'full_name' => $_SESSION['payer']['firstname'] . ' ' . $_SESSION['payer']['lastname']
+                ],
+                'address' => [
+                    'address_line_1' => $_SESSION['billing']['street'],
+                    'admin_area_2'   => $_SESSION['billing']['city'],
+                    'admin_area_1'   => $_SESSION['billing']['state'],
+                    'postal_code'    => $_SESSION['billing']['zip'],
+                    'country_code'   => $_SESSION['billing']['countrycode']
+                ],
+                'email_address' => $_SESSION['payer']['email']
+            ]
         ]
     ],
-    'application_context' => [
-        'return_url' => $domain . 'demo/paypal-pay-later/getOrder.php',
-        'cancel_url' => $domain . 'demo/paypal-pay-later/',
-        'shipping_preference' => 'GET_FROM_FILE',
-        'user_action' => 'PAY_NOW'
+    'payment_source' => [
+        'paypal' => [
+            'experience_context' => [
+                'return_url' => $domain . 'demo/paypal-pay-later/getOrder.php',
+                'cancel_url' => $domain . 'demo/paypal-pay-later/',
+                'shipping_preference' => 'SET_PROVIDED_ADDRESS',
+                'user_action' => 'PAY_NOW',
+            ]
+        ]
     ]
 ];
 

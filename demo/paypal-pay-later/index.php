@@ -1,6 +1,29 @@
 <?php
 require_once('../../includes/config.php');
 require_once('../../vendor/autoload.php');
+
+/**
+ * Payer Personal Information
+ * Cardholder / customer name details
+ */
+$_SESSION['payer'] = array(
+	'firstname' => 'John', 		// Payer's first name
+	'lastname' => 'Doe', 		// Payer's last name
+  'email' => 'sandbox@angelleye.com', // Payer's email address
+  'phonenumber' => '',   // Payer's phone number
+);
+	
+/**
+ * Billing Address Details
+ */
+$_SESSION['billing'] = array(
+	'street' => '707 W. Bay Drive', 	// Required.  First street address.
+	'city' => 'Largo', 			// Required.  Name of City.
+	'state' => 'FL', 			// Required. Name of State or Province.
+	'countrycode' => 'US', 			// Required.  Country code.
+	'zip' => '33770', 			// Required.  Postal code of payer.
+);
+
 ?>
 
 <html lang="en">

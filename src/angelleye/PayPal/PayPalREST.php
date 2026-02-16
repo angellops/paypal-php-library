@@ -479,7 +479,7 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId, false, $includeAuth);
 
-            if ($response['status_code'] === 201) {
+            if( in_array($response['status_code'], [201, 200]) ) {
                 return [
                     'success' => true,
                     'order_id' => $response['body']['id'],
@@ -673,12 +673,83 @@ class PayPalREST extends PayPal
     }
 
     /**
+     * Patch Order
+     */
+    public function patchOrder($DataArray) {
+        try {
+            $orderId = isset($DataArray['OrderID']) ? $DataArray['OrderID'] : '';
+            $updateData = isset($DataArray['UpdateData']) ? $DataArray['UpdateData'] : [];
+
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'PATCH', $updateData);
+
+            if (in_array($response['status_code'], [200, 204])) {
+                return [
+                    'success' => true,
+                    'message' => 'Order updated successfully'
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'error' => 'Failed to update order details',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => $response['body'],
+                'raw_response' => $response['raw_response']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function trackOrder($DataArray) {
+        try {
+            $orderId = isset($DataArray['OrderID']) ? $DataArray['OrderID'] : '';
+            $trackData = isset($DataArray['TrackData']) ? $DataArray['TrackData'] : [];
+
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/track', 'POST', $trackData);
+
+            $purchase_units = $response['body']['purchase_units'][0] ? $response['body']['purchase_units'][0] : [];
+            $shipping_trackers = $purchase_units['shipping']['trackers'] ? $purchase_units['shipping']['trackers'] : [];
+            $tracking_ids_array = !empty($shipping_trackers) ? array_column($shipping_trackers, 'id') : [];
+            $tracking_status_array = !empty($shipping_trackers) ? array_column($shipping_trackers, 'status') : [];
+            $tracking_ids_string = !empty($tracking_ids_array) ? implode(', ', $tracking_ids_array) : '';
+            $tracking_status_string = !empty($tracking_status_array) ? implode(', ', $tracking_status_array) : '';
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ? $response['body']['status'] : $response['status_code'],
+                    'tracking_ids' => $tracking_ids_string,
+                    'tracking_status' => $tracking_status_string,
+                    'full_response' => $response['body']
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'error' => 'Failed to track order details',
+                'status_code' => $response['body']['status'] ?? $response['status_code'],
+                'details' => $response['body'],
+                'raw_response' => $response['raw_response']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Helper method to extract approval URL from links
      */
     private function getApprovalUrl($links)
     {
         foreach ($links as $link) {
-            if ($link['rel'] === 'approve') {
+            if ($link['rel'] === 'approve' || $link['rel'] === 'payer-action') {
                 return $link['href'];
             }
         }

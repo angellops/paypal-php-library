@@ -58,8 +58,17 @@ if ($api_mode === 'classic') {
               </div>
             </div>
           </div>
-          <h2 class="main-title">Payment Complete!</h2>
-          <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed! We have added the PayPal transaction IDs (one for each transaction in the Parallel Payment split) to the Billing Information, which was provided in the <strong>captureOrder</strong> response.</p>
+          <h2 class="main-title">Order Tracking</h2>
+          <p class="main-info main-center">Stay updated on your journey—monitor your shipment's progress from our warehouse to your doorstep in real-time.</p>
+          <div class="shipping-tracker-progress-bar-wrapper">
+            <ol class="progress-tracker" data-progress-tracker-steps="5">
+              <li class="progress-tracker-done">Dispatching</li>
+              <li class="progress-tracker-done">Dispatched</li>
+              <li class="progress-tracker-todo">In Transit</li>
+              <li class="progress-tracker-todo">Out For Delivery</li>
+              <li class="progress-tracker-todo">Delivered</li>
+            </ol>
+          </div>
           <table class="table table-items table-bordered">
             <thead>
               <tr>
@@ -112,7 +121,13 @@ if ($api_mode === 'classic') {
                   echo $_SESSION['shipping_name'] . '<br />' .
                   $_SESSION['shipping_street'] . '<br />' .
                   $_SESSION['shipping_city'] . ', ' . $_SESSION['shipping_state'] . '  ' . $_SESSION['shipping_zip'] . '<br />' . 
-                  $_SESSION['shipping_country_name']; 
+                  $_SESSION['shipping_country_name'] . '</br></br>'; 
+                  if (isset($_SESSION['paypal_tracking_ids'])) {
+                    echo '<strong>PayPal Tracking IDs: </strong>' . $_SESSION['paypal_tracking_ids'] . '<br />';
+                  }
+                  if (isset($_SESSION['paypal_tracking_status'])) {
+                    echo '<strong>PayPal Tracking Status: </strong>' . $_SESSION['paypal_tracking_status'] . '<br />';
+                  }
                 ?>
               </p>
             </div>
@@ -140,9 +155,7 @@ if ($api_mode === 'classic') {
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="button-center" colspan="2">
-                      <a href="trackOrder.php" class="btn btn-success btn-lg" role="button">Track Order</a>
-                    </td>
+                    <td colspan="2"></td>
                   </tr>
                 </tbody>
               </table>
@@ -153,3 +166,6 @@ if ($api_mode === 'classic') {
     </div>
   </body>
 </html>
+<?php
+session_destroy();
+?>
