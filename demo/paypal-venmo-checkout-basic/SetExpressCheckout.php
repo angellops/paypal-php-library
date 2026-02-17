@@ -32,6 +32,9 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 // Determine payment type
 $paymentType = ( !empty($_GET) && !empty($_GET['paywith']) && $_GET['paywith'] === 'venmo' ) ? 'venmo' : 'paypal';
 
+// Store payment type in session
+$_SESSION['payment_type'] = $paymentType;
+
 // Map items from session
 $purchase_items = [];
 foreach ($_SESSION['items'] as $item) {
