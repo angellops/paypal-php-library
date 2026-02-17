@@ -1,8 +1,8 @@
 <?php
 
-// Redirect to Pay Later Product Page if API mode is classic
 if ($api_mode === 'classic') {
   header('Location: ./');
+  exit;
 }
 
 header('Content-Type: application/json');
@@ -11,20 +11,39 @@ header('Content-Type: application/json');
 $raw_input = file_get_contents('php://input');
 $data = json_decode($raw_input, true);
 
+// Basic validation
+if (!$data || !isset($data['purchase_units'][0])) {
+    http_response_code(422);
+    echo json_encode([
+        "error" => "Invalid request payload"
+    ]);
+    exit;
+}
+
 // Extract item total safely
 $item_total = isset($data['purchase_units'][0]['amount']['breakdown']['item_total']['value'])
     ? (float)$data['purchase_units'][0]['amount']['breakdown']['item_total']['value']
     : 0.00;
 
-// Your updated costs
+// Example: Reject if total is 0
+if ($item_total <= 0) {
+    http_response_code(422);
+    echo json_encode([
+        "error" => "Invalid item total"
+    ]);
+    exit;
+}
+
+// Costs
 $shipping_cost = 12.00;
 $handling_fee  = 4.50;
 $tax_total     = 3.50;
 
-// Calculate new grand total
 $grand_total = $item_total + $shipping_cost + $handling_fee + $tax_total;
 
-// Build response
+// SUCCESS → 200
+http_response_code(200);
+
 $response = [
     "purchase_units" => [[
         "amount" => [
@@ -49,8 +68,6 @@ $response = [
                 ]
             ]
         ],
-
-        // IMPORTANT: Shipping options required
         "shipping" => [
             "options" => [[
                 "id" => "SHIP_1",
