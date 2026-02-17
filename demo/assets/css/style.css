@@ -6,12 +6,20 @@
     align-items: center;
     margin: 10px 0;
 }
+@media (max-width: 600px) {
+    #header {
+        justify-content: space-between;
+    }
+}
 #header .column {
     padding: 0;
 }
 #angelleye_logo img,
 #paypal_partner_logo img {
     width: 240px;
+    @media (max-width: 600px) {
+        width: 140px;
+    }
 }
 #paypal_partner_logo {
     float: right;

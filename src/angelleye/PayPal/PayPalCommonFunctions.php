@@ -38,7 +38,7 @@ class PayPalCommonFunctions
         <?php if ($enableVenmo && $this->config['PayPalAPIMode'] === 'rest'): ?></a><?php endif; ?>
 
         <?php if ($enableVenmo): ?>
-            <a href="./SetExpressCheckout.php?paywith=venmo"><venmo-button id="venmoBtn" type="pay" hidden></venmo-button></a>
+            <venmo-button id="venmoBtn" type="pay" hidden></venmo-button>
         <?php endif; ?>
 
         <script>
