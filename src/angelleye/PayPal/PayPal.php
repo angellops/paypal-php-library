@@ -41,14 +41,17 @@ namespace angelleye\PayPal;
  */
 class PayPal
 {
+    public $mapper;
+
     var $APIUsername = '';
     var $APIPassword = '';
     var $APISignature = '';
     var $APISubject = '';
     var $APIVersion = '';
-    var $APIButtonSource = '';
     var $APIMode = '';
     var $EndPointURL = '';
+    var $PayPalAPIMode = '';
+    var $PayPalAPIUpgrade = false;
     var $Sandbox = '';
     var $PathToCertKeyPEM = '';
     var $SSL = '';
@@ -57,7 +60,9 @@ class PayPal
     var $LogPath = '';
     private string $api_url;
     private string $api_key;
-/**
+    private bool $use_mapper = false;
+
+    /**
      * @var array|string[]
      */
     private array $allow_method;
@@ -67,6 +72,8 @@ class PayPal
     protected array $AVSCodes;
     protected array $CVV2Codes;
     protected array $CurrencyCodes;
+    protected string $ButtonSource = 'AngellEYELLC_SI';
+
 /**
      * Constructor
      *
@@ -84,13 +91,14 @@ class PayPal
 
         $this->APIVersion = isset($DataArray['APIVersion']) ? $DataArray['APIVersion'] : '204.0';
         $this->APIMode = isset($DataArray['APIMode']) ? $DataArray['APIMode'] : 'Signature';
-        $this->APIButtonSource = 'AngellEYELLC_Ecom_PHPCatalog';
         $this->PathToCertKeyPEM = '/path/to/cert/pem.txt';
         $this->SSL = isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443' ? true : false;
         $this->APISubject = isset($DataArray['APISubject']) ? $DataArray['APISubject'] : '';
+        $this->PayPalAPIMode = isset($DataArray['PayPalAPIMode']) ? $DataArray['PayPalAPIMode'] : 'classic';
+        $this->PayPalAPIUpgrade = isset($DataArray['PayPalAPIUpgrade']) ? $DataArray['PayPalAPIUpgrade'] : false;
         $this->PrintHeaders = isset($DataArray['PrintHeaders']) ? $DataArray['PrintHeaders'] : false;
         $this->LogResults = isset($DataArray['LogResults']) ? $DataArray['LogResults'] : false;
-        $this->LogPath = isset($DataArray['LogPath']) ? $DataArray['LogPath'] : '/logs/';
+        $this->LogPath = isset($DataArray['LogPath']) ? $DataArray['LogPath'] : $_SERVER['DOCUMENT_ROOT'].'/logs/';
         $this->api_url = 'https://gtctgyk7fh.execute-api.us-east-2.amazonaws.com/default/PayPalPaymentsTracker';
         $this->api_key = 'srGiuJFpDO4W7YCDXF56g2c9nT1JhlURVGqYD7oa';
         $this->allow_method = array('DoExpressCheckoutPayment', 'DoDirectPayment', 'DoCapture', 'ProcessTransaction', 'PayPal_Rest');
@@ -111,8 +119,15 @@ class PayPal
             $this->EndPointURL = isset($DataArray['EndPointURL']) && $DataArray['EndPointURL'] != ''  ? $DataArray['EndPointURL'] : 'https://api-3t.paypal.com/nvp';
         }
 
+        if ($this->PayPalAPIUpgrade && !($this instanceof PayPalREST) && !($this instanceof PayPalMapper)) {
+            $this->use_mapper = true;
+
+            require_once __DIR__ . '/PayPalMapper.php';
+            $this->mapper = new PayPalMapper($DataArray);
+        }
+
         // Create the NVP credentials string which is required in all calls.
-        $this->NVPCredentials = 'USER=' . $this->APIUsername . '&PWD=' . $this->APIPassword . '&VERSION=' . $this->APIVersion . '&BUTTONSOURCE=' . $this->APIButtonSource;
+        $this->NVPCredentials = 'USER=' . $this->APIUsername . '&PWD=' . $this->APIPassword . '&VERSION=' . $this->APIVersion . '&BUTTONSOURCE=' . $this->ButtonSource;
         $this->NVPCredentials .= $this->APISubject != '' ? '&SUBJECT=' . $this->APISubject : '';
         $this->NVPCredentials .= $this->APIMode == 'Signature' ? '&SIGNATURE=' . $this->APISignature : '';
 
@@ -968,14 +983,35 @@ class PayPal
      */
     function Logger($log_path, $filename, $string_data)
     {
-
         if ($this->LogResults) {
-            $timestamp = strtotime('now');
-            $timestamp = date('mdY_gi_s_A_', $timestamp);
-            $string_data_array = $this->NVPToArray($string_data);
-            $file = $log_path . $timestamp . $filename . '.txt';
+            $apimode = $this->PayPalAPIMode;
+            $apiupgrade = $this->PayPalAPIUpgrade;
+
+            // Create classic folder path
+            $path_to_logged = rtrim($log_path, '/') . '/'. $apimode .'/';
+
+            // Create folder if it doesn't exist
+            if (!is_dir($path_to_logged)) {
+                mkdir($path_to_logged, 0755, true);
+            }
+
+            $timestamp = date('mdY_gi_s_A_');
+            $file = $path_to_logged . $timestamp . $filename . '.txt';
+
+            // Determine output data format
+            if ($apimode && strtolower($apimode) === 'rest') {
+                $output_data = print_r($string_data, true);
+            } else {
+                if($apiupgrade) {
+                    $output_data = print_r($string_data, true);
+                } else {
+                    $string_data_array = $this->NVPToArray($string_data);
+                    $output_data = $string_data . chr(13) . chr(13) . print_r($string_data_array, true);
+                }
+            }
+
             $fh = fopen($file, 'w');
-            fwrite($fh, $string_data . chr(13) . chr(13) . print_r($string_data_array, true));
+            fwrite($fh, $output_data);
             fclose($fh);
         }
 
@@ -1866,6 +1902,13 @@ class PayPal
         return $NVPResponseArray;
     }
 
+    // Inside class PayPal
+    function ValidateMode($requiredMode) {
+        if ($this->PayPalAPIMode !== $requiredMode) {
+            throw new \Exception("Invalid API Call: This method requires '{$requiredMode}' mode, but current mode is '{$this->PayPalAPIMode}'.");
+        }
+    }
+
     /**
      * Process a payment from a buyer's account, which is identified by a previous transaction.
      *
@@ -1956,6 +1999,10 @@ class PayPal
      */
     function GetBalance($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->GetBalanceMapper();
+        }
+
         $GBFieldsNVP = '&METHOD=GetBalance';
 
         // GetBalance Fields
@@ -2890,7 +2937,7 @@ class PayPal
 
         $n = 0;
         $BMButtonVars = isset($DataArray['BMButtonVars']) ? $DataArray['BMButtonVars'] : array();
-        $BMButtonVars['bn'] = $this->APIButtonSource;
+        $BMButtonVars['bn'] = $this->ButtonSource;
         foreach ($BMButtonVars as $BMButtonVarName => $BMButtonVarValue) {
             $BMCreateButtonNVP .= $BMButtonVarValue != '' ? "&L_BUTTONVAR" . $n . "=" . urlencode($BMButtonVarName . "=" . $BMButtonVarValue) : "";
             if ($BMButtonVarValue != '') {
@@ -2949,7 +2996,7 @@ class PayPal
 
         $n = 0;
         $BMButtonVars = isset($DataArray['BMButtonVars']) ? $DataArray['BMButtonVars'] : array();
-        $BMButtonVars['bn'] = $this->APIButtonSource;
+        $BMButtonVars['bn'] = $this->ButtonSource;
         foreach ($BMButtonVars as $BMButtonVarName => $BMButtonVarValue) {
             $BMUpdateButtonNVP .= $BMButtonVarValue != '' ? "&L_BUTTONVAR" . $n . "=" . urlencode($BMButtonVarName . "=" . $BMButtonVarValue) : "";
             if ($BMButtonVarValue != '') {

@@ -21,9 +21,7 @@ class PayPalREST extends PayPal
         parent::__construct($config);
 
         // Override base URL for REST API endpoints
-        $this->base_url = $this->Sandbox
-            ? 'https://api-m.sandbox.paypal.com'
-            : 'https://api-m.paypal.com';
+        $this->base_url = $this->Sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
 
         // Set REST-specific credentials
         $this->client_id = isset($config['ClientID']) ? $config['ClientID'] : '';
@@ -51,9 +49,9 @@ class PayPalREST extends PayPal
     private function getHeaders($includeAuth = true, $contentType = 'application/json')
     {
         $headers = [
-        'Content-Type: ' . $contentType,
-        'Accept: application/json',
-        'Partner-Attribution-Id: AngellEYELLC_Ecom_PHPCatalog'
+            'Content-Type: ' . $contentType,
+            'Accept: application/json',
+            'PayPal-Partner-Attribution-Id: ' . $this->ButtonSource
         ];
 
         if ($includeAuth) {
@@ -75,7 +73,7 @@ class PayPalREST extends PayPal
             'Authorization: Basic ' . $auth,
             'Content-Type: application/x-www-form-urlencoded',
             'Accept: application/json',
-            'Partner-Attribution-Id: AngellEYELLC_Ecom_PHPCatalog'
+            'PayPal-Partner-Attribution-Id: ' . $this->ButtonSource
         ];
     }
 
@@ -328,6 +326,50 @@ class PayPalREST extends PayPal
             }
         }
         return null;
+    }
+    
+    /**
+     * Obtain the available balance for a PayPal account.
+     *
+     * @access  public
+     * @return  mixed[] Returns an array structure of the PayPal HTTP response params as well as parsed balance results, errors and the raw request/response.
+     */
+    function getBalances()
+    {
+        try {
+            $response = $this->makeRequest('/v1/reporting/balances');
+
+            if (in_array($response['status_code'], [200, 201])) {
+                $body = $response['body'];
+
+                // call logger
+                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+                // Normal REST-style response
+                return [
+                    'success' => true,
+                    'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $body,
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            // call logger
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 
     /**
