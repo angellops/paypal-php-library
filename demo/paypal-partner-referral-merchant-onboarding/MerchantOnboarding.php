@@ -78,7 +78,8 @@ $PayPalRequestData = [
         'granted' => true                                   // Consent must be explicitly granted for onboarding to succeed.
     ]],
     'partner_config_override' => [
-        'return_url' => $domain . 'demo/paypal-partner-referral-merchant-onboarding/verifyMerchantOnboarding.php?onbaording=true',        // Required. URL where the merchant is redirected after completing onboarding on PayPal.
+        //'return_url' => $domain . 'demo/paypal-partner-referral-merchant-onboarding/verifyMerchantOnboarding.php?onbaording=true',        // Required. URL where the merchant is redirected after completing onboarding on PayPal.
+        'return_url' => 'https://angellops.com/',        // Required. URL where the merchant is redirected after completing onboarding on PayPal.
         'return_url_description' => 'Return after onboarding'                                                       // Description shown to the merchant during the onboarding flow.
     ]
 ];

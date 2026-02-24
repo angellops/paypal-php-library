@@ -102,12 +102,7 @@ require_once('../../includes/config.php');
                         <div class="col-md-4 column">
                             <p><strong>Shipping Information</strong></p>
                             <p>
-                                <?php
-                                    echo $_SESSION['shipping_name'] . '<br />' .
-                                    $_SESSION['shipping_street'] . '<br />' .
-                                    $_SESSION['shipping_city'] . ', ' . $_SESSION['shipping_state'] . '  ' . $_SESSION['shipping_zip'] . '<br />' .
-                                    $_SESSION['shipping_country_name'];
-                                ?>
+                                No Shipping Information Available.
                             </p>
                         </div>
                         <div class="col-md-4 column">

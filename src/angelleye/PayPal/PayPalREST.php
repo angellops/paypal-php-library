@@ -1034,6 +1034,12 @@ class PayPalREST extends PayPal
             ]
         ];
 
+        // If we are skipping details, we need to set the shipping preference and user action
+        if( isset($SECFields['skipdetails']) && $SECFields['skipdetails'] ) {
+            $payload['application_context']['shipping_preference'] = 'NO_SHIPPING';
+            $payload['application_context']['user_action'] = 'PAY_NOW';
+        }
+
         if( !empty($payerData) && !empty($payerData['buyeremail']) ) {
             $payload['payer'] = [
                 "email_address" => $payerData['buyeremail']

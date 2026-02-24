@@ -34,7 +34,7 @@ $_SESSION['items'][0] = array(
     'name' => 'Widget',
     'qty' => '2',
     'price' => '9.99',
-    'category' => 'DONATION',
+    'category' => 'Digital',
 );
 
 $_SESSION['items'][1] = array(
@@ -42,7 +42,7 @@ $_SESSION['items'][1] = array(
     'name' => 'Gadget',
     'qty' => '1',
     'price' => '4.99',
-    'category' => 'DONATION',
+    'category' => 'Digital',
 );
 $_SESSION['shopping_cart'] = array(
     'items' => $_SESSION['items'],
