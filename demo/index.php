@@ -44,6 +44,9 @@
                         <div class="col-md-6 column">
                             <div id="paypal_partner_logo">
                                 <img alt="PayPal Partner and Certified Developer" src="assets/images/paypal-partner-logo.png"/>
+                                <div class="accept-text">
+                                    We accept <strong class="paypal-text">PayPal</strong> and <strong class="venmo-text">Venmo</strong>
+                                </div>
                             </div>
                         </div>
                     </div>
