@@ -114,7 +114,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                         </div>
                     <?php } ?>
                     <h2 class="main-title"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
-                    <p class="main-info">Here we are using a basic shopping cart for display purposes, and we are expanding on the <a href="../paypal-checkout-basic/">basic demo</a> to include the cart line items with the PayPal payment so that they will show up on the PayPal review pages during checkout and in the PayPal tranaction details. Again, we are assuming that we have not collected any billing or shipping information from the buyer yet because we'll be obtaining those details from PayPal after the user logs in and is returned back to the site.</p>
+                    <p class="main-info">Here we are using a basic shopping cart for display purposes, and we are expanding on the <a href="../paypal-checkout-basic/">basic demo</a> to include the cart line items with the PayPal payment so that they will appear on the PayPal review pages during checkout and in the PayPal transaction details. Within the items, each product is categorized as <strong>digital goods</strong>. Again, we are assuming that we have not collected any billing or shipping information from the buyer yet, because we will obtain those details from PayPal after the user logs in and is returned to the site.
                     <div class="demo-cred">
                         <h2>Demo Credentials</h2>
                         <p>Email: paypal-buyer@angelleye.com</p>
