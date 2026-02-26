@@ -1095,10 +1095,10 @@ class PayPalREST extends PayPal
                 $response['approval_url'],
                 $response['raw_response']
             );
-        }
 
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+        }
 
         return $response;
     }
@@ -1205,12 +1205,14 @@ class PayPalREST extends PayPal
 
             $responseData['FULLRESPONSE'] = isset($response['order']) ? $response['order'] : array();
             $responseData['RAWRESPONSE'] = isset($response['raw_response']) ? $response['raw_response'] : array();
+            
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseData);
+
+            return $responseData;
         }
 
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', ($this->api_upgrade ? $responseData : $response));
-
-        return $this->api_upgrade ? $responseData : $response;
+        return $response;
     }
 
     /**
@@ -1294,12 +1296,14 @@ class PayPalREST extends PayPal
 
             $responseData['FULLRESPONSE'] = isset($response['full_response']) ? $response['full_response'] : array();
             $responseData['RAWRESPONSE'] = isset($response['raw_response']) ? $response['raw_response'] : array();
+            
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', ($this->api_upgrade ? $responseData : $response));
+
+            return $responseData;
         }
 
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', ($this->api_upgrade ? $responseData : $response));
-
-        return $this->api_upgrade ? $responseData : $response;
+        return $response;
     }
 
     /**
@@ -1313,69 +1317,132 @@ class PayPalREST extends PayPal
      * 2. Create a billing plan linked to the product using `/v1/billing/plans`.
      * 3. Create a subscription (recurring payments profile) using `/v1/billing/subscriptions`.
      */
-    public function CreateSubscriptionProfile($DataArray) {
-        // Extract the data arrays or initialize as empty arrays
-        $ProductData = isset($DataArray['ProductData']) ? $DataArray['ProductData'] : array();
-        $PlanData = isset($DataArray['PlanData']) ? $DataArray['PlanData'] : array();
-        $SubscriptionData = isset($DataArray['SubscriptionData']) ? $DataArray['SubscriptionData'] : array();
+    public function CreateSubscriptionProfile($DataArray)
+    {
+        $ProductData = !empty($DataArray['ProductData']) ? $DataArray['ProductData'] : [];
+        $PlanData = !empty($DataArray['PlanData']) ? $DataArray['PlanData'] : [];
+        $SubscriptionData = !empty($DataArray['SubscriptionData']) ? $DataArray['SubscriptionData'] : [];
 
-        // Step 1: Create the product in PayPal Catalog
-        $productResponse = $this->makeRequest('/v1/catalogs/products', 'POST', $ProductData);
-
-        $responseSimplified = array();
-
-        // Check if product creation succeeded (status 2xx)
-        if ($productResponse['status_code'] >= 200 && $productResponse['status_code'] < 300) {
-            // Attach created product_id to the plan data
-            $PlanData['product_id'] = isset($productResponse['body']['id']) ? $productResponse['body']['id'] : '';
-
-            // Step 2: Create a billing plan associated with the product
-            $planResponse = $this->makeRequest('/v1/billing/plans', 'POST', $PlanData);
-
-            if ($planResponse['status_code'] >= 200 && $planResponse['status_code'] < 300) {
-                // Attach the created plan_id to the subscription data
-                $SubscriptionData['plan_id'] = isset($planResponse['body']['id']) ? $planResponse['body']['id'] : '';
-
-                // Step 3: Create a subscription (recurring payments profile)
-                $subscriptionResponse = $this->makeRequest('/v1/billing/subscriptions', 'POST', $SubscriptionData);
-
-                if ($subscriptionResponse['status_code'] >= 200 && $subscriptionResponse['status_code'] < 300) {
-                    $responseSimplified = array(
-                        'success' => true,
-                        'subscription_id' => !empty($subscriptionResponse['body']['id']) ? $subscriptionResponse['body']['id'] : '',
-                        'status' => !empty($subscriptionResponse['status_code']) ? $subscriptionResponse['status_code'] : 0,
-                        'response' => !empty($subscriptionResponse['body']) ? $subscriptionResponse['body'] : [],
-                        'raw_response' => !empty($subscriptionResponse['raw_response']) ? $subscriptionResponse['raw_response'] : [],
-                    );
-                } else {
-                    $responseSimplified = array(
-                        'success' => false,
-                        'status' => $subscriptionResponse['status_code'],
-                        'error' => !empty($subscriptionResponse['body']) ? $subscriptionResponse['body'] : [],
-                        'raw_response' => !empty($subscriptionResponse['raw_response']) ? $subscriptionResponse['raw_response'] : [],
-                    );
-                }
-            } else {
-                $responseSimplified = array(
-                    'success' => false,
-                    'status' => $planResponse['status_code'],
-                    'error' => !empty($planResponse['body']) ? $planResponse['body'] : [],
-                    'raw_response' => !empty($planResponse['raw_response']) ? $planResponse['raw_response'] : [],
-                );
-            }
-        } else {
-            $responseSimplified = array(
-                'success' => false,
-                'status' => $productResponse['status_code'],
-                'error' => !empty($productResponse['body']) ? $productResponse['body'] : [],
-                'raw_response' => !empty($productResponse['raw_response']) ? $productResponse['raw_response'] : [],
-            );
+        // Step 1: Create Product
+        $product = $this->createProduct($ProductData);
+        if (!$product['success']) {
+            return $product;
         }
 
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseSimplified);
+        // Step 2: Create Plan
+        $plan = $this->createPlan($PlanData, $product['id']);
+        if (!$plan['success']) {
+            return $plan;
+        }
 
-        return $responseSimplified;
+        // Step 3: Create Subscription
+        $subscription = $this->createSubscription($SubscriptionData, $plan['id']);
+
+        return $subscription;
+    }
+
+    /**
+     * Creates a product in the PayPal catalog.
+     *
+     * This method sends a POST request to the PayPal `/v1/catalogs/products` endpoint
+     * to create a new product in the PayPal system.
+     *
+     * @param array $ProductData The product data to be sent in the request.
+     * @return array The response from the PayPal API.
+     */
+    public function createProduct($ProductData)
+    {
+        $response = $this->makeRequest('/v1/catalogs/products', 'POST', $ProductData);
+
+        // Log the response
+        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            return [
+                'success' => true,
+                'id' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                'response' => $response
+            ];
+        }
+
+        return [
+            'success' => false,
+            'status' => $response['status_code'],
+            'error' => isset($response['body']) ? $response['body'] : [],
+            'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+        ];
+    }
+
+    /**
+     * Creates a billing plan in the PayPal system.
+     *
+     * This method sends a POST request to the PayPal `/v1/billing/plans` endpoint
+     * to create a new billing plan.
+     *
+     * @param array $PlanData The plan data to be sent in the request.
+     * @param string $productId The ID of the product associated with the plan.
+     * @return array The response from the PayPal API.
+     */
+    public function createPlan($PlanData, $productId)
+    {
+        $PlanData['product_id'] = $productId;
+
+        $response = $this->makeRequest('/v1/billing/plans', 'POST', $PlanData);
+
+        // Log the response
+        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            return [
+                'success' => true,
+                'id' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                'response' => $response
+            ];
+        }
+
+        return [
+            'success' => false,
+            'status' => $response['status_code'],
+            'error' => isset($response['body']) ? $response['body'] : [],
+            'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+        ];
+    }
+
+    /**
+     * Creates a subscription in the PayPal system.
+     *
+     * This method sends a POST request to the PayPal `/v1/billing/subscriptions` endpoint
+     * to create a new subscription.
+     *
+     * @param array $SubscriptionData The subscription data to be sent in the request.
+     * @param string $planId The ID of the plan associated with the subscription.
+     * @return array The response from the PayPal API.
+     */
+    public function createSubscription($SubscriptionData, $planId)
+    {
+        $SubscriptionData['plan_id'] = $planId;
+
+        $response = $this->makeRequest('/v1/billing/subscriptions', 'POST', $SubscriptionData);
+
+        // Log the response
+        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            return [
+                'success' => true,
+                'subscription_id' => $response['body']['id'] ?? '',
+                'status' => $response['status_code'] ?? 0,
+                'response' => $response['body'] ?? [],
+                'raw_response' => $response['raw_response'] ?? [],
+            ];
+        }
+
+        return [
+            'success' => false,
+            'status' => $response['status_code'],
+            'error' => $response['body'] ?? [],
+            'raw_response' => $response['raw_response'] ?? [],
+        ];
     }
 
     /**
