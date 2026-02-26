@@ -504,6 +504,54 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="thumbnail">
+                                <img alt="PayPal Checkout Donation" src="assets/images/paypal-express-checkout.jpg">
+                                <?php
+                                $DIR = '/paypal-checkout-donation';
+                                $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
+                                ?>
+                                <div class="caption">
+                                    <h3>PayPal Checkout</h3>
+                                    <h4>Donation</h4>
+                                    <p>PayPal Donation integration using Web SDK v6, demonstrating a JS-driven payment flow where only pricing is passed to initiate checkout.</p>
+                                    <p align="center">
+                                        <?php if ($DIR_exists) : ?>
+                                            <a class="btn btn-primary" href="paypal-checkout-donation/" target="_blank">Launch Demo</a>
+                                        <?php else: ?>
+                                            <a class="btn btn-success"
+                                            href="https://www.angelleye.com/product/paypal-payments-pro-payflow-php-basic-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
+                                            target="_blank">Buy Now</a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="thumbnail">
+                                <img alt="PayPal Checkout Shipping Callback" src="assets/images/paypal-express-checkout.jpg">
+                                <?php
+                                $DIR = '/paypal-checkout-shipping-callback';
+                                $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
+                                ?>
+                                <div class="caption">
+                                    <h3>PayPal Shipping Callback</h3>
+                                    <h4>PayPal Shipping Callback Payment</h4>
+                                    <p>PayPal Shipping Callback integration using Web SDK v6, demonstrating a JS-driven payment flow where only pricing is passed to initiate checkout.</p>
+                                    <p align="center">
+                                        <?php if ($DIR_exists) : ?>
+                                            <a class="btn btn-primary" href="paypal-checkout-shipping-callback/" target="_blank">Launch Demo</a>
+                                        <?php else: ?>
+                                            <a class="btn btn-success"
+                                            href="https://www.angelleye.com/product/paypal-payments-pro-payflow-php-basic-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
+                                            target="_blank">Buy Now</a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

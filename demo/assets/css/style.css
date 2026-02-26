@@ -195,6 +195,27 @@ td.center {
 .main-center {
     text-align: center;
 }
+.donation-review {
+    width: 480px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 4px 3px rgba(0, 0, 0, 0.1);
+}
+.donation-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0 0;
+}
+.donation-button:hover {
+    text-decoration: none;
+}
+.donation-button .donate-label {
+    width: fit-content;
+    padding-left: 34px;
+}
 .update-order-form {
     width: 480px;
     margin: 0 auto;
@@ -220,6 +241,9 @@ td.center {
 }
 #paypal_errors {
 	margin-top: 25px;
+}
+.donation-title {
+    justify-content: space-between;
 }
 .donate-label {
     font-weight: 400;
@@ -251,7 +275,8 @@ body.checkout-page .heading-wrapper {
 .heading {
     margin: 0;
 }
-.cart-link {
+.cart-link,
+.back-link {
     text-decoration: none;
     color: #2563eb;
     font-size: 16px;
@@ -260,10 +285,12 @@ body.checkout-page .heading-wrapper {
     align-items: center;
     gap: 4px;
 }
-.cart-link img {
+.cart-link img,
+.back-link img {
     width: 22px;
 }
-.cart-link:hover {
+.cart-link:hover,
+.back-link:hover {
     text-decoration: none;
     color: #2563eb;
 }

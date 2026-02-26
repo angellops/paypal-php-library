@@ -156,8 +156,14 @@ class PayPalREST extends PayPal
     {
         $headers = $this->getHeaders(true, 'application/json', $requestId, $isInvoiceRequest, $includeAuth);
 
+        $url = $this->base_url . $endpoint;
+
+        // Detect caller function
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $callerFunction = isset($trace[1]['function']) ? $trace[1]['function'] : 'unknown';
+
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->base_url . $endpoint);
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -170,6 +176,19 @@ class PayPalREST extends PayPal
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        $request_log = [
+            'request' => [
+                'url' => $url,
+                'method' => $method,
+                'headers' => $headers,
+                'payload' => $data,
+                'request_id' => $requestId
+            ]
+        ];
+
+        // Log the request
+        $this->Logger($this->LogPath, $callerFunction . 'Request', $request_log);
 
         return [
             'status_code' => $httpCode,
@@ -299,8 +318,7 @@ class PayPalREST extends PayPal
         // Step 3: Make REST Call
         $response = $this->makeRequest('/v1/vault/bank-accounts', 'POST', $payload);
 
-        // Log Request and Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Request', $payload);
+        // Log Response
         $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
         // Step 4: Handle Response
@@ -364,8 +382,7 @@ class PayPalREST extends PayPal
             );
         }
 
-        // Log Request and Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Request', $payload);
+        // Log Response
         $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseSimplified);
 
         return $responseSimplified;
@@ -455,6 +472,10 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v1/notifications/webhooks');
+
+            // Log the response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
             return [
                 'success' => $response['status_code'] >= 200 && $response['status_code'] < 300,
                 'message' => $response['status_code'] >= 200 && $response['status_code'] < 300
@@ -478,6 +499,9 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId, false, $includeAuth);
+
+            // Log the response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if( in_array($response['status_code'], [201, 200]) ) {
                 return [
@@ -512,6 +536,9 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET');
+
+            // Log the response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 200) {
                 return [
@@ -579,6 +606,9 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST');
+
+            // Log the response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -710,6 +740,9 @@ class PayPalREST extends PayPal
             $trackData = isset($DataArray['TrackData']) ? $DataArray['TrackData'] : [];
 
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/track', 'POST', $trackData);
+
+            // Log the response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             $purchase_units = $response['body']['purchase_units'][0] ? $response['body']['purchase_units'][0] : [];
             $shipping_trackers = $purchase_units['shipping']['trackers'] ? $purchase_units['shipping']['trackers'] : [];
@@ -928,8 +961,7 @@ class PayPalREST extends PayPal
             );
         }
 
-        // Log Request and Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Request', $paymentsMappedData);
+        // Log Response
         $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseSimplified);
 
         return $responseSimplified;
@@ -1065,8 +1097,7 @@ class PayPalREST extends PayPal
             );
         }
 
-        // Log Request and Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Request', $payload);
+        // Log Response
         $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
         return $response;
@@ -1342,7 +1373,6 @@ class PayPalREST extends PayPal
         }
 
         // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Request', $DataArray);
         $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseSimplified);
 
         return $responseSimplified;
@@ -2310,8 +2340,7 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/cancel', 'POST', $payload, null, true);
 
-            // Log Request and Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Request', $payload);
+            // Log Response
             $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
