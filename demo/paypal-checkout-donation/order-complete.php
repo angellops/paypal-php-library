@@ -64,6 +64,7 @@ require_once('../../includes/config.php');
             <p><strong>Name:</strong> <?php echo $_SESSION['donation_name']; ?></p>
             <p><strong>Email:</strong> <?php echo $_SESSION['donation_email']; ?></p>
             <p><strong>Amount:</strong> $<?php echo $_SESSION['donation_amount']; ?></p>
+            <p><strong>Payment Source:</strong> PayPal</p>
             <p><strong>Transaction ID:</strong> <?php echo $_SESSION['paypal_transaction_id']; ?></p>
             <p><strong>Billing Information</strong>
               <br><strong style="padding-left: 16px;">- Name:</strong> <?php echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name']; ?>
