@@ -175,7 +175,6 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                                     <tr>
                                         <td class="paypalbtn" colspan="2">
                                             <a href="SetExpressCheckout.php">
-                                                <h4 class="donate-label">Donate with PayPal</h4>
                                                 <?php $PayPalCommonFunctions->renderPayPalButton(); ?>
                                             </a>
                                         </td>
