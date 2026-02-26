@@ -112,6 +112,6 @@ if( $PayPalResult['success'] ) {
     }
     header('Location: ' . $redirect_url);
 } else {
-    $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
+    $_SESSION['paypal_errors'] = $PayPalResult['error'];
     header('Location: ../error.php');
 }
