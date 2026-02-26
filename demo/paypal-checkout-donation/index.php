@@ -65,11 +65,11 @@ require_once('../../vendor/autoload.php');
           <form method="post" action="review-donation.php" class="update-order-form">
             <p class="main-info main-center">Your generous contribution helps support our mission and makes a meaningful impact. Every donation, big or small, is greatly appreciated. Thank you for your support!</p>
             <label>Name:</label><br>
-            <input type="text" name="name" id="name" required><br><br>
+            <input type="text" name="donation_name" id="name" required><br><br>
             <label>Email:</label><br>
-            <input type="text" name="email" id="email" required><br><br>
+            <input type="text" name="donation_email" id="email" required><br><br>
             <label>Donation Amount (USD):</label><br>
-            <input type="text" name="amount" id="amount" required><br><br>
+            <input type="text" name="donation_amount" id="amount" required><br><br>
             <button type="submit" class="btn btn-primary">Donate</button>
           </form>
         </div>

@@ -61,10 +61,14 @@ require_once('../../includes/config.php');
           <h2 class="main-title">Donation Completed Successfully!</h2>
           <p class="main-info main-center">Thank you for your generous donation! Your support helps us continue our mission.</p>
           <div class="donation-review">
-            <p><strong>Name:</strong> <?php echo $_SESSION['name']; ?></p>
-            <p><strong>Email:</strong> <?php echo $_SESSION['email']; ?></p>
-            <p><strong>Amount:</strong> $<?php echo $_SESSION['amount']; ?></p>
+            <p><strong>Name:</strong> <?php echo $_SESSION['donation_name']; ?></p>
+            <p><strong>Email:</strong> <?php echo $_SESSION['donation_email']; ?></p>
+            <p><strong>Amount:</strong> $<?php echo $_SESSION['donation_amount']; ?></p>
             <p><strong>Transaction ID:</strong> <?php echo $_SESSION['paypal_transaction_id']; ?></p>
+            <p><strong>Billing Information</strong>
+              <br><strong style="padding-left: 16px;">- Name:</strong> <?php echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name']; ?>
+              <br><strong style="padding-left: 16px;">- Email:</strong> <?php echo $_SESSION['email']; ?>
+            </p>
           </div>
         </div>
       </div>

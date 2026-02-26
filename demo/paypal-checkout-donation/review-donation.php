@@ -21,9 +21,9 @@ $PayPalConfig = array(
 );
 $PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
 
-$_SESSION['name']   = !empty($_POST['name']) ? $_POST['name'] : '';
-$_SESSION['email']  = !empty($_POST['email']) ? $_POST['email'] : '';
-$_SESSION['amount'] = !empty($_POST['amount']) ? $_POST['amount'] : '';
+$_SESSION['donation_name']   = !empty($_POST['donation_name']) ? $_POST['donation_name'] : '';
+$_SESSION['donation_email']  = !empty($_POST['donation_email']) ? $_POST['donation_email'] : '';
+$_SESSION['donation_amount'] = !empty($_POST['donation_amount']) ? $_POST['donation_amount'] : '';
 ?>
 <html lang="en">
   <head>
@@ -92,9 +92,9 @@ $_SESSION['amount'] = !empty($_POST['amount']) ? $_POST['amount'] : '';
             </a>
           </h2>
           <div class="donation-review">
-            <p><strong>Name:</strong> <?php echo $_SESSION['name']; ?></p>
-            <p><strong>Email:</strong> <?php echo $_SESSION['email']; ?></p>
-            <p><strong>Amount:</strong> $<?php echo $_SESSION['amount']; ?></p>
+            <p><strong>Name:</strong> <?php echo $_SESSION['donation_name']; ?></p>
+            <p><strong>Email:</strong> <?php echo $_SESSION['donation_email']; ?></p>
+            <p><strong>Amount:</strong> $<?php echo $_SESSION['donation_amount']; ?></p>
             <a class="donation-button" href="createOrder.php">
               <h4 class="donate-label">Donate with PayPal</h4>
               <?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>

@@ -27,7 +27,7 @@ $PayPalConfig = array(
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 // Format the amount
-$amount = number_format($_SESSION['amount'], 2, '.', '');
+$amount = number_format($_SESSION['donation_amount'], 2, '.', '');
 
 // Build the Base Payload
 $payload = [
@@ -35,8 +35,8 @@ $payload = [
     "purchase_units" => [[
         "description" => "Charity Donation",
         "custom_id" => json_encode([
-            "name" => $_SESSION['name'],
-            "email" => $_SESSION['email']
+            "name" => $_SESSION['donation_name'],
+            "email" => $_SESSION['donation_email']
         ]),
         "items" => [[
             "name" => "Donation",
