@@ -66,7 +66,7 @@ require_once('../../includes/config.php');
               <?php foreach($_SESSION['shopping_cart']['recurring_items'] as $cart_item) { ?>
               <tr>
                 <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
-                <td class="center"><?php echo number_format($cart_item['amt'],2) ?></td>
+                <td class="center">$<?php echo number_format($cart_item['amt'],2) ?></td>
               </tr>
               <?php } ?>
             </tbody>
