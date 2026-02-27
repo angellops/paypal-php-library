@@ -74,14 +74,14 @@ $BillingPeriod = array(
 	'billingperiod' => $_SESSION['billingperiod'], 				// Required.  Unit for billing during this subscription period.  One of the following: Day, Week, SemiMonth, Month, Year
 	'billingfrequency' => $_SESSION['billingfrequency'], 			// Required.  Number of billing periods that make up one billing cycle.  The combination of billing freq. and billing period must be less than or equal to one year. 
 	'totalbillingcycles' => $_SESSION['totalbillingcycles'], 		// the number of billing cycles for the payment period (regular or trial).  For trial period it must be greater than 0.  For regular payments 0 means indefinite...until canceled.  
-	'amt' => $_SESSION['items'][1]['amt'], 					// Required.  Billing amount for each billing cycle during the payment period.  This does not include shipping and tax. 
+	'amt' => $_SESSION['recurring_items'][1]['amt'], 					// Required.  Billing amount for each billing cycle during the payment period.  This does not include shipping and tax. 
 	'currencycode' => 'USD', 						// Required.  Three-letter currency code.
 	'shippingamt' => $_SESSION['shopping_cart']['shipping'], 		// Shipping amount for each billing cycle during the payment period.
 	'taxamt' => $_SESSION['shopping_cart']['tax'] 				// Tax amount for each billing cycle during the payment period.
 );
 				
 $ActivationDetails = array(
-	'initamt' => $_SESSION['items'][0]['amt'], 		// Initial non-recurring payment amount due immediatly upon profile creation.  Use an initial amount for enrolment or set-up fees.
+	'initamt' => $_SESSION['recurring_items'][0]['amt'], 		// Initial non-recurring payment amount due immediatly upon profile creation.  Use an initial amount for enrolment or set-up fees.
 	'failedinitamtaction' => '', 				// By default, PayPal will suspend the pending profile in the event that the initial payment fails.  You can override this.  Values are: ContinueOnFailure or CancelOnFailure
 );
 
@@ -126,7 +126,7 @@ $PlanData = array(
                         "total_cycles" => 0, // 0 = infinite
                         "pricing_scheme" => array(
                                 "fixed_price" => array(
-                                        "value" => $_SESSION['items'][1]['amt'],  // monthly charge
+                                        "value" => $_SESSION['recurring_items'][1]['amt'],  // monthly charge
                                         "currency_code" => "USD"
                                 )
                         )
@@ -135,7 +135,7 @@ $PlanData = array(
         "payment_preferences" => array(
                 "auto_bill_outstanding" => true,
 		"setup_fee" => array(
-			"value" => $_SESSION['items'][0]['amt'], // one-time setup fee
+			"value" => $_SESSION['recurring_items'][0]['amt'], // one-time setup fee
 			"currency_code" => "USD"
 		),
                 "setup_fee_failure_action" => "CONTINUE",

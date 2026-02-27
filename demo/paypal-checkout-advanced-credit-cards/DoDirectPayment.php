@@ -91,7 +91,7 @@ $PaymentDetails = array(
  * $Payment.
  */
 $OrderItems = array();
-foreach ($_SESSION['shopping_cart']['items'] as $cart_item) {
+foreach ($_SESSION['shopping_cart']['acdc_items'] as $cart_item) {
     $Item = array(
         'name' => $cart_item['name'], // Item name. 127 char max.
         'amt' => $cart_item['price'], // Cost of item.

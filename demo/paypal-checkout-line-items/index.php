@@ -29,7 +29,7 @@ $_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
  * throughout this demo.  In most cases, you will working with a dynamic
  * shopping cart system of some sort.
  */
-$_SESSION['items'][0] = array(
+$_SESSION['line_items'][0] = array(
     'id' => '123-ABC',
     'name' => 'Widget',
     'qty' => '2',
@@ -37,7 +37,7 @@ $_SESSION['items'][0] = array(
     'category' => 'Digital',
 );
 
-$_SESSION['items'][1] = array(
+$_SESSION['line_items'][1] = array(
     'id' => 'XYZ-456',
     'name' => 'Gadget',
     'qty' => '1',
@@ -45,7 +45,7 @@ $_SESSION['items'][1] = array(
     'category' => 'Digital',
 );
 $_SESSION['shopping_cart'] = array(
-    'items' => $_SESSION['items'],
+    'line_items' => $_SESSION['line_items'],
     'subtotal' => 24.97,
     'shipping' => 0,
     'handling' => 0,
@@ -132,7 +132,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                         </thead>
                         <tbody>
                             <?php
-                            foreach ($_SESSION['shopping_cart']['items'] as $cart_item) {
+                            foreach ($_SESSION['shopping_cart']['line_items'] as $cart_item) {
                                 ?>
                                 <tr>
                                     <td class="center"><?php echo $cart_item['id']; ?></td>

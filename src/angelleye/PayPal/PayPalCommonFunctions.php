@@ -83,7 +83,7 @@ class PayPalCommonFunctions
      * @return array
      */
     public function get_cart() {
-        return !empty($_SESSION['items']) ? $_SESSION['items'] : [];
+        return !empty($_SESSION['paylater_items']) ? $_SESSION['paylater_items'] : [];
     }
 
     /**
@@ -97,14 +97,14 @@ class PayPalCommonFunctions
      * @return void
      */
     public function add_to_cart($id, $name, $price, $qty) {
-        if (!isset($_SESSION['items'])) {
-            $_SESSION['items'] = [];
+        if (!isset($_SESSION['paylater_items'])) {
+            $_SESSION['paylater_items'] = [];
         }
 
-        if (isset($_SESSION['items'][$id])) {
-            $_SESSION['items'][$id]['qty'] += $qty;
+        if (isset($_SESSION['paylater_items'][$id])) {
+            $_SESSION['paylater_items'][$id]['qty'] += $qty;
         } else {
-            $_SESSION['items'][$id] = [
+            $_SESSION['paylater_items'][$id] = [
                 'name'  => $name,
                 'price' => (float)$price,
                 'qty'   => (int)$qty
@@ -122,9 +122,9 @@ class PayPalCommonFunctions
      */
     public function update_cart_qty($id, $qty) {
         if ($qty <= 0) {
-            unset($_SESSION['items'][$id]);
+            unset($_SESSION['paylater_items'][$id]);
         } else {
-            $_SESSION['items'][$id]['qty'] = $qty;
+            $_SESSION['paylater_items'][$id]['qty'] = $qty;
         }
     }
 
@@ -134,7 +134,7 @@ class PayPalCommonFunctions
      * @return void
      */
     public function empty_cart() {
-        unset($_SESSION['items']);
+        unset($_SESSION['paylater_items']);
     }
 
     /**

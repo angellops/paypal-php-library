@@ -81,7 +81,7 @@ if ($api_mode === 'classic') {
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($_SESSION['shopping_cart']['items'] as $id => $item) { ?>
+              <?php foreach ($_SESSION['shopping_cart']['paylater_items'] as $id => $item) { ?>
               <tr class="cart-item">
                 <td class="center cart-item-image"><img src="../assets/images/product.png" alt="Product Image"></td>
                 <td class="center"><?php echo $id; ?></td>

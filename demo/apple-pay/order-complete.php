@@ -71,8 +71,8 @@ if ($api_mode === 'classic') {
               </tr>
             </thead>
             <tbody>
-              <?php if(!empty($_SESSION['shopping_cart']['items'])) { 
-                foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+              <?php if(!empty($_SESSION['shopping_cart']['applepay_items'])) { 
+                foreach($_SESSION['shopping_cart']['applepay_items'] as $cart_item) { ?>
                   <tr>
                     <td class="center"><?php echo $cart_item['id']; ?></td>
                     <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>

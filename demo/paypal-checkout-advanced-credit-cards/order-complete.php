@@ -73,7 +73,7 @@ require_once('../../includes/config.php');
                         </thead>
                         <tbody>
                             <?php
-                            foreach ($_SESSION['shopping_cart']['items'] as $cart_item) {
+                            foreach ($_SESSION['shopping_cart']['acdc_items'] as $cart_item) {
                                 ?>
                                 <tr>
                                     <td class="center"><?php echo $cart_item['id']; ?></td>

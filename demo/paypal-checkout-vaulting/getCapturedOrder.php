@@ -22,7 +22,12 @@ $PayPalConfig = array(
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
-$PayPalResult = $PayPal->getOrder($_SESSION['paypal_token']);
+/**
+ * Generate unique PayPal request ID
+ */
+$paypalRequestId = uniqid('pprid_', true);
+
+$PayPalResult = $PayPal->getOrder($_SESSION['paypal_token'], $paypalRequestId, true);
 
 if ( $PayPalResult['success'] ) {
     /**

@@ -63,7 +63,7 @@ require_once('../../includes/config.php');
               </tr>
             </thead>
             <tbody>
-              <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+              <?php foreach($_SESSION['shopping_cart']['recurring_items'] as $cart_item) { ?>
               <tr>
                 <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
                 <td class="center"><?php echo number_format($cart_item['amt'],2) ?></td>
@@ -79,7 +79,7 @@ require_once('../../includes/config.php');
                   echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
                   $_SESSION['email'] . '<br />'. 
                   $_SESSION['phone_number'] . '<br />' . 
-                  'Recurring Payment Profile ID: ' .$_SESSION['RecurringProfileId'];
+                  '<strong>Recurring Payment Profile ID: </strong>' .$_SESSION['RecurringProfileId'];
                 ?>
               </p>
             </div>

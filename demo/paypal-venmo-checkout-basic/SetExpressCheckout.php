@@ -37,7 +37,7 @@ $_SESSION['payment_type'] = $paymentType;
 
 // Map items from session
 $purchase_items = [];
-foreach ($_SESSION['items'] as $item) {
+foreach ($_SESSION['venmo_items'] as $item) {
     $purchase_items[] = [
         "name" => $item['name'],
         "sku" => $item['id'],

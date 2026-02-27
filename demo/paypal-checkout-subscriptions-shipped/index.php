@@ -33,14 +33,14 @@ $_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
  * so that everything is available to us for the future API calls
  * to both DoExpressCheckoutPayment and CreateRecurringPaymentsProfile.
  */
-$_SESSION['items'][0] = array(
+$_SESSION['shipped_items'][0] = array(
   'id' => '123-ABC',
   'name' => 'Widget',
   'qty' => '2',
   'price' => '9.99',
 );
 
-$_SESSION['items'][1] = array(
+$_SESSION['shipped_items'][1] = array(
   'id' => 'XYZ-456',
   'name' => 'Gadget',
   'qty' => '1',
@@ -56,7 +56,7 @@ $_SESSION['subscription'] = array(
 );
 
 $_SESSION['shopping_cart'] = array(
-  'items' => $_SESSION['items'],
+  'shipped_items' => $_SESSION['shipped_items'],
   'subtotal' => 24.97,
   'shipping' => 0,
   'handling' => 0,
@@ -142,7 +142,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               </tr>
             </thead>
             <tbody>
-              <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+              <?php foreach($_SESSION['shopping_cart']['shipped_items'] as $cart_item) { ?>
               <tr>
                 <td class="center"><?php echo $cart_item['id']; ?></td>
                 <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>

@@ -28,7 +28,7 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 // Map items from session
 $purchase_items = [];
-foreach ($_SESSION['items'] as $item) {
+foreach ($_SESSION['callback_items'] as $item) {
     $purchase_items[] = [
         "name" => $item['name'],
         "sku" => $item['id'],

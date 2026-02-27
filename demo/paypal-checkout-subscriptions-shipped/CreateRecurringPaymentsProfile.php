@@ -148,21 +148,11 @@ $SubscriptionData = array(
                         "surname" => isset($_SESSION['last_name']) ? $_SESSION['last_name'] : '',
                 ),
                 "email_address" => isset($_SESSION['email']) ? $_SESSION['email'] : '',
-                "shipping_address" => array(
-                        "name" => array("full_name" => (isset($_SESSION['first_name']) ? $_SESSION['first_name'] : '') . ' ' . (isset($_SESSION['last_name']) ? $_SESSION['last_name'] : '')),
-                        "address" => array(
-                                "address_line_1" => isset($_SESSION['shipping_street']) ? $_SESSION['shipping_street'] : '',
-                                "admin_area_2" => isset($_SESSION['shipping_city']) ? $_SESSION['shipping_city'] : '',
-                                "admin_area_1" => isset($_SESSION['shipping_state']) ? $_SESSION['shipping_state'] : '',
-                                "postal_code" => isset($_SESSION['shipping_zip']) ? $_SESSION['shipping_zip'] : '',
-                                "country_code" => isset($_SESSION['shipping_country_code']) ? $_SESSION['shipping_country_code'] : '',
-                        )
-                )
         ),
         "application_context" => array(
                 "brand_name" => "Angell EYE Web Hosting",
                 "locale" => "en-US",
-                "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                "shipping_preference" => "NO_SHIPPING",
                 "user_action" => "SUBSCRIBE_NOW",
                 'return_url' => $domain . 'demo/paypal-checkout-subscriptions-shipped/GetRecurringPaymentsProfileDetails.php', 		// Required.  URL to which the customer will be returned after returning from PayPal.  2048 char max.
 		'cancel_url' => $domain . 'demo/paypal-checkout-subscriptions-shipped/', 

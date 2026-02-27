@@ -31,18 +31,18 @@ $_SESSION['billingperiod']='Month';
 $_SESSION['billingfrequency']='1';
 $_SESSION['totalbillingcycles']='0';
 
-$_SESSION['items'][0] = array(   
+$_SESSION['recurring_items'][0] = array(   
   'name' => 'One-Time Setup Fee',   
   'amt' => '50.00'
 );
-$_SESSION['items'][1] = array(   
+$_SESSION['recurring_items'][1] = array(   
   'name' => 'Monthly Subscription',   
   'amt' => '10.00'
 );
 
 $_SESSION['shopping_cart'] = array(
-	'items' => $_SESSION['items'],	
-  'subtotal' => $_SESSION['items'][0]['amt'],
+	'recurring_items' => $_SESSION['recurring_items'],	
+  'subtotal' => $_SESSION['recurring_items'][0]['amt'],
 	'shipping' => 0,
 	'handling' => 0,
 	'tax' => 0,
@@ -123,7 +123,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               </tr>
             </thead>
             <tbody>
-              <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+              <?php foreach($_SESSION['shopping_cart']['recurring_items'] as $cart_item) { ?>
               <tr>
                 <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
                 <td class="center">$<?php echo number_format($cart_item['amt'],2) ?></td>

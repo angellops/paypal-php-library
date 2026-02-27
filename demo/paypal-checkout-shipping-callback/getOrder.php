@@ -62,28 +62,7 @@ if( $PayPalResult['success'] ) {
     $_SESSION['shipping_zip'] = isset($shipping['address']['postal_code']) ? $shipping['address']['postal_code'] : '';
     $_SESSION['shipping_country_code'] = isset($shipping['address']['country_code']) ? $shipping['address']['country_code'] : '';
     $_SESSION['shipping_country_name'] = 'United States';
-
-    // /**
-    //  * At this point, we now have the buyer's shipping address available in our app.
-    //  * We could now run the data through a shipping calculator to retrieve rate
-    //  * information for this particular order.
-    //  *
-    //  * This would also be the time to calculate any sales tax you may need to
-    //  * add to the order, as well as handling fees.
-    //  *
-    //  * We're going to set static values for these things in our static
-    //  * shopping cart, and then re-calculate our grand total.
-    //  */
-    // $_SESSION['shopping_cart']['shipping'] = 10.00;
-    // $_SESSION['shopping_cart']['handling'] = 2.50;
-    // $_SESSION['shopping_cart']['tax'] = 1.50;
-
-    // $_SESSION['shopping_cart']['grand_total'] = number_format(
-    //     $_SESSION['shopping_cart']['subtotal']
-    //     + $_SESSION['shopping_cart']['shipping']
-    //     + $_SESSION['shopping_cart']['handling']
-    //     + $_SESSION['shopping_cart']['tax'],2);
-
+    
     /**
      * Now we will redirect the user to a final review
      * page so they can see the shipping/handling/tax

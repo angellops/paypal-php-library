@@ -56,7 +56,7 @@ $seller_merchant_id_b = 'QEV4T5D83THAJ';
  * For the purposes of this Parallel Payments demo we have added a
  * "seller_id" to the cart items.
  */
-$_SESSION['items'][0] = array(
+$_SESSION['multiparty_items'][0] = array(
   'id' => '123-ABC',
   'name' => 'Widget',
   'qty' => '1',
@@ -64,7 +64,7 @@ $_SESSION['items'][0] = array(
   'seller_id' => ($api_mode === 'rest') ? $seller_merchant_id_a : $seller_a,
 );
 
-$_SESSION['items'][1] = array(
+$_SESSION['multiparty_items'][1] = array(
   'id' => 'XYZ-456',
   'name' => 'Gadget',
   'qty' => '1',
@@ -72,7 +72,7 @@ $_SESSION['items'][1] = array(
   'seller_id' => ($api_mode === 'rest') ? $seller_merchant_id_b : $seller_b,
 );
 $_SESSION['shopping_cart'] = array(
-	'items' => $_SESSION['items'],
+	'multiparty_items' => $_SESSION['multiparty_items'],
 	'subtotal' => 15.00,
 	'shipping' => 0,
 	'handling' => 0,
@@ -158,7 +158,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               </tr>
             </thead>
             <tbody>
-              <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+              <?php foreach($_SESSION['shopping_cart']['multiparty_items'] as $cart_item) { ?>
               <tr>
                 <td class="center"><?php echo $cart_item['id']; ?></td>
                 <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>

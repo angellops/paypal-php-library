@@ -77,7 +77,7 @@ if ($api_mode === 'classic') {
               </tr>
             </thead>
             <tbody>
-              <?php foreach($_SESSION['shopping_cart']['items'] as $cart_item) { ?>
+              <?php foreach($_SESSION['shopping_cart']['venmo_items'] as $cart_item) { ?>
               <tr>
                 <td class="center"><?php echo $cart_item['id']; ?></td>
                 <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>

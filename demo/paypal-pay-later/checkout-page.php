@@ -54,7 +54,7 @@ if (empty($items)) {
  */
 $subtotal = $PayPalCommonFunctions->calculate_subtotal($items);
 $_SESSION['shopping_cart'] = [
-  'items'    => $items,
+  'paylater_items'    => $items,
   'subtotal' => $subtotal,
   'shipping' => 10.00,
   'handling' => 2.50,
@@ -141,7 +141,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($_SESSION['shopping_cart']['items'] as $id => $item) { ?>
+              <?php foreach ($_SESSION['shopping_cart']['paylater_items'] as $id => $item) { ?>
               <tr class="cart-item">
                 <td class="center cart-item-image"><img src="../assets/images/product.png" alt="Product Image"></td>
                 <td class="center"><?php echo $id; ?></td>

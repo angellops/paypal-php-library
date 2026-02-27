@@ -27,7 +27,7 @@ $PayPalConfig = array(
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 $items = [];
-foreach ($_SESSION['shopping_cart']['items'] as $id => $item) {
+foreach ($_SESSION['shopping_cart']['paylater_items'] as $id => $item) {
     $items[] = [
         'name' => $item['name'],
         'quantity' => $item['qty'],

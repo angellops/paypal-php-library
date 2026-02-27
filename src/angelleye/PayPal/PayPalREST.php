@@ -532,10 +532,10 @@ class PayPalREST extends PayPal
     /**
      * Get order details (replaces GetExpressCheckoutDetails)
      */
-    public function getOrder($orderId)
+    public function getOrder($orderId, $paypalRequestId = null, $includeAuth = false)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET');
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET', [], $paypalRequestId, false, $includeAuth);
 
             // Log the response
             $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
@@ -566,10 +566,10 @@ class PayPalREST extends PayPal
     /**
      * Authorize order (for auth-only transactions)
      */
-    public function authorizeOrder($orderId)
+    public function authorizeOrder($orderId, $paypalRequestId = null, $includeAuth = false)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/authorize', 'POST');
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/authorize', 'POST', [], $paypalRequestId, false, $includeAuth);
 
             // Log Response
             $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
@@ -602,10 +602,10 @@ class PayPalREST extends PayPal
     /**
      * Capture order (replaces DoExpressCheckoutPayment)
      */
-    public function captureOrder($orderId)
+    public function captureOrder($orderId, $paypalRequestId = null, $includeAuth = false)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST');
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST', [], $paypalRequestId, false, $includeAuth);
 
             // Log the response
             $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);

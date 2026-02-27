@@ -29,8 +29,8 @@ if (!$id || $qty < 1) {
  * Check if the item exists in the 'items' array within the session.
  * If found, update the quantity to the new value.
  */
-if (isset($_SESSION['items'][$id])) {
-    $_SESSION['items'][$id]['qty'] = $qty;
+if (isset($_SESSION['paylater_items'][$id])) {
+    $_SESSION['paylater_items'][$id]['qty'] = $qty;
     echo json_encode([
         'success' => true,
         'message' => 'Quantity updated'
