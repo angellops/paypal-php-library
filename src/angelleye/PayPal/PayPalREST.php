@@ -712,6 +712,9 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'PATCH', $updateData);
 
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
             if (in_array($response['status_code'], [200, 204])) {
                 return [
                     'success' => true,
