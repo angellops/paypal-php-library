@@ -131,6 +131,14 @@ if( $api_mode === 'classic' && $PayPal->APICallSuccessful($PayPalResult['ACK']) 
     $_SESSION['paypal_transaction_id'] = ( ! $api_upgrade ) 
                                     ? ( isset($PayPalResult['RESPONSE']['id']) ? $PayPalResult['RESPONSE']['id'] : '' )
                                     : ( isset($PayPalResult['TRANSACTIONID']) ? $PayPalResult['TRANSACTIONID'] : '' );
+    
+    $_SESSION['shipping_name'] = $_SESSION['payer']['firstname'] . ' ' . $_SESSION['payer']['lastname'];
+    $_SESSION['shipping_street'] = $_SESSION['billing']['street'];
+    $_SESSION['shipping_city'] = $_SESSION['billing']['city'];
+    $_SESSION['shipping_state'] = $_SESSION['billing']['state'];
+    $_SESSION['shipping_zip'] = $_SESSION['billing']['zip'];
+    $_SESSION['shipping_country_code'] = $_SESSION['billing']['countrycode'];
+
     header('Location: order-complete.php');
 } else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];

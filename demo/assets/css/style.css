@@ -435,10 +435,15 @@ body.cart-page .quantity-controls {
     pointer-events: none;
 }
 #googlepay-button-container,
-#applepay-button-container {
+#applepay-button-container,
+#acdc-container {
     font-style: italic;
     color: #b00020;
     margin-top: 20px;
+    word-break: break-all;
+}
+#pay-button {
+    font-style: normal;
 }
 .shipping-tracker-progress-bar-wrapper {
     padding: 0px 0px 35px;
@@ -499,4 +504,24 @@ ol.progress-tracker li.progress-tracker-todo:before {
     background-color: white;
     font-size: 1.5em;
     bottom: -1.6em;
+}
+.card-fields-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 20px 0;
+}
+#paypal-card-fields-number {
+    flex: 1 0 100%;
+}
+#paypal-card-fields-expiry, 
+#paypal-card-fields-cvv {
+    flex: 1;
+}
+.card-field {
+	height: 44px;
+}
+#paypal-loader {
+    color: #333;
+    margin-top: 10px;
 }

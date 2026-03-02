@@ -80,6 +80,12 @@ $_SESSION['shopping_cart'] = array(
     'tax' => 1.5,
 );
 $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'], 2);
+
+$checkoutData = [
+    'payer' => $_SESSION['payer'],
+    'billing' => $_SESSION['billing'],
+    'cart' => $_SESSION['shopping_cart']
+];
 ?>
 <html lang="en">
     <head>
@@ -113,6 +119,8 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
         <script type="text/javascript" src="../assets/js/scripts.js"></script>
         <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
         <script src="<?php echo $sdk_url; ?>"></script>
+        <script src="guest-checkout.js"></script>
+        <script src="acdc.js"></script>
     </head>
 
     <body>
@@ -202,7 +210,24 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                                         <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                                     </tr>
                                     <tr>
-                                        <td class="paypalbtn" colspan="2"><a href="DoDirectPayment.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a></td>
+                                        <td class="paypalbtn" colspan="2">
+                                            <a href="DoDirectPayment.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>
+                                            <?php if( $api_mode === 'rest' ) : ?>
+                                                <div id="guest-checkout-container" data-mode="rest" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>">
+                                                    <paypal-basic-card-container>
+                                                        <paypal-basic-card-button id="paypal-basic-card-button" hidden></paypal-basic-card-button>
+                                                    </paypal-basic-card-container>
+                                                </div>
+                                                <div id="acdc-container" data-mode="rest" data-checkout='<?php echo json_encode($checkoutData); ?>'>
+                                                    <div class="card-fields-container">
+                                                        <div class="card-field" id="paypal-card-fields-number"></div>
+                                                        <div class="card-field" id="paypal-card-fields-expiry"></div>
+                                                        <div class="card-field" id="paypal-card-fields-cvv"></div>
+                                                    </div>
+                                                    <button id="pay-button" class="pay-button btn btn-primary">Place Order</button>
+                                                </div>
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

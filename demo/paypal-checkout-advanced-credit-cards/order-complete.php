@@ -92,14 +92,37 @@ require_once('../../includes/config.php');
                             <p><strong>Billing Information</strong></p>
                             <p>
                                 <?php
-                                    echo $_SESSION['payer']['firstname'] . ' ' . $_SESSION['payer']['lastname'] . '<br />' .
-                                    $_SESSION['payer']['email'] . '<br />' .
-                                    $_SESSION['payer']['phonenumber'] . '<br />' .
-                                    $_SESSION['paypal_transaction_id'];
+                                    if( !isset($_SESSION['payment_mode']) ) {
+                                        echo $_SESSION['payer']['firstname'] . ' ' . $_SESSION['payer']['lastname'] . '<br />' .
+                                        $_SESSION['payer']['email'] . '<br />' .
+                                        $_SESSION['payer']['phonenumber'] . '<br />' .
+                                        '<strong>Transaction ID: </strong>' . $_SESSION['paypal_transaction_id'] . '<br />
+                                        <span style="display:block; width: 75%;"><strong> Payment Source: </strong>PayPal</span>';
+                                    } elseif( isset($_SESSION['payment_mode']) && $_SESSION['payment_mode'] === 'guest' ) {
+                                        echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
+                                        $_SESSION['email'] . '<br />'. 
+                                        $_SESSION['phone_number'] . '<br />' . 
+                                        '<strong>Transaction ID: </strong>' . $_SESSION['paypal_transaction_id'] . '<br />
+                                        <span style="display:block; width: 75%;"><strong> Payment Source: </strong>Guest Checkout Payments</span>';
+                                    } else {
+                                        echo '<strong>Payment Method: </strong>' . $_SESSION['card_last4'] . ' (' . $_SESSION['card_brand'] . ')<br />' . 
+                                        '<strong>Transaction ID: </strong>' . $_SESSION['paypal_transaction_id'] . '<br />
+                                        <span style="display:block; width: 75%;"><strong> Payment Source: </strong>Advanced Credit/Debit Cards (ACDC)</span>';
+                                    }
                                 ?>
                             </p>
                         </div>
-                        <div class="col-md-4 column"></div>
+                        <div class="col-md-4 column">
+                            <p><strong>Shipping Information</strong></p>
+                            <p>
+                                <?php 
+                                    echo ($_SESSION['shipping_name']) . '<br />' .
+                                    $_SESSION['shipping_street'] . '<br />' .
+                                    $_SESSION['shipping_city'] . ', ' . $_SESSION['shipping_state'] . '  ' . $_SESSION['shipping_zip'] . '<br />' . 
+                                    $_SESSION['shipping_country_code']; 
+                                ?>
+                            </p>
+                        </div>
                         <div class="col-md-4 column">
                             <table class="table table-summary">
                                 <tbody>
