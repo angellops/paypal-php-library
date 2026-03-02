@@ -138,6 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function init() {
+        // Hide Pay Button
         payButton.style.display = "none";
 
         try {
@@ -193,8 +194,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const orderId = await createOrder();
 
             const { data, state } = await cardFieldsInstance.submit(orderId, {
+                cardholderName: checkoutData.payer.firstname + " " + checkoutData.payer.lastname,
                 billingAddress: {
+                    addressLine1: checkoutData.billing.street,
+                    adminArea2: checkoutData.billing.city,
+                    adminArea1: checkoutData.billing.state,
                     postalCode: checkoutData.billing.zip,
+                    countryCode: checkoutData.billing.countrycode,
                 },
                 contingencies: ["SCA_ALWAYS"]
             });
