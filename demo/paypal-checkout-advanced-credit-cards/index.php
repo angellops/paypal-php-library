@@ -214,7 +214,7 @@ $checkoutData = [
                                             <?php if( $api_mode === 'rest' ) : ?><div class="inline-buttons"><?php endif; ?>
                                             <a href="DoDirectPayment.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>
                                             <?php if( $api_mode === 'rest' ) : ?>
-                                                <div id="guest-checkout-container" data-mode="rest" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>">
+                                                <div id="guest-checkout-container" data-mode="rest" data-checkout='<?php echo json_encode($checkoutData); ?>'>
                                                     <paypal-basic-card-container>
                                                         <paypal-basic-card-button id="paypal-basic-card-button" hidden></paypal-basic-card-button>
                                                     </paypal-basic-card-container>
