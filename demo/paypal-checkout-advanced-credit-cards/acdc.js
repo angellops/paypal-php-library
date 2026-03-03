@@ -14,21 +14,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const items = cart.acdc_items.map(item => ({
                 name: item.name,
+                description: "Item description",
                 sku: item.id,
+                product_code: item.id,
+                commodity_code: "86101700",
+                unit_of_measure: "UNIT",
+                quantity: item.qty,
+                category: "PHYSICAL_GOODS",
                 unit_amount: {
                     currency_code: "USD",
                     value: item.price
                 },
-                quantity: item.qty,
-                category: "PHYSICAL_GOODS",
-                commodity_code: "86101700",
-                description: "Item description",
-                unit_of_measure: "UNIT",
-                tax: {
+                unit_tax_amount: {
                     currency_code: "USD",
                     value: "0.00"
                 },
-                discount_amount: { 
+                unit_discount_amount: { 
                     currency_code: "USD", 
                     value: "0.00" 
                 }
@@ -59,6 +60,14 @@ document.addEventListener("DOMContentLoaded", function () {
                                 tax_total: {
                                     currency_code: "USD",
                                     value: cart.tax
+                                },
+                                discount: {
+                                    currency_code: "USD",
+                                    value: "0.00"
+                                },
+                                duty: { 
+                                    currency_code: "USD",
+                                    value: "0.00"
                                 }
                             },
                         },
@@ -74,7 +83,13 @@ document.addEventListener("DOMContentLoaded", function () {
                                 postal_code: billing.zip,
                                 country_code: billing.countrycode
                             }
-                        }
+                        },
+                        shipping_detail: {
+                            ship_from_address: {
+                                postal_code: "90001",
+                                country_code: "US"
+                            },
+                        },
                     },
                 ],
             };
