@@ -525,3 +525,35 @@ ol.progress-tracker li.progress-tracker-todo:before {
     color: #333;
     margin-top: 10px;
 }
+.inline-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+.inline-buttons paypal-basic-card-container {
+    width: auto;
+}
+.paypalbtn .inline-buttons a {
+    margin: 0;
+}
+.or-wrapper {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    font-weight: 600;
+    margin-top: 20px;
+    color: #b4b4b4;
+}
+.or-wrapper::before,
+.or-wrapper::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #ccc;
+}
+.or-wrapper::before {
+    margin-right: 10px;
+}
+.or-wrapper::after {
+    margin-left: 10px;
+}
