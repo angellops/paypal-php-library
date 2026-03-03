@@ -1,6 +1,5 @@
 @charset "utf-8";
 /* CSS Document */
-
 #header {
     display: flex;
     align-items: center;
@@ -436,7 +435,8 @@ body.cart-page .quantity-controls {
 }
 #googlepay-button-container,
 #applepay-button-container,
-#acdc-container {
+#acdc-container,
+#venmo-container {
     font-style: italic;
     color: #b00020;
     margin-top: 20px;
@@ -453,13 +453,11 @@ ol.progress-tracker {
     padding: 0;
     list-style-type: none;
 }
-
 ol.progress-tracker li {
     display: inline-block;
     text-align: center;
     line-height: 3em;
 }
-
 ol.progress-tracker[data-progress-tracker-steps="2"] li { width: 49%; }
 ol.progress-tracker[data-progress-tracker-steps="3"] li { width: 33%; }
 ol.progress-tracker[data-progress-tracker-steps="4"] li { width: 24%; }
@@ -468,7 +466,6 @@ ol.progress-tracker[data-progress-tracker-steps="6"] li { width: 16%; }
 ol.progress-tracker[data-progress-tracker-steps="7"] li { width: 14%; }
 ol.progress-tracker[data-progress-tracker-steps="8"] li { width: 12%; }
 ol.progress-tracker[data-progress-tracker-steps="9"] li { width: 11%; }
-
 ol.progress-tracker li.progress-tracker-done {
     color: black;
     border-bottom: 4px solid #01ba7c;
@@ -477,7 +474,6 @@ ol.progress-tracker li.progress-tracker-todo {
     color: silver; 
     border-bottom: 4px solid silver;
 }
-
 ol.progress-tracker li:after {
     content: "\00a0\00a0";
 }

@@ -19,7 +19,7 @@ class PayPalCommonFunctions
     /**
      * Render the PayPal payment button
      */
-    public function renderPayPalButton($enableVenmo = false)
+    public function renderPayPalButton()
     {
         if ($this->config['PayPalAPIMode'] !== 'rest') {
             echo '<img src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif">';
@@ -33,19 +33,12 @@ class PayPalCommonFunctions
         <script async src="<?php echo $sdk_url; ?>" onload="initPayPalV6()"> </script>
 
         <div id="paypalError"></div>
-        <?php if ($enableVenmo && $this->config['PayPalAPIMode'] === 'rest'): ?><a href="./SetExpressCheckout.php?paywith=paypal"><?php endif; ?>
-            <paypal-button id="paypalBtn" type="pay" hidden></paypal-button>
-        <?php if ($enableVenmo && $this->config['PayPalAPIMode'] === 'rest'): ?></a><?php endif; ?>
-
-        <?php if ($enableVenmo): ?>
-            <venmo-button id="venmoBtn" type="pay" hidden></venmo-button>
-        <?php endif; ?>
+        <paypal-button id="paypalBtn" type="pay" hidden></paypal-button>
 
         <script>
             async function initPayPalV6() {
                 const errorEl = document.getElementById('paypalError');
                 const btnEl   = document.getElementById('paypalBtn');
-                const venmoEl = document.getElementById('venmoBtn');
                 try {
                     const res = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_client_token');
                     if (!res.ok) {
@@ -57,14 +50,13 @@ class PayPalCommonFunctions
                         throw new Error(data.message || 'PayPal client token missing');
                     }
 
-                    await paypal.createInstance({
+                    const sdkInstance = await paypal.createInstance({
                         clientToken: data.token,
-                        components: ['paypal-payments', 'venmo-payments'],
+                        components: ['paypal-payments'],
                         pageType: 'checkout'
                     });
 
                     btnEl.removeAttribute('hidden');
-                    if (venmoEl) venmoEl.removeAttribute('hidden');
                 } catch (err) {
                     console.error('PayPal init error:', err);
 

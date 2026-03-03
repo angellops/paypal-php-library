@@ -118,6 +118,7 @@ if( $PayPalResult['success'] || ( $api_upgrade && $PayPalResult['ACK'] && strtou
     $_SESSION['shipping_zip'] = isset($shipping['address']['postal_code']) ? $shipping['address']['postal_code'] : '';
     $_SESSION['shipping_country_code'] = isset($shipping['address']['country_code']) ? $shipping['address']['country_code'] : '';
     $_SESSION['shipping_country_name'] = 'United States';
+    $_SESSION['payment_method_source'] = 'PayPal';
 
     /**
      * At this point, we now have the buyer's shipping address available in our app.

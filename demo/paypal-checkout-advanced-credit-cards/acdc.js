@@ -101,7 +101,6 @@ document.addEventListener("DOMContentLoaded", function () {
             })
 
             const data = await response.json();
-            console.log("Order creation response:", data);
             if (!data.order_id) {
                 throw new Error(data.message || "Unable to create PayPal order.");
             }

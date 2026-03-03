@@ -83,7 +83,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <script type="text/javascript" src="../assets/js/scripts.js"></script>
     <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
     <script src="<?php echo $sdk_url; ?>"></script>
-    <script src="paypal-basic.js"></script>
+    <script src="venmo-basic.js"></script>
   </head>
   <body>
     <div class="container">
@@ -168,7 +168,10 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                   </tr>
                   <tr>
                     <td class="paypalbtn vaulting-btns" colspan="2">
-                      <?php $PayPalCommonFunctions->renderPayPalButton(true); ?>
+                      <a href="SetExpressCheckout.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>
+                      <div id="venmo-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
+                        <venmo-button id="venmo-button" type="pay" hidden></venmo-button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
