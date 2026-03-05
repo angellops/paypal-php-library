@@ -22,6 +22,25 @@ if (!$data || !isset($data['purchase_units'][0])) {
     exit;
 }
 
+$order_id = isset($data['id']) ? $data['id'] : null;
+$reference_id = isset($data['purchase_units'][0]['reference_id']) ? $data['purchase_units'][0]['reference_id'] : '';
+
+$items = [];
+$data_items = $data['purchase_units'][0]['items'];
+if (isset($data_items) && is_array($data_items)) {
+    foreach ($data_items as $item) {
+        $items[] = [
+            "name" => isset($item['name']) ? $item['name'] : '',
+            "unit_amount" => [
+                "currency_code" => isset($item['unit_amount']['currency_code']) ? $item['unit_amount']['currency_code'] : 'USD',
+                "value" => isset($item['unit_amount']['value']) ? $item['unit_amount']['value'] : '0.00'
+            ],
+            "quantity" => isset($item['quantity']) ? $item['quantity'] : "1",
+            "sku" => isset($item['sku']) ? $item['sku'] : ""
+        ];
+    }
+}
+
 // Extract item total safely
 $item_total = isset($data['purchase_units'][0]['amount']['breakdown']['item_total']['value'])
     ? (float)$data['purchase_units'][0]['amount']['breakdown']['item_total']['value']
@@ -47,6 +66,7 @@ http_response_code(200);
 
 $response = [
     "purchase_units" => [[
+        "reference_id" => $reference_id,
         "amount" => [
             "currency_code" => "USD",
             "value" => number_format($grand_total, 2, '.', ''),

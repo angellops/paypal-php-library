@@ -44,6 +44,7 @@ foreach ($_SESSION['callback_items'] as $item) {
 $payload = [
     "intent" => "CAPTURE",
     "purchase_units" => [[
+        "reference_id" => uniqid('ORDER-'),
         "items" => $purchase_items,
         "amount" => [
             "currency_code" => "USD",
@@ -52,6 +53,18 @@ $payload = [
                 "item_total" => [
                     "currency_code" => "USD",
                     "value" => number_format($_SESSION['shopping_cart']['subtotal'], 2, '.', '')
+                ],
+                "shipping" => [
+                    "currency_code" => "USD",
+                    "value" => number_format($_SESSION['shopping_cart']['shipping'], 2, '.', '')
+                ],
+                "handling" => [
+                    "currency_code" => "USD",
+                    "value" => number_format($_SESSION['shopping_cart']['handling'], 2, '.', '')
+                ],
+                "tax_total" => [
+                    "currency_code" => "USD",
+                    "value" => number_format($_SESSION['shopping_cart']['tax'], 2, '.', '')
                 ]
             ]
         ]
@@ -67,8 +80,7 @@ $payload = [
                 "order_update_callback_config" => [
                     "callback_url" => $domain . "demo/paypal-checkout-shipping-callback/shippingCallback.php",
                     "callback_events" => [
-                        "SHIPPING_ADDRESS",
-                        "SHIPPING_OPTIONS"
+                        "SHIPPING_ADDRESS"
                     ]
                 ]
             ],
