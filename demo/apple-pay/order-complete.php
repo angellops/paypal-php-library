@@ -93,8 +93,8 @@ if ($api_mode === 'classic') {
                   echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
                   $_SESSION['email'] . '<br />'. 
                   $_SESSION['phone_number'] . '<br />' . 
-                  $_SESSION['paypal_transaction_id'] . '<br />
-                  <strong> Payment Method: ApplePay</strong>';
+                  '<strong>Transaction ID: </strong>' . $_SESSION['paypal_transaction_id'] . '<br />
+                  <strong> Payment Method: </strong>ApplePay';
                 ?>
               </p>
             </div>

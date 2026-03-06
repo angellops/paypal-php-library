@@ -98,8 +98,8 @@ if ($api_mode === 'classic') {
                   echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
                   $_SESSION['email'] . '<br />'. 
                   $_SESSION['phone_number'] . '<br />' . 
-                  $_SESSION['paypal_transaction_id'];
-                  echo '<br /> Payment Source: <strong>' . ucfirst( $_SESSION['payment_method_source'] ) . '</strong><br />';
+                  '<strong>Transaction ID: </strong>' . $_SESSION['paypal_transaction_id'];
+                  echo '<br /> <strong>Payment Source: </strong>' . ucfirst( $_SESSION['payment_method_source'] ) . '<br />';
                 ?>
               </p>
             </div>

@@ -93,7 +93,7 @@ require_once('../../includes/config.php');
                   echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
                   $_SESSION['email'] . '<br />'. 
                   $_SESSION['phone_number'] . '<br />' . 
-                  $_SESSION['paypal_transaction_id'];
+                  '<strong>Transaction ID: </strong>' . $_SESSION['paypal_transaction_id'];
                 ?>
               </p>
             </div>
