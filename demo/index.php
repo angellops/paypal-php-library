@@ -551,6 +551,29 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <div class="thumbnail">
+                                <img alt="PayPal Multiple Checkout Options" src="assets/images/paypal-express-checkout.jpg">
+                                <?php
+                                $DIR = '/paypal-multiple-checkout-options';
+                                $DIR_exists = (is_dir(__DIR__ . $DIR)) ? true : false;
+                                ?>
+                                <div class="caption">
+                                    <h3>PayPal</h3>
+                                    <h4>Multiple Checkout Options</h4>
+                                    <p>Demo of multiple checkout options: PayPal, Guest Checkout, Venmo, Pay Later, and Direct Card Payments.</p>
+                                    <p align="center">
+                                        <?php if ($DIR_exists) : ?>
+                                            <a class="btn btn-primary" href="paypal-multiple-checkout-options/" target="_blank">Launch Demo</a>
+                                        <?php else: ?>
+                                            <a class="btn btn-success"
+                                            href="https://www.angelleye.com/product/paypal-payments-pro-payflow-php-basic-demo-kit?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
+                                            target="_blank">Buy Now</a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

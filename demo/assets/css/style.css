@@ -101,6 +101,20 @@
 .main-info p {
     margin-bottom: 4px;
 }
+.demo-main-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+@media (min-width: 768px) {
+    .demo-main-wrapper {
+        flex-direction: row;
+        gap: 32px;
+    }
+    .demo-main-wrapper .demo-cred {
+        width: calc(50% - 16px);
+    }
+}
 .demo-cred {
     background: #EFF6FF;
     padding: 24px;
@@ -530,6 +544,12 @@ ol.progress-tracker li.progress-tracker-todo:before {
 .inline-buttons paypal-basic-card-container {
     width: auto;
 }
+.inline-buttons #venmo-container {
+    margin-top: 0;
+}
+.inline-buttons.other-buttons {
+    margin-top: 10px;
+}
 .paypalbtn .inline-buttons a {
     margin: 0;
 }
@@ -552,4 +572,9 @@ ol.progress-tracker li.progress-tracker-todo:before {
 }
 .or-wrapper::after {
     margin-left: 10px;
+}
+.paylater-message {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
 }
