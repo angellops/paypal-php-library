@@ -29,12 +29,6 @@ $PayPalConfig = array(
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
-// Determine payment type
-$paymentType = ( !empty($_GET) && !empty($_GET['paywith']) && $_GET['paywith'] === 'venmo' ) ? 'venmo' : 'paypal';
-
-// Store payment type in session
-$_SESSION['payment_type'] = $paymentType;
-
 // Map items from session
 $purchase_items = [];
 foreach ($_SESSION['venmo_items'] as $item) {
@@ -64,47 +58,26 @@ $payload = [
                 ]
             ]
         ]
-    ]]
-];
-
-if ($paymentType === 'venmo') {
-	$payload['payment_source'] = [
-		'venmo' => [
-			'experience_context' => [
-				'brand_name' => 'Angell EYE',
-				'shipping_preference' => 'GET_FROM_FILE',
-			]
-		]
-	];
-} else {
-	$payload['payment_source'] = [
-		'paypal' => [
-			'experience_context' => [
-				'brand_name' => 'Angell EYE',
-				'shipping_preference' => 'GET_FROM_FILE',
-				'return_url' => $domain . 'demo/paypal-venmo-checkout-basic/GetExpressCheckoutDetails.php',
-				'cancel_url' => $domain . 'demo/paypal-venmo-checkout-basic/',
-			],
-
-			'order_update_callback_config' => [
-				'callback_url' => $domain . 'demo/paypal-venmo-checkout-basic/shippingCallback.php',
-				'callback_events' => [
-					'SHIPPING_ADDRESS',
-					'SHIPPING_OPTIONS'
-				]
-			]
-		]
-	];
-
-	$payload['payment_method'] = [
-		"payer_selected" => "PAYPAL",
+    ]],
+    "payment_source" => [
+        "paypal" => [
+            "experience_context" => [
+                "brand_name" => "Angell EYE",
+                "shipping_preference" => "GET_FROM_FILE",
+                "user_action" => "PAY_NOW",
+                "return_url" => $domain . "demo/paypal-venmo-checkout-basic/GetExpressCheckoutDetails.php",
+                "cancel_url" => $domain . "demo/paypal-venmo-checkout-basic/",
+            ],
+        ]
+	],
+    "payment_method" => [
+        "payer_selected" => "PAYPAL",
 		"payee_preferred" => "IMMEDIATE_PAYMENT_REQUIRED"
-	];
-
-	$payload['payer'] = [
-		"email_address" => $_SESSION['buyer_email']
-	];
-}
+    ],
+    "payer" => [
+        "email_address" => $_SESSION['buyer_email']
+    ]
+];
 
 /**
  * Here we are making the call to the createOrder function in the library,
@@ -150,13 +123,6 @@ if( !$api_upgrade ) {
 if( !empty($redirect_url) ) {
     $_SESSION['paypal_token'] = $orderId;
     header('Location: ' . $redirect_url);
-} elseif( $PaymentType === 'venmo' ) {
-	header('Content-Type: application/json');
-
-	echo json_encode([
-		'id' => $orderId,
-		'status' => 'success'
-	]);
 } else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
     header('Location: ../error.php');

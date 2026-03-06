@@ -146,7 +146,7 @@ if( $PayPalResult['success'] || ( $api_upgrade && $PayPalResult['ACK'] && strtou
      * page so they can see the shipping/handling/tax
      * that has been added to the order.
      */
-    header('Location: review.php');
+    header('Location: DoExpressCheckoutPayment.php');
 } else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
     header('Location: ../error.php');
