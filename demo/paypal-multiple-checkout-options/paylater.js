@@ -17,12 +17,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 pageType: 'checkout',
             });
 
-            const messagesInstance = sdkInstance.createPayPalMessages();
             const paymentMethods = await sdkInstance.findEligibleMethods({
                 currencyCode: "USD",
             });
 
             if (paymentMethods.isEligible("paylater")) {
+                // Initialize PayLater Messaging
+                const messagesInstance = sdkInstance.createPayPalMessages();
+
                 const payLaterPaymentMethodDetails = paymentMethods.getDetails("paylater");
                 const { productCode, countryCode } = payLaterPaymentMethodDetails;
                 const payLaterButton = document.querySelector("paypal-pay-later-button");
