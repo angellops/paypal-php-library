@@ -122,12 +122,16 @@ class PayPalREST extends PayPal
      */
     protected function makeRequest($endpoint, $method = 'GET', $data = null)
     {
-        $token = $this->getAccessToken();
-
         $headers = $this->getHeaders(true);
 
+        $url = $this->base_url . $endpoint;
+
+        // Detect caller function
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $callerFunction = isset($trace[1]['function']) ? $trace[1]['function'] : 'unknown';
+
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->base_url . $endpoint);
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -140,6 +144,18 @@ class PayPalREST extends PayPal
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        $request_log = [
+            'request' => [
+                'url' => $url,
+                'method' => $method,
+                'headers' => $headers,
+                'payload' => $data
+            ]
+        ];
+
+        // Log the request
+        $this->Logger($this->LogPath, $callerFunction . 'Request', $request_log);
 
         return [
             'status_code' => $httpCode,
@@ -200,7 +216,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData);
 
-            if ($response['status_code'] === 201) {
+            // Log the response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
                     'success' => true,
                     'order_id' => $response['body']['id'],
@@ -321,7 +340,7 @@ class PayPalREST extends PayPal
     private function getApprovalUrl($links)
     {
         foreach ($links as $link) {
-            if ($link['rel'] === 'approve') {
+            if ($link['rel'] === 'approve' || $link['rel'] === 'payer-action') {
                 return $link['href'];
             }
         }
@@ -338,13 +357,13 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v1/reporting/balances');
-
+            
+            // call logger
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+            
             if (in_array($response['status_code'], [200, 201])) {
                 $body = $response['body'];
-
-                // call logger
-                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
+                
                 // Normal REST-style response
                 return [
                     'success' => true,
@@ -353,9 +372,6 @@ class PayPalREST extends PayPal
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
                 ];
             }
-
-            // call logger
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             return [
                 'success' => false,
