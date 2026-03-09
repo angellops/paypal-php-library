@@ -127,7 +127,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 pageType: 'checkout',
             });
 
-            const messagesInstance = sdkInstance.createPayPalMessages();
             if (document.body.classList.contains('checkout-page')) {
                 const paymentMethods = await sdkInstance.findEligibleMethods({
                     currencyCode: "USD",
@@ -138,6 +137,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     const { productCode, countryCode } = payLaterPaymentMethodDetails;
                     const payLaterButton = document.querySelector("paypal-pay-later-button");
     
+                    const messagesInstance = sdkInstance.createPayPalMessages();
+
                     // Configure button with Pay Later specific details
                     payLaterButton.productCode = productCode;
                     payLaterButton.countryCode = countryCode;
