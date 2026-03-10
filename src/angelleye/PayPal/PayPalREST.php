@@ -251,7 +251,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET');
 
-            if ($response['status_code'] === 200) {
+            // Log the response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
                     'success' => true,
                     'order' => $response['body']
@@ -280,7 +283,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/authorize', 'POST');
 
-            if ($response['status_code'] === 201) {
+            // Log the response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
                     'success' => true,
                     'authorization_id' => $response['body']['purchase_units'][0]['payments']['authorizations'][0]['id'],
@@ -311,7 +317,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST');
 
-            if ($response['status_code'] === 201) {
+            // Log the response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
                     'success' => true,
                     'capture_id' => $response['body']['purchase_units'][0]['payments']['captures'][0]['id'],

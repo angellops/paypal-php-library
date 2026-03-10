@@ -83,17 +83,11 @@ $createOrderPayload = [
             'items' => $orderItems,                         // Reference the list of items created earlier
         ],
     ],
-    'payment_source' => [
-        'paypal' => [
-            'experience_context' => [
-                'brand_name' => '',                         // The business name shown on PayPal
-                'landing_page' => '',                       // Direct user to login or guest checkout
-                'user_action' => '',                        // Label for the final button on PayPal
-                'shipping_preference' => '',                // Disable shipping address collection  
-                'return_url' => '',                         // URL after successful payment
-                'cancel_url' => ''                          // URL if user cancels
-            ]
-        ]
+    'application_context' => [
+        'return_url' => '',             // URL after successful payment
+        'cancel_url' => '',             // URL if user cancels
+        'brand_name' => '',             // The business name shown on PayPal
+        'user_action' => '',            // Label for the final button on PayPal
     ]
 ];
 

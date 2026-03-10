@@ -83,26 +83,20 @@ $createOrderPayload = [
             'items' => $orderItems,                         // Reference the list of items created earlier
         ],
     ],
-    'payment_source' => [
-        'paypal' => [
-            'experience_context' => [
-                'brand_name' => 'AngellEYE',                                    // The business name shown on PayPal
-                'landing_page' => 'LOGIN',                                      // Direct user to login or guest checkout
-                'user_action' => 'CONTINUE',                                    // Label for the final button on PayPal
-                'shipping_preference' => 'NO_SHIPPING',                         // Disable shipping address collection  
-                'return_url' => $domain . 'samples/rest/captureOrder.php',      // URL after successful payment
-                'cancel_url' => $domain . 'samples/rest/createOrder.php'        // URL if user cancels
-            ]
-        ]
+    'application_context' => [
+        'return_url' => $domain . 'samples/rest/captureOrder.php',      // URL after successful payment
+        'cancel_url' => $domain . 'samples/rest/createOrder.php',       // URL if user cancels
+        'brand_name' => 'AngellEYE',                                    // The business name shown on PayPal
+        'user_action' => 'PAY_NOW',                                     // Label for the final button on PayPal
     ]
 ];
 
 // Execute the API call to create the order with PayPal
-$PayPalResult = $PayPal->createOrder($createOrderPayload);
+$_SESSION['createOrderResponse'] = $PayPal->createOrder($createOrderPayload);
 
 // Output a clickable link to redirect the user to PayPal for approval
-echo '<a href="' . $PayPalResult['approval_url'] . '">Click here to continue.</a><br /><br />';
+echo '<a href="' . $_SESSION['createOrderResponse']['approval_url'] . '">Click here to continue.</a><br /><br />';
 
 // Print the full API response for debugging purposes
 echo '<pre>';
-print_r($PayPalResult);
+print_r($_SESSION['createOrderResponse']);
