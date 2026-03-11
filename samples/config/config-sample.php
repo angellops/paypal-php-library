@@ -49,7 +49,7 @@ $api_mode = 'classic';  // Options: 'classic' or 'rest'
  * If FALSE, Classic and REST modes work separately, and REST responses
  * are returned as-is.
  */
-$api_upgrade = FALSE; // Options: TRUE or FALSE
+$api_upgrade = false; // Options: true or false
 
 /**
  * PayPal API Version

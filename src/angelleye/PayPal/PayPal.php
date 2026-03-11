@@ -1444,6 +1444,10 @@ class PayPal
      */
     function SetExpressCheckout($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->SetExpressCheckoutMapper($DataArray);
+        }
+
         $SECFieldsNVP = '&METHOD=SetExpressCheckout';
         $SurveyChoicesNVP = '';
         $PaymentsNVP = '';
@@ -1598,6 +1602,10 @@ class PayPal
      */
     function GetExpressCheckoutDetails($Token)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->GetExpressCheckoutDetailsMapper($Token);
+        }
+
         $GECDFieldsNVP = '&METHOD=GetExpressCheckoutDetails&TOKEN=' . $Token;
 
         $NVPRequest = $this->NVPCredentials . $GECDFieldsNVP;
@@ -1634,6 +1642,10 @@ class PayPal
      */
     function DoExpressCheckoutPayment($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->DoExpressCheckoutPaymentMapper($DataArray);
+        }
+
         $DECPFieldsNVP = '&METHOD=DoExpressCheckoutPayment';
         $PaymentsNVP = '';
         $UserSelectedOptionsNVP = '';

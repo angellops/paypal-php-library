@@ -225,7 +225,8 @@ class PayPalREST extends PayPal
                     'order_id' => $response['body']['id'],
                     'status' => $response['body']['status'],
                     'approval_url' => $this->getApprovalUrl($response['body']['links']),
-                    'full_response' => $response['body']
+                    'full_response' => $response['body'],
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
                 ];
             }
 
@@ -233,12 +234,13 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'error' => 'Failed to create order',
                 'status_code' => $response['status_code'],
-                'details' => $response['body']
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ];
         }
     }
@@ -257,7 +259,8 @@ class PayPalREST extends PayPal
             if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
                     'success' => true,
-                    'order' => $response['body']
+                    'order' => $response['body'],
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
                 ];
             }
 
@@ -265,7 +268,8 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'error' => 'Failed to get order details',
                 'status_code' => $response['status_code'],
-                'details' => $response['body']
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {
             return [
@@ -291,7 +295,8 @@ class PayPalREST extends PayPal
                     'success' => true,
                     'authorization_id' => $response['body']['purchase_units'][0]['payments']['authorizations'][0]['id'],
                     'status' => $response['body']['status'],
-                    'full_response' => $response['body']
+                    'full_response' => $response['body'],
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
                 ];
             }
 
@@ -299,7 +304,8 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'error' => 'Failed to authorize order',
                 'status_code' => $response['status_code'],
-                'details' => $response['body']
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {
             return [
@@ -325,7 +331,8 @@ class PayPalREST extends PayPal
                     'success' => true,
                     'capture_id' => $response['body']['purchase_units'][0]['payments']['captures'][0]['id'],
                     'status' => $response['body']['status'],
-                    'full_response' => $response['body']
+                    'full_response' => $response['body'],
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
                 ];
             }
 
@@ -333,7 +340,8 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'error' => 'Failed to capture order',
                 'status_code' => $response['status_code'],
-                'details' => $response['body']
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {
             return [

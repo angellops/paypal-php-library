@@ -5,14 +5,18 @@ require_once('../../autoload.php');
 
 // Create PayPal object.
 $PayPalConfig = array(
-					'Sandbox' => $sandbox,
-					'APIUsername' => $api_username,
-					'APIPassword' => $api_password,
-					'APISignature' => $api_signature, 
-					'PrintHeaders' => $print_headers, 
-					'LogResults' => $log_results,
-					'LogPath' => $log_path,
-					);
+	'Sandbox' => $sandbox,
+	'PayPalAPIMode' => $api_mode,
+	'PayPalAPIUpgrade' => $api_upgrade,
+	'APIUsername' => $api_username,
+	'APIPassword' => $api_password,
+	'APISignature' => $api_signature, 
+	'ClientID' => $rest_client_id,
+        'ClientSecret' => $rest_client_secret,
+	'PrintHeaders' => $print_headers,
+	'LogResults' => $log_results,
+	'LogPath' => $log_path,
+);
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
@@ -144,5 +148,7 @@ $PayPalRequestData = array(
 $PayPalResult = $PayPal->DoExpressCheckoutPayment($PayPalRequestData);
 
 // Write the contents of the response array to the screen for demo purposes.
-echo '<pre />';
+echo '<b>DoExpressCheckoutPayment</b><br /><pre>';
+print_r($GECDResult);
+echo '<br /><br /></pre>';
 print_r($PayPalResult);
