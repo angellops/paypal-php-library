@@ -5,21 +5,28 @@ require_once('../../autoload.php');
 
 // Create PayPal object.
 $PayPalConfig = array(
-					'Sandbox' => $sandbox,
-					'APIUsername' => $api_username,
-					'APIPassword' => $api_password,
-					'APISignature' => $api_signature, 
-					'PrintHeaders' => $print_headers,
-                    'LogResults' => $log_results,
-                    'LogPath' => $log_path,
-					);
+	'Sandbox' => $sandbox,
+	'PayPalAPIMode' => $api_mode,
+	'PayPalAPIUpgrade' => $api_upgrade,
+	'APIUsername' => $api_username,
+	'APIPassword' => $api_password,
+	'APISignature' => $api_signature, 
+	'ClientID' => $rest_client_id,
+        'ClientSecret' => $rest_client_secret,
+	'PrintHeaders' => $print_headers,
+	'LogResults' => $log_results,
+	'LogPath' => $log_path,
+);
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
+// Validate API mode
+$PayPal->ValidateMode('classic');
+
 // Prepare request arrays
 $GRPPDFields = array(
-				   'profileid' => 'I-YMGN1WN4YY9E'			// Profile ID of the profile you want to get details for.
-				   );
+	'profileid' => 'I-YMGN1WN4YY9E'			// Profile ID of the profile you want to get details for.
+);
 				   
 $PayPalRequestData = array('GRPPDFields'=>$GRPPDFields);
 

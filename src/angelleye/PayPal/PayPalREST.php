@@ -406,6 +406,268 @@ class PayPalREST extends PayPal
     }
 
     /**
+     * Create a recurring payments profile using PayPal REST APIs.
+     *
+     * This method automates the process of creating a PayPal product, 
+     * billing plan, and subscription (recurring profile) in sequence.
+     *
+     * Steps:
+     * 1. Create a product using the `/v1/catalogs/products` endpoint.
+     * 2. Create a billing plan linked to the product using `/v1/billing/plans`.
+     * 3. Create a subscription (recurring payments profile) using `/v1/billing/subscriptions`.
+     */
+    public function createSubscriptionProfile($DataArray)
+    {
+        $ProductData = !empty($DataArray['ProductData']) ? $DataArray['ProductData'] : [];
+        $PlanData = !empty($DataArray['PlanData']) ? $DataArray['PlanData'] : [];
+        $SubscriptionData = !empty($DataArray['SubscriptionData']) ? $DataArray['SubscriptionData'] : [];
+
+        // Step 1: Create Product
+        $product = $this->createProduct($ProductData);
+        if (!$product['success']) {
+            return $product;
+        }
+
+        // Step 2: Create Plan
+        $plan = $this->createPlan($PlanData, $product['id']);
+        if (!$plan['success']) {
+            return $plan;
+        }
+
+        // Step 3: Create Subscription
+        $subscription = $this->createSubscription($SubscriptionData, $plan['id']);
+
+        return $subscription;
+    }
+
+    /**
+     * Creates a product in the PayPal catalog.
+     *
+     * This method sends a POST request to the PayPal `/v1/catalogs/products` endpoint
+     * to create a new product in the PayPal system.
+     *
+     * @param array $ProductData The product data to be sent in the request.
+     * @return array The response from the PayPal API.
+     */
+    public function createProduct($ProductData)
+    {
+        $response = $this->makeRequest('/v1/catalogs/products', 'POST', $ProductData);
+
+        // Log the response
+        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            return [
+                'success' => true,
+                'id' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                'response' => $response,
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        }
+
+        return [
+            'success' => false,
+            'status' => $response['status_code'],
+            'error' => isset($response['body']) ? $response['body'] : [],
+            'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+        ];
+    }
+
+    /**
+     * Creates a billing plan in the PayPal system.
+     *
+     * This method sends a POST request to the PayPal `/v1/billing/plans` endpoint
+     * to create a new billing plan.
+     *
+     * @param array $PlanData The plan data to be sent in the request.
+     * @param string $productId The ID of the product associated with the plan.
+     * @return array The response from the PayPal API.
+     */
+    public function createPlan($PlanData, $productId)
+    {
+        $PlanData['product_id'] = $productId;
+
+        $response = $this->makeRequest('/v1/billing/plans', 'POST', $PlanData);
+
+        // Log the response
+        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            return [
+                'success' => true,
+                'id' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                'response' => $response,
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        }
+
+        return [
+            'success' => false,
+            'status' => $response['status_code'],
+            'error' => isset($response['body']) ? $response['body'] : [],
+            'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+        ];
+    }
+
+    /**
+     * Creates a subscription in the PayPal system.
+     *
+     * This method sends a POST request to the PayPal `/v1/billing/subscriptions` endpoint
+     * to create a new subscription.
+     *
+     * @param array $SubscriptionData The subscription data to be sent in the request.
+     * @param string $planId The ID of the plan associated with the subscription.
+     * @return array The response from the PayPal API.
+     */
+    public function createSubscription($SubscriptionData, $planId)
+    {
+        $SubscriptionData['plan_id'] = $planId;
+
+        $response = $this->makeRequest('/v1/billing/subscriptions', 'POST', $SubscriptionData);
+
+        // Log the response
+        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+        if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+            return [
+                'success' => true,
+                'subscription_id' => !empty($response['body']['id']) ? $response['body']['id'] : '',
+                'status' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                'approval_url' => $this->getApprovalUrl($response['body']['links']),
+                'response' => !empty($response['body']) ? $response['body'] : [],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        }
+
+        return [
+            'success' => false,
+            'status' => $response['status_code'],
+            'error' => !empty($response['body']) ? $response['body'] : [],
+            'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+        ];
+    }
+
+    /**
+     * Retrieves details of a PayPal subscription profile using the REST API.
+     *
+     * This method sends a GET request to the PayPal `/v1/billing/subscriptions/{subscription_id}` 
+     * endpoint to fetch information about a specific subscription, including its status and 
+     * associated details.
+     */
+    public function getSubscriptionProfile($subscriptionID) {
+        try {
+            $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionID, 'GET');
+
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status' => $response['body']['status'] ?? $response['status_code'],
+                'full_response' => $response['body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Manage a PayPal subscription profile by performing actions such as cancel, suspend, or activate.
+     *
+     * This function interacts with the PayPal REST API to manage an existing subscription.
+     * Supported actions typically include `cancel`, `suspend`, or `activate`.
+     */
+    public function manageSubscriptionProfile($DataArray) {
+        try {
+            $subscriptionId = isset($DataArray['subscription_id']) ? $DataArray['subscription_id'] : '';
+            $subscriptionAction = isset($DataArray['subscription_action']) ? strtolower($DataArray['subscription_action']) : '';
+            $subscriptionReason = isset($DataArray['subscription_reason']) ? array('reason' => $DataArray['subscription_reason']) : array();
+
+            $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionId . '/' . $subscriptionAction, 'POST', $subscriptionReason);
+            
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status' => $response['body']['status'] ?? $response['status_code'],
+                'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Updates an existing PayPal subscription profile using PATCH request.
+     *
+     * This method sends a PATCH request to the PayPal REST API endpoint
+     * `/v1/billing/subscriptions/{subscription_id}` to update details of an active subscription,
+     * such as plan, quantity, or metadata.
+     */
+    public function updateSubscriptionProfile($DataArray) {
+        try {
+            $subscriptionId = isset($DataArray['subscription_id']) ? $DataArray['subscription_id'] : '';
+            $patches = isset($DataArray['patches']) ? $DataArray['patches'] : array();
+
+            $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionId, 'PATCH', $patches);
+
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
+                return [
+                    'success' => true,
+                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => '',
+                'status' => $response['body']['status'] ?? $response['status_code'],
+                'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Test Orders API functionality
      */
     public function testOrdersAPI()
