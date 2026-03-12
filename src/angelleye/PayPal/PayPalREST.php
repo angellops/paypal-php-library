@@ -468,7 +468,7 @@ class PayPalREST extends PayPal
         return [
             'success' => false,
             'status' => $response['status_code'],
-            'error' => isset($response['body']) ? $response['body'] : [],
+            'errors' => isset($response['body']) ? $response['body'] : [],
             'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
         ];
     }
@@ -504,7 +504,7 @@ class PayPalREST extends PayPal
         return [
             'success' => false,
             'status' => $response['status_code'],
-            'error' => isset($response['body']) ? $response['body'] : [],
+            'errors' => isset($response['body']) ? $response['body'] : [],
             'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
         ];
     }
@@ -542,7 +542,7 @@ class PayPalREST extends PayPal
         return [
             'success' => false,
             'status' => $response['status_code'],
-            'error' => !empty($response['body']) ? $response['body'] : [],
+            'errors' => !empty($response['body']) ? $response['body'] : [],
             'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
         ];
     }
@@ -572,9 +572,8 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
-                'error' => '',
                 'status' => $response['body']['status'] ?? $response['status_code'],
-                'full_response' => $response['body'],
+                'errors' => !empty($response['body']) ? $response['body'] : [],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {
@@ -613,9 +612,8 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
-                'error' => '',
                 'status' => $response['body']['status'] ?? $response['status_code'],
-                'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
+                'errors' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {
@@ -654,9 +652,8 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
-                'error' => '',
                 'status' => $response['body']['status'] ?? $response['status_code'],
-                'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+                'errors' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {

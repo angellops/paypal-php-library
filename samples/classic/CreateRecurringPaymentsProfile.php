@@ -115,10 +115,15 @@ $PayPalRequestData = array(
 	'CCDetails' => $CCDetails, 
 	'PayerInfo' => $PayerInfo, 
 	'PayerName' => $PayerName, 
-	'BillingAddress' => $BillingAddress
+	'BillingAddress' => $BillingAddress,
+	'DomainDetails' => $domain,
 );
 
 $PayPalResult = $PayPal->CreateRecurringPaymentsProfile($PayPalRequestData);
+
+if( $api_upgrade ) {
+	echo '<a href="' . $PayPalResult['APPROVALURL']. '">Click here to continue.</a><br /><br />';
+}
 
 echo '<pre />';
 print_r($PayPalResult);

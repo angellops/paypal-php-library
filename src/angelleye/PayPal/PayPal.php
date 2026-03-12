@@ -2170,6 +2170,10 @@ class PayPal
      */
     function CreateRecurringPaymentsProfile($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->CreateRecurringPaymentsProfileMapper($DataArray);
+        }
+
         $CRPPFieldsNVP = '&METHOD=CreateRecurringPaymentsProfile';
         $OrderItemsNVP = '';
 
@@ -2261,6 +2265,10 @@ class PayPal
      */
     function GetRecurringPaymentsProfileDetails($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->GetRecurringPaymentsProfileDetailsMapper($DataArray);
+        }
+
         $GRPPDFieldsNVP = '&METHOD=GetRecurringPaymentsProfileDetails';
 
         $GRPPDFields = isset($DataArray['GRPPDFields']) ? $DataArray['GRPPDFields'] : array();
@@ -2294,6 +2302,10 @@ class PayPal
      */
     function ManageRecurringPaymentsProfileStatus($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->ManageRecurringPaymentsProfileStatusMapper($DataArray);
+        }
+
         $MRPPSFieldsNVP = '&METHOD=ManageRecurringPaymentsProfileStatus';
 
         $MRPPSFields = isset($DataArray['MRPPSFields']) ? $DataArray['MRPPSFields'] : array();
@@ -2372,6 +2384,10 @@ class PayPal
      */
     function UpdateRecurringPaymentsProfile($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->UpdateRecurringPaymentsProfileMapper($DataArray);
+        }
+
         $URPPFieldsNVP = '&METHOD=UpdateRecurringPaymentsProfile';
 
         $URPPFields = isset($DataArray['URPPFields']) ? $DataArray['URPPFields'] : array();

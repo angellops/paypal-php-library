@@ -22,7 +22,7 @@ $PayPal->ValidateMode('rest');
 
 // Prepare request arrays
 $PayPalRequestData = array(
-        'subscription_id' => 'I-4PVLBPJVE48L',                                  // Subscription ID of the profile you want to manage
+        'subscription_id' => 'I-6BWG203SG5JT',                                  // Subscription ID of the profile you want to manage
         'subscription_action' => 'cancel',                                      // options: cancel | suspend | activate
         'subscription_reason' => 'Canceling the subscription profile.'          // Reason for the change in status
 );

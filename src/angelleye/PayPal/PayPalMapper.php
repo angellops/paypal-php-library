@@ -84,7 +84,7 @@ class PayPalMapper extends PayPal
             'VERSION'   => $this->APIVersion,
         ];
 
-        if (in_array($response['status'], [200, 201])) {
+        if (isset($response['success']) && !empty($response['success'])) {
             $body = $response['full_response'];
 
             $balances = [];
@@ -255,6 +255,7 @@ class PayPalMapper extends PayPal
             ];
         }
 
+        // Call the REST method to createOrder
         $response = $this->rest->createOrder($payload);
 
         // Define the primary headers first
@@ -264,7 +265,7 @@ class PayPalMapper extends PayPal
             'VERSION'   => $this->APIVersion,
         ];
 
-        if (isset($response['success'])) {
+        if (isset($response['success']) && !empty($response['success'])) {
             $result = array_merge(
                 $headers,
                 [
@@ -301,6 +302,7 @@ class PayPalMapper extends PayPal
      */
     public function GetExpressCheckoutDetailsMapper($Token)
     {   
+        // Call the REST method to getOrder
         $response = $this->rest->getOrder($Token);
 
         // Define the primary headers first
@@ -310,7 +312,7 @@ class PayPalMapper extends PayPal
             'VERSION'   => $this->APIVersion,
         ];
 
-        if (isset($response['success'])) {
+        if (isset($response['success']) && !empty($response['success'])) {
             $order = $response['order'];
             $nvp = [];
 
@@ -499,12 +501,18 @@ class PayPalMapper extends PayPal
         return $result;
     }
 
+    /**
+     * Map PayPal REST captureOrder response to Classic NVP DoExpressCheckoutPayment format.
+     * 
+     * @return array
+     */
     public function DoExpressCheckoutPaymentMapper($DataArray)
     {
         $orderId = isset($DataArray['DECPFields']['token']) ? $DataArray['DECPFields']['token'] : '';
         $DataPayments = isset($DataArray['Payments']) ? $DataArray['Payments'] : [];
         $txtAmt = isset($DataPayments[0]['taxamt']) ? $DataPayments[0]['taxamt'] : '0.00';
 
+        // Call the REST method to captureOrder
         $response = $this->rest->captureOrder($orderId);
 
         // Define the primary headers first
@@ -514,7 +522,7 @@ class PayPalMapper extends PayPal
             'VERSION'   => $this->APIVersion,
         ];
 
-        if (isset($response['success'])) {
+        if (isset($response['success']) && !empty($response['success'])) {
             $responseData = array();
 
             $responseData['TOKEN'] = $orderId;
@@ -588,6 +596,346 @@ class PayPalMapper extends PayPal
 
             $result = array_merge($headers, $responseData);
             return $result;            
+        }
+
+        // Call function to convert REST Errors to NVP
+        $NVPErrors = $this->convertRESTErrorsToNVP($response);
+
+        $result = array_merge(
+            $headers,
+            $NVPErrors['flatErrors'], 
+            [
+                'ERRORS'         => $NVPErrors['errorsList'],
+                'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Map Classic CreateRecurringPaymentsProfile request to PayPal REST Subscription flow.
+     * 
+     * @return array
+     */
+    public function CreateRecurringPaymentsProfileMapper($DataArray)
+    {
+        $profileDetails = !empty($DataArray['profileDetails']) ? $DataArray['profileDetails'] : [];
+        $scheduleDetails = !empty($DataArray['ScheduleDetails']) ? $DataArray['ScheduleDetails'] : [];
+        $billingPeriod = !empty($DataArray['BillingPeriod']) ? $DataArray['BillingPeriod'] : [];
+        $payerInfo = !empty($DataArray['PayerInfo']) ? $DataArray['PayerInfo'] : [];
+        $payerName = !empty($DataArray['PayerName']) ? $DataArray['PayerName'] : [];
+        $billingAddress = !empty($DataArray['BillingAddress']) ? $DataArray['BillingAddress'] : [];
+        $domain = !empty($DataArray['DomainDetails']) ? $DataArray['DomainDetails'] : '';
+
+        $ProductData = array(
+            "name" => !empty($scheduleDetails['desc']) ? $scheduleDetails['desc'] : "",
+            "description" => "Web hosting recurring subscription",
+            "type" => "SERVICE",
+            "category" => "SOFTWARE",
+        );
+
+        $PlanData = array(
+            "product_id" => "",
+            "name" => "Daily Hosting Plan",
+            "description" => "Daily recurring billing for hosting",
+            "billing_cycles" => array(
+                array(
+                    "frequency" => array(
+                        "interval_unit" => !empty($billingPeriod['billingperiod']) ? strtoupper($billingPeriod['billingperiod']) : "",
+                        "interval_count" => !empty($billingPeriod['billingfrequency']) ? strtoupper($billingPeriod['billingfrequency']) : "",
+                    ),
+                    "tenure_type" => "REGULAR",
+                    "sequence" => 1,
+                    "total_cycles" => !empty($billingPeriod['totalbillingcycles']) ? strtoupper($billingPeriod['totalbillingcycles']) : 0, // 0 = infinite
+                    "pricing_scheme" => array(
+                        "fixed_price" => array(
+                            "value" => !empty($billingPeriod['amt']) ? strtoupper($billingPeriod['amt']) : "10.00",
+                            "currency_code" => !empty($billingPeriod['currencycode']) ? strtoupper($billingPeriod['currencycode']) : "USD"
+                        )
+                    )
+                )
+            ),
+            "payment_preferences" => array(
+                "auto_bill_outstanding" => true,
+                "setup_fee_failure_action" => "CONTINUE",
+                "payment_failure_threshold" => 3
+            )
+        );
+
+        $SubscriptionData = array(
+            "plan_id" => '',
+            "start_time" => gmdate("Y-m-d\TH:i:s\Z", strtotime("+10 minutes")),
+            "subscriber" => array(
+                "name" => array(
+                    "given_name" => !empty($payerName['firstname']) ? strtoupper($payerName['firstname']) : "",
+                    "surname" => !empty($payerName['lastname']) ? strtoupper($payerName['lastname']) : "",
+                ),
+                "email_address" => !empty($payerInfo['email']) ? strtoupper($payerInfo['email']) : "",
+                "shipping_address" => array(
+                    "name" => array("full_name" => !empty($profileDetails['subscribername']) ? strtoupper($profileDetails['subscribername']) : ""),
+                    "address" => array(
+                            "address_line_1" => !empty($billingAddress['street']) ? strtoupper($billingAddress['street']) : "",
+                            "admin_area_2" => !empty($billingAddress['city']) ? strtoupper($billingAddress['city']) : "",
+                            "admin_area_1" => !empty($billingAddress['state']) ? strtoupper($billingAddress['state']) : "",
+                            "postal_code" => !empty($billingAddress['zip']) ? strtoupper($billingAddress['zip']) : "",
+                            "country_code" => !empty($billingAddress['countrycode']) ? strtoupper($billingAddress['countrycode']) : "",
+                    )
+                )
+            ),
+            "application_context" => array(
+                "brand_name" => "Angell EYE Web Hosting",
+                "locale" => "en-US",
+                "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                "user_action" => "SUBSCRIBE_NOW",
+                "return_url" => $domain . "samples/classic/GetRecurringPaymentsProfileDetails.php",
+                "cancel_url" => $domain . "samples/classic/", 
+            )
+        );
+
+        $PayPalRequestData = array(
+            'ProductData' => $ProductData, 
+            'PlanData' => $PlanData, 
+            'SubscriptionData' => $SubscriptionData, 
+        );
+
+        // Call the REST method to createSubscriptionProfile
+        $response = $this->rest->createSubscriptionProfile($PayPalRequestData);
+
+        // Define the primary headers first
+        $headers = [
+            'TIMESTAMP' => gmdate('c'),
+            'ACK'       => 'Success',
+            'VERSION'   => $this->APIVersion,
+        ];
+
+        if (isset($response['success']) && !empty($response['success'])) {
+            $result = array_merge(
+                $headers,
+                [
+                    'PROFILEID'         => isset($response['subscription_id']) ? $response['subscription_id'] : '',
+                    'PROFILESTATUS'     => isset($response['response']['status']) ? $response['response']['status'] : '',
+                    'APPROVALURL'       => isset($response['approval_url']) ? $response['approval_url'] : '',
+                    'RAWRESPONSE'       => isset($response['raw_response']) ? $response['raw_response'] : null,
+                ]
+            );
+
+            return $result;
+        }
+
+        // Call function to convert REST Errors to NVP
+        $NVPErrors = $this->convertRESTErrorsToNVP($response);
+
+        $result = array_merge(
+            $headers,
+            $NVPErrors['flatErrors'], 
+            [
+                'ERRORS'         => $NVPErrors['errorsList'],
+                'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Map PayPal REST subscription details to Classic
+     * GetRecurringPaymentsProfileDetails NVP response format.
+     * 
+     * @return array
+     */
+    public function GetRecurringPaymentsProfileDetailsMapper($DataArray)
+    {
+        $GRPPDFields = !empty($DataArray['GRPPDFields']) ? $DataArray['GRPPDFields'] : [];
+        $subscriptionID = !empty($GRPPDFields['profileid']) ? $GRPPDFields['profileid'] : '';
+
+        // Call the REST method to getSubscriptionProfile
+        $response = $this->rest->getSubscriptionProfile($subscriptionID);
+
+        // Define the primary headers first
+        $headers = [
+            'TIMESTAMP' => gmdate('c'),
+            'ACK'       => 'Success',
+            'VERSION'   => $this->APIVersion,
+        ];
+
+        if (isset($response['success']) && !empty($response['success'])) {
+            $fullResponse = $response['full_response'];
+            $givenName = !empty( $fullResponse['subscriber']['name']['given_name'] ) ? $fullResponse['subscriber']['name']['given_name'] : '';
+            $surname = !empty( $fullResponse['subscriber']['name']['surname'] ) ? $fullResponse['subscriber']['name']['surname'] : '';
+            $phone_number = !empty( $fullResponse['subscriber']['phone_number'] ) ? $fullResponse['subscriber']['phone_number'] : '';
+            $payer_id = !empty( $fullResponse['subscriber']['payer_id'] ) ? $fullResponse['subscriber']['payer_id'] : '';
+            $subscriberName = !empty( $givenName ) ? $givenName . ' ' . $surname : $surname;
+
+            $responseData = array(
+                'PROFILEID'             => !empty( $fullResponse['id'] ) ? $fullResponse['id'] : '-',
+                'STATUS'                => !empty( $fullResponse['status'] ) ? $fullResponse['status'] : '-', 
+                'DESC'                  => !empty( $fullResponse['status_change_note'] ) ? $fullResponse['status_change_note'] : '',
+                'AUTOBILLOUTAMT'        => '',
+                'MAXFAILEDPAYMENTS'     => '',
+                'FIRSTNAME'             => $givenName,
+                'LASTNAME'              => $surname,
+                'SUBSCRIBERNAME'        => $subscriberName,
+                'SUBSCRIBEREMAIL'       => !empty( $fullResponse['subscriber']['email_address'] ) ? $fullResponse['subscriber']['email_address'] : '',
+                'PHONENUMBER'           => $phone_number,
+                'PAYERID'               => $payer_id,
+                'PROFILESTARTDATE'      => !empty( $fullResponse['start_time'] ) ? $fullResponse['start_time'] : '',
+                'NEXTBILLINGDATE'       => !empty( $fullResponse['billing_info']['next_billing_time'] ) ? $fullResponse['billing_info']['next_billing_time'] : '',
+                'NUMCYCLESCOMPLETED'    => !empty( $fullResponse['billing_info']['cycle_executions'][0]['cycles_completed'] ) ? $fullResponse['billing_info']['cycle_executions'][0]['cycles_completed'] : '',
+                'NUMCYCLESREMAINING'    => !empty( $fullResponse['billing_info']['cycle_executions'][0]['cycles_remaining'] ) ? $fullResponse['billing_info']['cycle_executions'][0]['cycles_remaining'] : '',
+                'OUTSTANDINGBALANCE'    => !empty( $fullResponse['billing_info']['outstanding_balance']['value'] ) ? $fullResponse['billing_info']['outstanding_balance']['value'] : '',
+                'FAILEDPAYMENTCOUNT'    => !empty( $fullResponse['billing_info']['failed_payments_count'] ) ? $fullResponse['billing_info']['failed_payments_count'] : '',
+                'LASTPAYMENTDATE'       => !empty( $fullResponse['billing_info']['last_payment']['time'] ) ? $fullResponse['billing_info']['last_payment']['time'] : '',
+                'LASTPAYMENTAMT'        => !empty( $fullResponse['billing_info']['last_payment']['amount']['value'] ) ? $fullResponse['billing_info']['last_payment']['amount']['value'] : '',
+                'SHIPTONAME'            => !empty( $fullResponse['subscriber']['shipping_address']['name']['full_name'] ) ? $fullResponse['subscriber']['shipping_address']['name']['full_name'] : '',
+                'SHIPTOSTREET'          => !empty( $fullResponse['subscriber']['shipping_address']['address']['address_line_1'] ) ? $fullResponse['subscriber']['shipping_address']['address']['address_line_1'] : '',
+                'SHIPTOCITY'            => !empty( $fullResponse['subscriber']['shipping_address']['address']['admin_area_2'] ) ? $fullResponse['subscriber']['shipping_address']['address']['admin_area_2'] : '',
+                'SHIPTOSTATE'           => !empty( $fullResponse['subscriber']['shipping_address']['address']['admin_area_1'] ) ? $fullResponse['subscriber']['shipping_address']['address']['admin_area_1'] : '',
+                'SHIPTOZIP'             => !empty( $fullResponse['subscriber']['shipping_address']['address']['postal_code'] ) ? $fullResponse['subscriber']['shipping_address']['address']['postal_code'] : '',
+                'SHIPTOCOUNTRYCODE'     => !empty( $fullResponse['subscriber']['shipping_address']['address']['country_code'] ) ? $fullResponse['subscriber']['shipping_address']['address']['country_code'] : '',
+                'SHIPTOCOUNTRY'         => !empty( $fullResponse['subscriber']['shipping_address']['address']['country_code'] ) ? $fullResponse['subscriber']['shipping_address']['address']['country_code'] : '',
+                'SHIPADDRESSOWNER'      => !empty( $fullResponse['subscriber']['tenant'] ) ? $fullResponse['subscriber']['tenant'] : '',
+                'SHIPPINGAMT'           => !empty( $fullResponse['shipping_amount']['value'] ) ? $fullResponse['shipping_amount']['value'] : '',
+                'SHIPPINGCURRENCY'      => !empty( $fullResponse['shipping_amount']['currency_code'] ) ? $fullResponse['shipping_amount']['currency_code'] : '',
+                'BILLINGPERIOD'         => '',
+                'BILLINGFREQUENCY'      => '',
+                'TOTALBILLINGCYCLES'    => '',
+                'CURRENCYCODE'          => !empty( $fullResponse['billing_info']['last_payment']['amount']['currency_code'] ) ? $fullResponse['billing_info']['last_payment']['amount']['currency_code'] : '',
+                'AMT'                   => !empty( $fullResponse['billing_info']['last_payment']['amount']['value'] ) ? $fullResponse['billing_info']['last_payment']['amount']['value'] : '', 
+                'REGULARBILLINGPERIOD'       => '',
+                'REGULARBILLINGFREQUENCY'    => '',
+                'REGULARTOTALBILLINGCYCLES'  => '',
+                'REGULARCURRENCYCODE'   => !empty( $fullResponse['billing_info']['last_payment']['amount']['currency_code'] ) ? $fullResponse['billing_info']['last_payment']['amount']['currency_code'] : '',
+                'REGULARAMT'            => !empty( $fullResponse['billing_info']['last_payment']['amount']['value'] ) ? $fullResponse['billing_info']['last_payment']['amount']['value'] : '',
+                'AGGREGATEAMT'          => '',
+                'AGGREGATEOPTIONALAMT'  => '',
+                'ERRORS'                => [],
+                'RAWRESPONSE'           => !empty( $response['raw_response'] ) ? $response['raw_response'] : [],
+            );
+
+            $result = array_merge($headers, $responseData);
+            return $result;             
+        }
+
+        // Call function to convert REST Errors to NVP
+        $NVPErrors = $this->convertRESTErrorsToNVP($response);
+
+        $result = array_merge(
+            $headers,
+            $NVPErrors['flatErrors'], 
+            [
+                'ERRORS'         => $NVPErrors['errorsList'],
+                'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Map Classic ManageRecurringPaymentsProfileStatus request to PayPal REST
+     * subscription management actions.
+     * 
+     * @return array
+     */
+    public function ManageRecurringPaymentsProfileStatusMapper($DataArray)
+    {
+        $MRPPSFields = !empty($DataArray['MRPPSFields']) ? $DataArray['MRPPSFields'] : [];
+
+        $requestData = array(
+            'subscription_id' => !empty($MRPPSFields['profileid']) ? $MRPPSFields['profileid'] : '',                // Subscription ID of the profile you want to manage
+            'subscription_action' => !empty($MRPPSFields['action']) ? strtolower($MRPPSFields['action']) : '',      // options: cancel | suspend | activate
+            'subscription_reason' => !empty($MRPPSFields['note']) ? $MRPPSFields['note'] : ''                       // Reason for the change in status
+        );
+
+        // Call the REST method to manageSubscriptionProfile
+        $response = $this->rest->manageSubscriptionProfile($requestData);
+
+        // Define the primary headers first
+        $headers = [
+            'TIMESTAMP' => gmdate('c'),
+            'ACK'       => 'Success',
+            'VERSION'   => $this->APIVersion,
+        ];
+
+        if (isset($response['success']) && !empty($response['success'])) {
+            $result = array_merge(
+                $headers,
+                [
+                    'PROFILEID'      => !empty($MRPPSFields['profileid']) ? $MRPPSFields['profileid'] : '',
+                    'L_LONGMESSAGE0' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
+                    'ERRORS'         => [],
+                    'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ]
+            );
+
+            return $result;
+        }
+
+        // Call function to convert REST Errors to NVP
+        $NVPErrors = $this->convertRESTErrorsToNVP($response);
+
+        $result = array_merge(
+            $headers,
+            $NVPErrors['flatErrors'], 
+            [
+                'ERRORS'         => $NVPErrors['errorsList'],
+                'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Map Classic UpdateRecurringPaymentsProfile request to PayPal REST
+     * subscription PATCH update operation.
+     * 
+     * @return array
+     */
+    public function UpdateRecurringPaymentsProfileMapper($DataArray)
+    {
+        $URPPFields = !empty($DataArray['URPPFields']) ? $DataArray['URPPFields'] : [];
+
+        $patchData = [
+            [
+                "op" => "replace",
+                    "path" => "/shipping_amount",
+                    "value" => [
+                        "currency_code" => "USD",
+                        "value" => !empty($URPPFields['amt']) ? $URPPFields['amt'] : "0.00"
+                    ]
+            ]
+        ];
+
+        // Prepare request arrays
+        $requestData = array(
+            'subscription_id' => !empty($URPPFields['profileid']) ? $URPPFields['profileid'] : '',
+            'patches' => $patchData,
+        );
+
+        // Call the REST method to updateSubscriptionProfile
+        $response = $this->rest->updateSubscriptionProfile($requestData);
+
+        // Define the primary headers first
+        $headers = [
+            'TIMESTAMP' => gmdate('c'),
+            'ACK'       => 'Success',
+            'VERSION'   => $this->APIVersion,
+        ];
+
+        if (isset($response['success']) && !empty($response['success'])) {
+            $result = array_merge(
+                $headers,
+                [
+                    'PROFILEID'      => !empty($URPPFields['profileid']) ? $URPPFields['profileid'] : '',
+                    'L_LONGMESSAGE0' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+                    'ERRORS'         => [],
+                    'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ]
+            );
+
+            return $result;
         }
 
         // Call function to convert REST Errors to NVP

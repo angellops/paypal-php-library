@@ -25,9 +25,9 @@ $PayPal->ValidateMode('classic');
 
 // Prepare request arrays
 $GRPPDFields = array(
-	'profileid' => 'I-YMGN1WN4YY9E'			// Profile ID of the profile you want to get details for.
+	'profileid' => isset($_GET['subscription_id']) ? $_GET['subscription_id'] : 'I-HS7W8E8BN4WG'			// Profile ID of the profile you want to get details for.
 );
-				   
+			   
 $PayPalRequestData = array('GRPPDFields'=>$GRPPDFields);
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult

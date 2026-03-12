@@ -25,7 +25,7 @@ $PayPal->ValidateMode('classic');
 
 // Prepare request arrays
 $URPPFields = array(
-	'profileid' => 'I-54Y4CNH8T196', 			// Required.  Recurring payments ID.
+	'profileid' => 'I-WD0NGX5RW04W', 			// Required.  Recurring payments ID.
 	'note' => '', 						// Note about the reason for the update to the profile.  Included in EC profile notification emails and in details pages.
 	'desc' => '', 						// Description of the recurring payment profile.
 	'subscribername' => '', 				// Full name of the person receiving the product or service paid for by the recurring payment profile.

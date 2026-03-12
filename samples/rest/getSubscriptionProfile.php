@@ -20,7 +20,7 @@ $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 // Validate API mode
 $PayPal->ValidateMode('rest');
 
-$subscriptionID = isset($_GET['subscription_id']) ? $_GET['subscription_id'] : '';
+$subscriptionID = isset($_GET['subscription_id']) ? $_GET['subscription_id'] : 'I-HS7W8E8BN4WG';
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
 $PayPalResult = $PayPal->getSubscriptionProfile($subscriptionID);
