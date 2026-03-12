@@ -22,7 +22,7 @@ $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 $PayPal->ValidateMode('classic');
 
 $DRTFields = array(
-	'referenceid' => 'B-2K417090Y62194353', 
+	'referenceid' => 'B-26G90383GW321384N', 
 	'paymentaction' => 'Sale', 
 	'returnfmfdetails' => '1', 
 	'softdescriptor' => 'Angell EYE'
