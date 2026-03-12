@@ -46,7 +46,7 @@ class PayPalREST extends PayPal
     /**
      * Get standard headers for API requests
      */
-    private function getHeaders($includeAuth = true, $contentType = 'application/json')
+    private function getHeaders($includeAuth = true, $contentType = 'application/json', $requestId = null)
     {
         $headers = [
             'Content-Type: ' . $contentType,
@@ -57,6 +57,10 @@ class PayPalREST extends PayPal
         if ($includeAuth) {
             $token = $this->getAccessToken();
             $headers[] = 'Authorization: Bearer ' . $token;
+        }
+
+        if (!empty($requestId)) {
+            $headers[] = 'PayPal-Request-Id: ' . $requestId;
         }
 
         return $headers;
@@ -120,9 +124,9 @@ class PayPalREST extends PayPal
     /**
      * Make authenticated REST API request
      */
-    protected function makeRequest($endpoint, $method = 'GET', $data = null)
+    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null)
     {
-        $headers = $this->getHeaders(true);
+        $headers = $this->getHeaders(true, 'application/json', $requestId);
 
         $url = $this->base_url . $endpoint;
 
@@ -211,10 +215,10 @@ class PayPalREST extends PayPal
     /**
      * Create an order (replaces SetExpressCheckout)
      */
-    public function createOrder($orderData)
+    public function createOrder($orderData, $paypalRequestId = null)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData);
+            $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId);
 
             // Log the response
             $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);

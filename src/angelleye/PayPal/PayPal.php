@@ -1930,6 +1930,10 @@ class PayPal
      */
     function DoReferenceTransaction($DataArray)
     {
+        if ($this->use_mapper) {
+            throw new \Exception("Classic DoReferenceTransaction uses Billing Agreement ID, but REST requires Vault ID. Automatic conversion is not possible.");
+        }
+
         $DRTFieldsNVP = '&METHOD=DoReferenceTransaction';
         $CCDetailsNVP = '';
         $PayerInfoNVP = '';
