@@ -2069,6 +2069,10 @@ class PayPal
      */
     function GetPalDetails()
     {
+        if ($this->use_mapper) {
+            return $this->mapper->GetPalDetailsMapper();
+        }
+
         $GPFieldsNVP = '&METHOD=GetPalDetails';
 
         $NVPRequest = $this->NVPCredentials . $GPFieldsNVP;

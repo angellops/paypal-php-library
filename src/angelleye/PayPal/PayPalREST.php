@@ -471,7 +471,7 @@ class PayPalREST extends PayPal
 
         return [
             'success' => false,
-            'status' => $response['status_code'],
+            'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
             'errors' => isset($response['body']) ? $response['body'] : [],
             'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
         ];
@@ -507,7 +507,7 @@ class PayPalREST extends PayPal
 
         return [
             'success' => false,
-            'status' => $response['status_code'],
+            'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
             'errors' => isset($response['body']) ? $response['body'] : [],
             'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
         ];
@@ -536,7 +536,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => true,
                 'subscription_id' => !empty($response['body']['id']) ? $response['body']['id'] : '',
-                'status' => !empty($response['status_code']) ? $response['status_code'] : 0,
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'approval_url' => $this->getApprovalUrl($response['body']['links']),
                 'response' => !empty($response['body']) ? $response['body'] : [],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -545,7 +545,7 @@ class PayPalREST extends PayPal
 
         return [
             'success' => false,
-            'status' => $response['status_code'],
+            'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
             'errors' => !empty($response['body']) ? $response['body'] : [],
             'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
         ];
@@ -576,7 +576,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
-                'status' => $response['body']['status'] ?? $response['status_code'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => !empty($response['body']) ? $response['body'] : [],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             ];
@@ -608,7 +608,7 @@ class PayPalREST extends PayPal
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
-                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
                     'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
                 ];
@@ -616,7 +616,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
-                'status' => $response['body']['status'] ?? $response['status_code'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             ];
@@ -648,7 +648,7 @@ class PayPalREST extends PayPal
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
-                    'status' => $response['body']['status'] ?? $response['status_code'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
                     'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
                 ];
@@ -656,8 +656,46 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
-                'status' => $response['body']['status'] ?? $response['status_code'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Retrieves PayPal account details of the authenticated user using the REST Identity API.
+     *
+     * This method calls the `/v1/identity/oauth2/userinfo?schema=paypalv1.1` endpoint
+     * to get information about the merchant’s PayPal account such as email, account ID,
+     * verification status, and country. It serves as the REST equivalent of the classic
+     * NVP `GetPalDetails` API.
+     */
+    public function getPayPalUserInfo() {
+        try {
+            $response = $this->makeRequest('/v1/identity/oauth2/userinfo?schema=paypalv1.1');
+
+            // Log Response
+            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {

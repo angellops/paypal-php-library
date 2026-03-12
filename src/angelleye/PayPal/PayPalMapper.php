@@ -143,6 +143,68 @@ class PayPalMapper extends PayPal
     }
 
     /**
+     * Calls the PayPal REST API to retrieve the authenticated user's account
+     * information and maps the response into a Classic NVP-style format
+     * compatible with the GetPalDetails response structure.
+     * 
+     * @return array
+     */
+    public function GetPalDetailsMapper()
+    {
+        // Call the REST method to get balances
+        $response = $this->rest->getPayPalUserInfo();
+
+        // Define the primary headers first
+        $headers = [
+            'TIMESTAMP' => gmdate('c'),
+            'ACK'       => 'Success',
+            'VERSION'   => $this->APIVersion,
+        ];
+
+        if (isset($response['success']) && !empty($response['success'])) {
+            $body = $response['full_response'];
+            $email = '';
+            if (!empty($body['emails'])) {
+                foreach ($body['emails'] as $emailData) {
+                    if (!empty($emailData['confirmed']) && $emailData['confirmed'] == 1) {
+                        $email = $emailData['value'];
+                        break;
+                    }
+                }
+            }
+
+            $result = array_merge(
+                $headers,
+                [
+                    'PAL'           => !empty($body['payer_id']) ? $body['payer_id'] : '',
+                    'LOCALE'        => 'en_US',
+                    'PALNAME'       => !empty($body['name']) ? $body['name'] : '',
+                    'PALEMAIL'      => $email,
+                    'ERRORS'        => array(),
+                    'RAWRESPONSE'   => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ]
+            );
+
+            return $result;
+        }
+
+        // Call function to convert REST Errors to NVP
+        $NVPErrors = $this->convertRESTErrorsToNVP($response);
+
+        $result = array_merge(
+            $headers,
+            $NVPErrors['flatErrors'], 
+            [
+                'ERRORS'         => $NVPErrors['errorsList'],
+                'BALANCERESULTS' => array(),
+                'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
      * Maps Classic SetExpressCheckout data array to a PayPal REST order payload
      * and creates the order using the REST API
      * 
