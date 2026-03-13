@@ -60,7 +60,7 @@ require_once('../../includes/config.php');
                         </div>
                     <?php } ?>
                     <h2 class="main-title">Payment Complete!</h2>
-                    <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed!  We have added the PayPal transaction ID to the Billing Information, which was provided in the DoExpressCheckoutPayment response.</p>
+                    <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed!  We have added the PayPal transaction ID to the Billing Information, which was provided in the getOrder response.</p>
                     <table class="table table-items table-bordered">
                         <thead>
                             <tr>
