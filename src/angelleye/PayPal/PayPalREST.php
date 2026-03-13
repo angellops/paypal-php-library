@@ -120,20 +120,57 @@ class PayPalREST extends PayPal
             $postData['response_type'] = 'client_token';
         }
 
+        $url = $this->base_url . '/v1/oauth2/token';
+
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->base_url . '/v1/oauth2/token');
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
+        if ($this->print_headers) {
+            curl_setopt($ch, CURLOPT_HEADER, true);
+        }
+
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        $parsedHeaders = [];
+        $debugId = null;
+        if ($this->print_headers) {
+            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $headerString = substr($response, 0, $headerSize);
+            $body = substr($response, $headerSize);
+
+            $parsedHeaders = $this->parseHeaders($headerString);
+            $debugId = !empty($parsedHeaders['paypal-debug-id']) ? $parsedHeaders['paypal-debug-id'] : null;
+        } else {
+            $body = $response;
+        }
         curl_close($ch);
 
+        // Request Log
+        $request_log = [
+            'url' => $url,
+            'method' => 'POST',
+            'headers' => $headers,
+            'payload' => $postData
+        ];
+        $this->Logger($this->LogPath, 'AccessTokenRequest', $request_log);
+
+        // Response Log
+        $response_log = [
+            'status_code' => $httpCode,
+            'debug_id' => $debugId,
+            'headers' => $parsedHeaders,
+            'body' => json_decode($body, true)
+        ];
+        $this->Logger($this->LogPath, 'AccessTokenResponse', $response_log);
+
         if ($httpCode === 200) {
-            $data = json_decode($response, true);
+            $data = json_decode($body, true);
             $this->accessToken = $data['access_token'];
             // Set expiry with 1 minute buffer (9 hours - 1 minute)
             $this->tokenExpiry = time() + ($data['expires_in'] - 60);
@@ -141,7 +178,7 @@ class PayPalREST extends PayPal
             return $this->accessToken;
         }
 
-        throw new \Exception('Failed to get OAuth token: ' . $response);
+        throw new \Exception('Failed to get OAuth token: ' . $body);
     }
 
     /**
@@ -150,6 +187,24 @@ class PayPalREST extends PayPal
     public function fetchAccessToken( $load_sdk_btn = false ){
         return $this->getAccessToken( $load_sdk_btn );
     }
+
+    /**
+     * Parse raw HTTP header string into an associative array.
+     */
+    private function parseHeaders($headerString)
+    {
+        $headers = [];
+        $lines = explode("\r\n", $headerString);
+
+        foreach ($lines as $line) {
+            if (strpos($line, ':') !== false) {
+                list($key, $value) = explode(':', $line, 2);
+                $headers[trim($key)] = trim($value);
+            }
+        }
+
+        return $headers;
+    } 
 
     /**
      * Make authenticated REST API request
@@ -171,34 +226,54 @@ class PayPalREST extends PayPal
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 
-        if ($data && ($method === 'POST' || $method === 'PUT' || $method === 'PATCH')) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        if($this->print_headers) {
+            curl_setopt($ch, CURLOPT_HEADER, true);
         }
 
-        if ($this->print_headers) {
-            curl_setopt($curl, CURLOPT_HEADER, TRUE);
+        if ($data && in_array($method, ['POST','PUT','PATCH'])) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
+        $parsedHeaders = [];
+        $debugId = null;
+        if ($this->print_headers) {
+            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $headerString = substr($response, 0, $headerSize);
+            $body = substr($response, $headerSize);
+
+            $parsedHeaders = $this->parseHeaders($headerString);
+            $debugId = !empty($parsedHeaders['paypal-debug-id']) ? $parsedHeaders['paypal-debug-id'] : null;
+        } else {
+            $body = $response;
+        }
         curl_close($ch);
 
+        // Request Log
         $request_log = [
-            'request' => [
-                'url' => $url,
-                'method' => $method,
-                'headers' => $headers,
-                'payload' => $data,
-                'request_id' => $requestId
-            ]
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'payload' => $data,
+            'request_id' => $requestId
         ];
-
-        // Log the request
         $this->Logger($this->LogPath, $callerFunction . 'Request', $request_log);
+
+        // Response Log
+        $response_log = [
+            'status_code' => $httpCode,
+            'debug_id' => $debugId,
+            'headers' => $parsedHeaders,
+            'body' => json_decode($body, true)
+        ];
+        $this->Logger($this->LogPath, $callerFunction . 'Response', $response_log);
 
         return [
             'status_code' => $httpCode,
-            'body' => json_decode($response, true),
+            'debug_id' => $debugId,
+            'body' => json_decode($body, true),
             'raw_response' => $response
         ];
     }
@@ -266,16 +341,10 @@ class PayPalREST extends PayPal
                             'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
                         ]
                     );
-
-                    // call logger
-                    $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $result);
                     
                     // return response
                     return $result;
                 }
-                
-                // call logger
-                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
                 // Normal REST-style response
                 return [
@@ -284,9 +353,6 @@ class PayPalREST extends PayPal
                     'full_response' => $body,
                 ];
             }
-
-            // call logger
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             return [
                 'success' => false,
@@ -323,9 +389,6 @@ class PayPalREST extends PayPal
 
         // Step 3: Make REST Call
         $response = $this->makeRequest('/v1/vault/bank-accounts', 'POST', $payload);
-
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
         // Step 4: Handle Response
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
@@ -388,9 +451,6 @@ class PayPalREST extends PayPal
             );
         }
 
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseSimplified);
-
         return $responseSimplified;
     }
 
@@ -417,9 +477,6 @@ class PayPalREST extends PayPal
             );
         }
 
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
         return $responseSimplified;
     }
 
@@ -443,9 +500,6 @@ class PayPalREST extends PayPal
                 'RAWRESPONSE' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             );
         }
-
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseSimplified);
 
         return $responseSimplified;
     }
@@ -479,9 +533,6 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v1/notifications/webhooks');
 
-            // Log the response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             return [
                 'success' => $response['status_code'] >= 200 && $response['status_code'] < 300,
                 'message' => $response['status_code'] >= 200 && $response['status_code'] < 300
@@ -505,9 +556,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId, false, $includeAuth);
-
-            // Log the response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if( in_array($response['status_code'], [201, 200]) ) {
                 return [
@@ -543,9 +591,6 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET', [], $paypalRequestId, false, $includeAuth);
 
-            // Log the response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if ($response['status_code'] === 200) {
                 return [
                     'success' => true,
@@ -576,9 +621,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/authorize', 'POST', [], $paypalRequestId, false, $includeAuth);
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -613,9 +655,6 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST', [], $paypalRequestId, false, $includeAuth);
 
-            // Log the response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if ($response['status_code'] === 201) {
                 return [
                     'success' => true,
@@ -649,9 +688,6 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/payments/authorizations/' . $authorizationId . '/capture', 'POST');
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if ($response['status_code'] === 201) {
                 return [
                     'success' => true,
@@ -682,9 +718,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/payments/captures/' . $captureId, 'GET');
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -718,9 +751,6 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'PATCH', $updateData);
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if (in_array($response['status_code'], [200, 204])) {
                 return [
                     'success' => true,
@@ -749,9 +779,6 @@ class PayPalREST extends PayPal
             $trackData = isset($DataArray['TrackData']) ? $DataArray['TrackData'] : [];
 
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/track', 'POST', $trackData);
-
-            // Log the response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             $purchase_units = $response['body']['purchase_units'][0] ? $response['body']['purchase_units'][0] : [];
             $shipping_trackers = $purchase_units['shipping']['trackers'] ? $purchase_units['shipping']['trackers'] : [];
@@ -970,9 +997,6 @@ class PayPalREST extends PayPal
             );
         }
 
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseSimplified);
-
         return $responseSimplified;
     }
 
@@ -1104,9 +1128,6 @@ class PayPalREST extends PayPal
                 $response['approval_url'],
                 $response['raw_response']
             );
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
         }
 
         return $response;
@@ -1214,9 +1235,6 @@ class PayPalREST extends PayPal
 
             $responseData['FULLRESPONSE'] = isset($response['order']) ? $response['order'] : array();
             $responseData['RAWRESPONSE'] = isset($response['raw_response']) ? $response['raw_response'] : array();
-            
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseData);
 
             return $responseData;
         }
@@ -1305,9 +1323,6 @@ class PayPalREST extends PayPal
 
             $responseData['FULLRESPONSE'] = isset($response['full_response']) ? $response['full_response'] : array();
             $responseData['RAWRESPONSE'] = isset($response['raw_response']) ? $response['raw_response'] : array();
-            
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', ($this->api_upgrade ? $responseData : $response));
 
             return $responseData;
         }
@@ -1363,9 +1378,6 @@ class PayPalREST extends PayPal
     {
         $response = $this->makeRequest('/v1/catalogs/products', 'POST', $ProductData);
 
-        // Log the response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
@@ -1398,9 +1410,6 @@ class PayPalREST extends PayPal
 
         $response = $this->makeRequest('/v1/billing/plans', 'POST', $PlanData);
 
-        // Log the response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
@@ -1432,9 +1441,6 @@ class PayPalREST extends PayPal
         $SubscriptionData['plan_id'] = $planId;
 
         $response = $this->makeRequest('/v1/billing/subscriptions', 'POST', $SubscriptionData);
-
-        // Log the response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
@@ -1513,14 +1519,8 @@ class PayPalREST extends PayPal
                         'RAWRESPONSE'           => ! empty( $response['raw_response'] ) ? $response['raw_response'] : [],
                     );
 
-                    // call logger
-                    $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseData);
-
                     return $responseData;
                 }
-
-                // Log Response
-                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
                 return [
                     'success' => true,
@@ -1528,9 +1528,6 @@ class PayPalREST extends PayPal
                     'full_response' => $response['body']
                 ];
             }
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             return [
                 'success' => false,
@@ -1572,14 +1569,8 @@ class PayPalREST extends PayPal
                         'full_response'  => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
                     ];
 
-                    // call logger
-                    $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $result);
-
                     return $result;
                 }
-
-                // Log Response
-                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
                 return [
                     'success' => true,
@@ -1587,9 +1578,6 @@ class PayPalREST extends PayPal
                     'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
                 ];
             }
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             return [
                 'success' => false,
@@ -1632,14 +1620,8 @@ class PayPalREST extends PayPal
                         'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
                     ];
 
-                    // call logger
-                    $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $result);
-
                     return $result;
                 }
-
-                // Log Response
-                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
                 return [
                     'success' => true,
@@ -1647,9 +1629,6 @@ class PayPalREST extends PayPal
                     'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
                 ];
             }
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             return [
                 'success' => false,
@@ -1687,23 +1666,14 @@ class PayPalREST extends PayPal
                         'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
                     ];
 
-                    // call logger
-                    $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $result);
-
                     return $result;
                 }
                 
-                // Log Response
-                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
                 return [
                     'success' => true,
                     'order' => $response['body']
                 ];
             }
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             return [
                 'success' => false,
@@ -1732,9 +1702,6 @@ class PayPalREST extends PayPal
             $refundFields = isset($DataArray['refund_fields']) ? $DataArray['refund_fields'] : array();
 
             $response = $this->makeRequest('/v2/payments/captures/' . $transactionId . '/refund', 'POST', $refundFields);
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -1782,14 +1749,8 @@ class PayPalREST extends PayPal
                         'RAWRESPONSE' => isset($response['raw_response']) ? $response['raw_response'] : [],
                     ];
 
-                    // Log Response
-                    $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $result);
-
                     return $result;
                 }
-
-                // Log Response
-                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
                 return [
                     'success' => true,
@@ -1797,9 +1758,6 @@ class PayPalREST extends PayPal
                     'full_response' => $response['body']
                 ];
             }
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             return [
                 'success' => false,
@@ -1845,9 +1803,6 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v3/vault/setup-tokens', 'POST', $payloadData, null, false, true);
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if (in_array($response['status_code'], [200, 201])) {
                 return [
                     'success' => true,
@@ -1888,9 +1843,6 @@ class PayPalREST extends PayPal
     public function getVaultSetupTokenDetails($setupToken) {
         try {
             $response = $this->makeRequest('/v3/vault/setup-tokens/' . urlencode($setupToken), 'GET', null, null, false, true);
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if (in_array($response['status_code'], [200, 201])) {
                 return [
@@ -1934,9 +1886,6 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v3/vault/payment-tokens', 'POST', $vaultPaymentData, $paypalRequestId, false, true);
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if (in_array($response['status_code'], [200, 201])) {
                 return [
                     'success' => true,
@@ -1972,9 +1921,6 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/customer/partner-referrals', 'POST', $DataArray);
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if (in_array($response['status_code'], [200, 201])) {
                 return [
                     'success' => true,
@@ -2008,9 +1954,6 @@ class PayPalREST extends PayPal
     public function verifyMerchantOnboarding($merchantId) {
         try {
             $response = $this->makeRequest('/v1/customer/partners/' . $this->merchant_id . '/merchant-integrations/' . $merchantId);
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if (in_array($response['status_code'], [200, 201])) {
                 return [
@@ -2059,14 +2002,8 @@ class PayPalREST extends PayPal
                         'RAWRESPONSE' => isset($response['raw_response']) ? $response['raw_response'] : [],
                     ];
 
-                    // Log Response
-                    $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $result);
-
                     return $result;
                 }
-
-                // Log Response
-                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
                 return [
                     'success' => true,
@@ -2074,9 +2011,6 @@ class PayPalREST extends PayPal
                     'full_response' => $response['body']
                 ];
             }
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             return [
                 'success' => false,
@@ -2207,9 +2141,6 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v1/identity/oauth2/userinfo?schema=openid');
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if ($response['status_code'] === 201) {
                 return [
                     'success' => true,
@@ -2242,9 +2173,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/invoicing/invoices', 'POST', $InvoiceData, null, true);
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -2280,9 +2208,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/send', 'POST', null, null, true);
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -2352,9 +2277,6 @@ class PayPalREST extends PayPal
             );
         }
 
-        // Log Response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $responseSimplified);
-
         return $responseSimplified;
     }
 
@@ -2368,9 +2290,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID, 'GET', null, null, true);
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -2416,9 +2335,6 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/cancel', 'POST', $payload, null, true);
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if ($response['status_code'] === 201) {
                 return [
                     'success' => true,
@@ -2453,9 +2369,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID, 'DELETE', null, null, true);
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -2497,9 +2410,6 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/payments', 'POST', $payload, null, true);
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if ($response['status_code'] === 201) {
                 return [
                     'success' => true,
@@ -2537,9 +2447,6 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/refunds', 'POST', $payload, null, true);
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if ($response['status_code'] === 201) {
                 return [
                     'success' => true,
@@ -2575,9 +2482,6 @@ class PayPalREST extends PayPal
             $InvoiceID = isset($InvoiceData['InvoiceID']) ? $InvoiceData['InvoiceID'] : '';
 
             $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/remind', 'POST', $payload, null, true);
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if ($response['status_code'] === 201) {
                 return [
@@ -2694,14 +2598,8 @@ class PayPalREST extends PayPal
                     'invoices' => array_values($filteredInvoices),
                 ];
 
-                // Log Response
-                $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $result);
-
                 return $result;
             }
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             return [
                 'success' => false,

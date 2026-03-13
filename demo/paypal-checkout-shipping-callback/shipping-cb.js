@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showPaypalError(message) {
-        errorContainer = payPalBtnContainer.getElementById('paypalError');
+        const errorContainer = payPalBtnContainer.getElementById('paypalError');
         if( !errorContainer ) return;
         errorContainer.innerHTML = message;
     }

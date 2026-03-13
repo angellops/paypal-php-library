@@ -636,10 +636,6 @@ class PayPalClassic extends PayPal
             curl_setopt($curl, CURLOPT_SSLCERT, $this->PathToCertKeyPEM);
         }
 
-        if ($this->PrintHeaders) {
-            curl_setopt($curl, CURLOPT_HEADER, TRUE);
-        }
-
         $Response = curl_exec($curl);
 
         /*
