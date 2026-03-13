@@ -7,6 +7,7 @@ require_once('../../../../autoload.php');
 $PayPalConfig = array(
     'Sandbox' => $sandbox,
     'PayPalAPIMode' => $api_mode,
+    'PayPalAPIUpgrade' => $api_upgrade,
     'ClientID' => $rest_client_id,
     'ClientSecret' => $rest_client_secret,
     'PrintHeaders' => $print_headers,
