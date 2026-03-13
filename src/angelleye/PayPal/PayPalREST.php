@@ -15,6 +15,7 @@ class PayPalREST extends PayPal
     private $client_secret;
     private $merchant_id;
     private $api_upgrade;
+    private $print_headers;
     private $base_url;
     private $LogResults;
     protected ?string $LogPath = null;
@@ -35,6 +36,7 @@ class PayPalREST extends PayPal
         $this->client_secret = isset($config['ClientSecret']) ? $config['ClientSecret'] : '';
         $this->merchant_id = isset($config['MerchantID']) ? $config['MerchantID'] : '';
         $this->api_upgrade = isset($config['PayPalAPIUpgrade']) ? $config['PayPalAPIUpgrade'] : FALSE;
+        $this->print_headers = isset($config['PrintHeaders']) ? $config['PrintHeaders'] : false;
         $this->LogResults = isset($config['LogResults']) ? $config['LogResults'] : false;
         $this->LogPath = isset($config['LogPath']) ? $config['LogPath'] : '/logs/';
 
@@ -171,6 +173,10 @@ class PayPalREST extends PayPal
 
         if ($data && ($method === 'POST' || $method === 'PUT' || $method === 'PATCH')) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        }
+
+        if ($this->print_headers) {
+            curl_setopt($curl, CURLOPT_HEADER, TRUE);
         }
 
         $response = curl_exec($ch);
