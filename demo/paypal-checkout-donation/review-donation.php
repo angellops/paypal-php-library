@@ -2,6 +2,11 @@
 require_once('../../includes/config.php');
 require_once('../../vendor/autoload.php');
 
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
+
 /**
  * Setup configuration for the PayPal library using vars from the config file.
  * Then load the PayPal object into $PayPal
@@ -10,9 +15,6 @@ $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
   'PayPalAPIUpgrade' => $api_upgrade,
-  'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
 	'PrintHeaders' => $print_headers, 
@@ -24,6 +26,12 @@ $PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfi
 $_SESSION['donation_name']   = !empty($_POST['donation_name']) ? $_POST['donation_name'] : '';
 $_SESSION['donation_email']  = !empty($_POST['donation_email']) ? $_POST['donation_email'] : '';
 $_SESSION['donation_amount'] = !empty($_POST['donation_amount']) ? $_POST['donation_amount'] : '';
+
+$donationItems = [
+  'donation_name' => $_SESSION['donation_name'],
+  'donation_email' => $_SESSION['donation_email'],
+  'donation_amount' => $_SESSION['donation_amount']
+];
 ?>
 <html lang="en">
   <head>
@@ -57,6 +65,7 @@ $_SESSION['donation_amount'] = !empty($_POST['donation_amount']) ? $_POST['donat
     <script type="text/javascript" src="../assets/js/scripts.js"></script>
     <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
     <script src="<?php echo $sdk_url; ?>"></script>
+    <script src="donation-order.js"></script>
   </head>
   <body>
     <div class="container">
@@ -95,9 +104,12 @@ $_SESSION['donation_amount'] = !empty($_POST['donation_amount']) ? $_POST['donat
             <p><strong>Name:</strong> <?php echo $_SESSION['donation_name']; ?></p>
             <p><strong>Email:</strong> <?php echo $_SESSION['donation_email']; ?></p>
             <p><strong>Amount:</strong> $<?php echo $_SESSION['donation_amount']; ?></p>
-            <a class="donation-button" href="createOrder.php">
+            <div class="donation-button">
               <h4 class="donate-label">Donate with PayPal</h4>
-              <?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>
+              <div id="paypal-button-container" data-checkout='<?php echo json_encode($donationItems); ?>'>
+                <div id="paypalError"></div>
+                <paypal-button type="pay" hidden></paypal-button>
+              </div>
           </div>
         </div>
       </div>

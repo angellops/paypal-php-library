@@ -18,9 +18,6 @@ $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
     'PayPalAPIUpgrade' => $api_upgrade,
-    'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
 	'PrintHeaders' => $print_headers, 
@@ -32,7 +29,7 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 /*
  * Here we call GetExpressCheckoutDetails to obtain payer information from PayPal
  */
-$PayPalResult = $PayPal->getOrder($_SESSION['paypal_token']);
+$PayPalResult = $PayPal->getOrder($_GET['order_id']);
 
 /**
  * Now we'll check for any errors returned by PayPal, and if we get an error,
@@ -52,13 +49,17 @@ if( $PayPalResult['success'] ) {
     $_SESSION['first_name']     = isset($PayPalResult['order']['payer']['name']['given_name']) ? $PayPalResult['order']['payer']['name']['given_name'] : '';
     $_SESSION['last_name']      = isset($PayPalResult['order']['payer']['name']['surname']) ? $PayPalResult['order']['payer']['name']['surname'] : '';
     $_SESSION['billing_country_code'] = isset($PayPalResult['order']['payer']['address']['country_code']) ? $PayPalResult['order']['payer']['address']['country_code'] : '';
+    
+    $captures = !empty($PayPalResult['order']['purchase_units'][0]['payments']['captures'][0]) ? $PayPalResult['order']['purchase_units'][0]['payments']['captures'][0] : [];
+    $_SESSION['paypal_transaction_id'] = isset($captures['id']) ? $captures['id'] : '';
+    $_SESSION['paypal_fee'] = isset( $captures['seller_receivable_breakdown']['paypal_fee']['value'] ) ? $captures['seller_receivable_breakdown']['paypal_fee']['value'] : 0.00;
 
     /**
      * Now we will redirect the user to a final review
      * page so they can see the shipping/handling/tax
      * that has been added to the order.
      */
-    header('Location: captureOrder.php');
+    header('Location: order-complete.php');
 } else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
     header('Location: ../error.php');
