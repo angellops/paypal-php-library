@@ -198,9 +198,15 @@ td.center {
 .table-summary .paypalbtn {
     padding: 0 !important;
 }
+.paypalbtn #paypal-button-container {
+    margin: 20px 0;
+}
 .paypalbtn a {
     display: block;
     margin: 20px 0;
+}
+.paypalbtn a[disabled] {
+    pointer-events: none;
 }
 .paypalbtn.vaulting-btns {
     padding-top: 16px !important;
@@ -451,6 +457,12 @@ body.cart-page .quantity-controls {
 #applepay-button-container,
 #acdc-container,
 #venmo-container {
+    font-style: italic;
+    color: #b00020;
+    margin-top: 20px;
+    word-break: break-all;
+}
+#paypalError {
     font-style: italic;
     color: #b00020;
     margin-top: 20px;

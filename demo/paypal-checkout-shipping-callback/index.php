@@ -21,9 +21,6 @@ $PayPalConfig = array(
 );
 $PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
 
-// Set buyer email in session
-$_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
-
 /**
  * Here we are building a very simple, static shopping cart to use
  * throughout this demo.  In most cases, you will working with a dynamic
@@ -83,6 +80,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <script type="text/javascript" src="../assets/js/scripts.js"></script>
     <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
     <script src="<?php echo $sdk_url; ?>"></script>
+    <script src="shipping-cb.js"></script>
   </head>
   <body>
     <div class="container">
@@ -166,7 +164,18 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="paypalbtn" colspan="2"><a href="createOrder.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a></td>
+                    <td class="paypalbtn" colspan="2">
+                      <?php if( $api_mode === 'classic' ) : ?>
+                        <a href="#" disabled>
+                          <img src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif">
+                        </a>
+                      <?php else: ?>
+                        <div id="paypal-button-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
+                          <div id="paypalError"></div>
+                          <paypal-button type="pay" hidden></paypal-button>
+                        </div>
+                      <?php endif; ?>
+                    </td>
                   </tr>
                 </tbody>
               </table>

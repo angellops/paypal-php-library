@@ -32,7 +32,7 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 /*
  * Here we call GetExpressCheckoutDetails to obtain payer information from PayPal
  */
-$PayPalResult = $PayPal->getOrder($_SESSION['paypal_token']);
+$PayPalResult = $PayPal->getOrder($_GET['order_id']);
 
 /**
  * Now we'll check for any errors returned by PayPal, and if we get an error,
@@ -68,7 +68,7 @@ if( $PayPalResult['success'] ) {
      * page so they can see the shipping/handling/tax
      * that has been added to the order.
      */
-    header('Location: captureOrder.php');
+    header('Location: order-complete.php');
 } else {
     $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
     header('Location: ../error.php');
