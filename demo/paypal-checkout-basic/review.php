@@ -59,8 +59,7 @@ require_once('../../includes/config.php');
             </div>
           <?php } ?>
           <h2 class="main-title">Order Review</h2>
-          <p class="main-info">Here we display a final review to the buyer now that we've calculated shipping, handling, and tax. The billing and shipping information provided here is what we obtained in the <strong>GetExpressCheckoutDetails</strong> response.</p>
-          <p class="main-info">The payment has not been processed at this point because we have not yet called the final <strong>DoExpressCheckoutPayment</strong> API. That is what will happen when we click the "<strong>Complete Order</strong>" button below.</p>
+          <p class="main-info">Here we display a final review to the buyer now that we've calculated shipping, handling, and tax. The billing and shipping information provided here is what we obtained in the <strong>getOrder</strong> response.</p>
           <table class="table table-items table-bordered">
             <thead>
               <tr>
@@ -129,7 +128,7 @@ require_once('../../includes/config.php');
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="button-center" colspan="2"><a href="DoExpressCheckoutPayment.php" class="btn btn-success btn-lg" role="button">Complete Order</a></td>
+                    <td class="button-center" colspan="2"><a href="order-complete.php" class="btn btn-success btn-lg" role="button">Complete Order</a></td>
                   </tr>
                 </tbody>
               </table>

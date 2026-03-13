@@ -3,25 +3,6 @@ require_once('../../includes/config.php');
 require_once('../../vendor/autoload.php');
 
 /**
- * Setup configuration for the PayPal library using vars from the config file.
- * Then load the PayPal object into $PayPal
- */
-$PayPalConfig = array(
-	'Sandbox' => $sandbox,
-	'PayPalAPIMode' => $api_mode,
-  'PayPalAPIUpgrade' => $api_upgrade,
-  'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
-	'ClientID' => $rest_client_id,
-	'ClientSecret' => $rest_client_secret,
-	'PrintHeaders' => $print_headers, 
-	'LogResults' => $log_results, 
-	'LogPath' => $log_path,
-);
-$PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
-
-/**
  * Here we are building a very simple, static shopping cart to use
  * throughout this demo.  In most cases, you will working with a dynamic
  * shopping cart system of some sort.
