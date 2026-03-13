@@ -151,23 +151,30 @@ class PayPalREST extends PayPal
         }
         curl_close($ch);
 
+        $tokenType = $load_sdk_btn ? 'ClientToken' : 'AccessToken';
+        $tokenSource = $load_sdk_btn ? 'paypal_js_sdk' : 'server_api';
+
         // Request Log
         $request_log = [
+            'type' => $tokenType,
+            'source' => $tokenSource,
             'url' => $url,
             'method' => 'POST',
             'headers' => $headers,
             'payload' => $postData
         ];
-        $this->Logger($this->LogPath, 'AccessTokenRequest', $request_log);
+        $this->Logger($this->LogPath, $tokenType . 'Request', $request_log);
 
         // Response Log
         $response_log = [
+            'type' => $tokenType,
+            'source' => $tokenSource,
             'status_code' => $httpCode,
             'debug_id' => $debugId,
             'headers' => $parsedHeaders,
             'body' => json_decode($body, true)
         ];
-        $this->Logger($this->LogPath, 'AccessTokenResponse', $response_log);
+        $this->Logger($this->LogPath, $tokenType . 'Response', $response_log);
 
         if ($httpCode === 200) {
             $data = json_decode($body, true);
