@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const data = await response.json();
             if (!data.order_id) {
-                console.log(data.message || "Unable to create PayPal order.");
+                showPaypalError("Unable to create PayPal order.");
                 return;
             }
 
@@ -87,8 +87,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showPaypalError(message) {
-        const errorContainer = payPalBtnContainer.getElementById('paypalError');
+        const errorContainer = document.getElementById('paypalError');
         if( !errorContainer ) return;
+        errorContainer.style.display = "block";
         errorContainer.innerHTML = message;
     }
 
@@ -173,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     createOrder(),
                 );
             } catch (error) {
-                console.error("PayPal payment start error:", error);
+                showPaypalError(`PayPal payment start error: ${error}`)
             }
         });
     }

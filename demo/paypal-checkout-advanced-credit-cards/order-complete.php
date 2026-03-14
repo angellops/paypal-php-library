@@ -96,7 +96,13 @@ require_once('../../includes/config.php');
                                         echo $_SESSION['payer']['firstname'] . ' ' . $_SESSION['payer']['lastname'] . '<br />' .
                                         $_SESSION['payer']['email'] . '<br />' .
                                         $_SESSION['payer']['phonenumber'] . '<br />' .
-                                        '<strong>PayPal OrderID: </strong>' . $_SESSION['paypal_order_id'] . '<br />
+                                        '<strong>Transaction ID: </strong>' . $_SESSION['paypal_transaction_id'] . '<br />
+                                        <span style="display:block; width: 75%;"><strong> Payment Source: </strong>PayPal</span>';
+                                    } elseif( isset($_SESSION['payment_mode']) && $_SESSION['payment_mode'] === 'paypal' ) {
+                                        echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
+                                        $_SESSION['email'] . '<br />'. 
+                                        $_SESSION['phone_number'] . '<br />' . 
+                                        '<strong>Transaction ID: </strong>' . $_SESSION['paypal_transaction_id'] . '<br />
                                         <span style="display:block; width: 75%;"><strong> Payment Source: </strong>PayPal</span>';
                                     } elseif( isset($_SESSION['payment_mode']) && $_SESSION['payment_mode'] === 'guest' ) {
                                         echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 

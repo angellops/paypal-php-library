@@ -241,7 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         } catch (err) {
             hideActions();
-            console.error("Payment flow error", err);
+            showPaypalError(`Payment flow error: ${err}`)
         }
     }
 

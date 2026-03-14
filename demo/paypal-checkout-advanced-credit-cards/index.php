@@ -124,6 +124,7 @@ $checkoutData = [
         <script type="text/javascript" src="../assets/js/scripts.js"></script>
         <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
         <script src="<?php echo $sdk_url; ?>"></script>
+        <script src="paypal-payment.js"></script>
         <script src="guest-checkout.js"></script>
         <script src="acdc.js"></script>
     </head>
@@ -222,7 +223,10 @@ $checkoutData = [
                                                 </a>
                                             <?php else: ?>
                                                 <div class="inline-buttons">
-                                                    <a href="DoDirectPayment.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>
+                                                    <div id="paypal-button-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
+                                                        <div id="paypalError"></div>
+                                                        <paypal-button type="pay" hidden></paypal-button>
+                                                    </div>
                                                     <div id="guest-checkout-container" data-mode="rest" data-checkout='<?php echo json_encode($checkoutData); ?>'>
                                                         <paypal-basic-card-container>
                                                             <paypal-basic-card-button id="paypal-basic-card-button" hidden></paypal-basic-card-button>

@@ -6,45 +6,52 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function createOrder() {
         try {
-            const amount = Number(checkoutData.donation_amount).toFixed(2);
+            const items = checkoutData.acdc_items.map(item => ({
+                name: item.name,
+                description: item.desc,
+                sku: item.id,
+                quantity: item.qty.toString(),
+                category: item.category,
+                unit_amount: {
+                    currency_code: "USD",
+                    value: Number(item.price).toFixed(2)
+                }
+            }));
+
             const orderPayload = {
                 intent: "CAPTURE",
                 purchase_units: [
                     {
-                        description: "Charity Donation",
-                        custom_id: JSON.stringify({
-                            name: checkoutData.donation_name,
-                            email: checkoutData.donation_email
-                        }),
-                        items: [
-                            {
-                                name: "Donation",
-                                description: "Support our cause",
-                                quantity: "1",
-                                unit_amount: {
-                                    currency_code: "USD",
-                                    value: amount
-                                },
-                                category: "DONATION"
-                            }
-                        ],
                         amount: {
                             currency_code: "USD",
-                            value: amount,
+                            value: Number(checkoutData.grand_total).toFixed(2),
                             breakdown: {
                                 item_total: {
                                     currency_code: "USD",
-                                    value: amount
-                                }
-                            }
-                        }
-                    }
+                                    value: Number(checkoutData.subtotal).toFixed(2),
+                                },
+                                shipping: {
+                                    currency_code: "USD",
+                                    value: Number(checkoutData.shipping).toFixed(2),
+                                },
+                                handling: {
+                                    currency_code: "USD",
+                                    value: Number(checkoutData.handling).toFixed(2),
+                                },
+                                tax_total: {
+                                    currency_code: "USD",
+                                    value: Number(checkoutData.tax).toFixed(2),
+                                },
+                            },
+                        },
+                        items: items,
+                    },
                 ],
                 payment_source: {
                     paypal: {
                         experience_context: {
                             brand_name: "AngellEYE",
-                            shipping_preference: "NO_SHIPPING",
+                            shipping_preference: "GET_FROM_FILE",
                             user_action: "PAY_NOW"
                         }
                     }
@@ -88,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const captureResult = await response.json();
 
             if (captureResult.status === "COMPLETED") {
-                window.location.href = `getOrder.php?order_id=${data.orderId}`;
+                window.location.href = `getOrder.php?payment_mode=paypal&order_id=${data.orderId}`;
             } else {
                 throw new Error("Payment capture failed.");
             }
