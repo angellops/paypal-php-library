@@ -145,16 +145,26 @@ if( $PayPalResult['success'] ) {
     /**
      * Here we'll pull out data from the PayPal response.
      */
-    $_SESSION['paypal_transaction_id'] = isset($PayPalResult['full_response']['id']) ? $PayPalResult['full_response']['id'] : '';
-    $_SESSION['shipping_name'] = $_SESSION['payer']['firstname'] . ' ' . $_SESSION['payer']['lastname'];
-    $_SESSION['shipping_street'] = $_SESSION['billing']['street'];
-    $_SESSION['shipping_city'] = $_SESSION['billing']['city'];
-    $_SESSION['shipping_state'] = $_SESSION['billing']['state'];
-    $_SESSION['shipping_zip'] = $_SESSION['billing']['zip'];
-    $_SESSION['shipping_country_code'] = $_SESSION['billing']['countrycode'];
+    $orderID = isset($PayPalResult['full_response']['id']) ? $PayPalResult['full_response']['id'] : '';
+    $getOrderResult = $PayPal->getOrder($orderID);
+
+    if( $getOrderResult['success'] ) {
+        $_SESSION['paypal_order_id'] = isset($getOrderResult['order']['id']) ? $getOrderResult['order']['id'] : '';
+        $purchaseUnit = $getOrderResult['order']['purchase_units'][0];
+        $shipping = isset( $purchaseUnit['shipping'] ) ? $purchaseUnit['shipping'] : [];
+        $_SESSION['shipping_name'] = isset($shipping['name']['full_name']) ? $shipping['name']['full_name'] : '';
+        $_SESSION['shipping_street'] = isset($shipping['address']['address_line_1']) ? $shipping['address']['address_line_1'] : '';
+        $_SESSION['shipping_city'] = isset($shipping['address']['admin_area_2']) ? $shipping['address']['admin_area_2'] : '';
+        $_SESSION['shipping_state'] = isset($shipping['address']['admin_area_1']) ? $shipping['address']['admin_area_1'] : '';
+        $_SESSION['shipping_zip'] = isset($shipping['address']['postal_code']) ? $shipping['address']['postal_code'] : '';
+        $_SESSION['shipping_country_code'] = isset($shipping['address']['country_code']) ? $shipping['address']['country_code'] : '';
+    } else {
+        $_SESSION['paypal_errors'] = $getOrderResult['errors'];
+        header('Location: ../error.php');
+    }
 
     header('Location: order-complete.php');
 } else {
-    $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
+    $_SESSION['paypal_errors'] = $PayPalResult['errors'];
     header('Location: ../error.php');
 }
