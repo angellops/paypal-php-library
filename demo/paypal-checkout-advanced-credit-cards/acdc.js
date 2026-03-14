@@ -14,20 +14,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const items = cart.acdc_items.map(item => ({
                 name: item.name,
-                description: "Item description",
+                description: item.desc,
                 sku: item.id,
                 product_code: item.id,
                 commodity_code: "86101700",
                 unit_of_measure: "UNIT",
-                quantity: item.qty,
-                category: "PHYSICAL_GOODS",
+                quantity: item.qty.toString(),
+                category: item.category,
                 unit_amount: {
                     currency_code: "USD",
-                    value: item.price
+                    value: Number(item.price).toFixed(2)
                 },
                 unit_tax_amount: {
                     currency_code: "USD",
-                    value: "0.00"
+                    value: Number(item.tax).toFixed(2)
                 },
                 unit_discount_amount: { 
                     currency_code: "USD", 
@@ -43,23 +43,23 @@ document.addEventListener("DOMContentLoaded", function () {
                         invoice_id: "INV-" + Date.now(),
                         amount: {
                             currency_code: "USD",
-                            value: cart.grand_total,
+                            value: Number(cart.grand_total).toFixed(2),
                             breakdown: {
                                 item_total: {
                                     currency_code: "USD",
-                                    value: cart.subtotal,
+                                    value: Number(cart.subtotal).toFixed(2),
                                 },
                                 shipping: {
                                     currency_code: "USD",
-                                    value: cart.shipping
+                                    value: Number(cart.shipping).toFixed(2),
                                 },
                                 handling: {
                                     currency_code: "USD",
-                                    value: cart.handling
+                                    value: Number(cart.handling).toFixed(2),
                                 },
                                 tax_total: {
                                     currency_code: "USD",
-                                    value: cart.tax
+                                    value: Number(cart.tax).toFixed(2),
                                 },
                                 discount: {
                                     currency_code: "USD",

@@ -28,7 +28,7 @@ $PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfi
 $_SESSION['card_details'] = array(
 	'creditcardtype' => 'Visa', 		        // Type of credit card.  Visa, MasterCard, Discover, Amex, Maestro, Solo.  If Maestro or Solo, the currency code must be GBP.  In addition, either start date or issue number must be specified.
 	'accountnumber' => '4111111111111111', 		// Credit card number.  No spaces or punctuation.
-	'expiry' => '122026', 			            // Credit card expiration date.  Format is MMYYYY
+	'expiry' => '2027-12', 			            // Credit card expiration date.  Format is MMYYYY
 	'cvv' => '456', 			                // Requirements determined by your PayPal account settings.  Security digits for credit card.
 );
 
@@ -62,15 +62,20 @@ $_SESSION['billing'] = array(
 $_SESSION['acdc_items'][0] = array(
     'id' => '123-ABC',
     'name' => 'Widget',
+    'desc' => 'Widget 123',
     'qty' => '2',
     'price' => '9.99',
+    'tax' => 0,
+    'category' => 'PHYSICAL_GOODS',
 );
-
 $_SESSION['acdc_items'][1] = array(
     'id' => 'XYZ-456',
     'name' => 'Gadget',
+    'desc' => 'Gadget 456',
     'qty' => '1',
     'price' => '4.99',
+    'tax' => 0,
+    'category' => 'PHYSICAL_GOODS',
 );
 $_SESSION['shopping_cart'] = array(
     'acdc_items' => $_SESSION['acdc_items'],
@@ -211,15 +216,19 @@ $checkoutData = [
                                     </tr>
                                     <tr>
                                         <td class="paypalbtn" colspan="2">
-                                            <?php if( $api_mode === 'rest' ) : ?><div class="inline-buttons"><?php endif; ?>
-                                            <a href="DoDirectPayment.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>
-                                            <?php if( $api_mode === 'rest' ) : ?>
-                                                <div id="guest-checkout-container" data-mode="rest" data-checkout='<?php echo json_encode($checkoutData); ?>'>
-                                                    <paypal-basic-card-container>
-                                                        <paypal-basic-card-button id="paypal-basic-card-button" hidden></paypal-basic-card-button>
-                                                    </paypal-basic-card-container>
+                                            <?php if( $api_mode === 'classic' ) : ?>
+                                                <a href="#" disabled>
+                                                    <img src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif">
+                                                </a>
+                                            <?php else: ?>
+                                                <div class="inline-buttons">
+                                                    <a href="DoDirectPayment.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>
+                                                    <div id="guest-checkout-container" data-mode="rest" data-checkout='<?php echo json_encode($checkoutData); ?>'>
+                                                        <paypal-basic-card-container>
+                                                            <paypal-basic-card-button id="paypal-basic-card-button" hidden></paypal-basic-card-button>
+                                                        </paypal-basic-card-container>
+                                                    </div>
                                                 </div>
-                                                <?php if( $api_mode === 'rest' ) : ?></div><?php endif; ?>
                                                 <div class="or-wrapper">OR</div>
                                                 <div id="acdc-container" data-mode="rest" data-checkout='<?php echo json_encode($checkoutData); ?>'>
                                                     <div class="card-fields-container">
