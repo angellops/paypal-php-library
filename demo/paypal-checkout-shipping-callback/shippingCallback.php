@@ -65,6 +65,7 @@ $grand_total = $item_total + $shipping_cost + $handling_fee + $tax_total;
 http_response_code(200);
 
 $response = [
+    "id" => $order_id,
     "purchase_units" => [[
         "reference_id" => $reference_id,
         "amount" => [
@@ -89,18 +90,16 @@ $response = [
                 ]
             ]
         ],
-        "shipping" => [
-            "options" => [[
-                "id" => "SHIP_1",
-                "label" => "Standard Shipping",
-                "type" => "SHIPPING",
-                "selected" => true,
-                "amount" => [
-                    "currency_code" => "USD",
-                    "value" => number_format($shipping_cost, 2, '.', '')
-                ]
-            ]]
-        ]
+        "shipping_options" => [[
+            "id" => "SHIP_1",
+            "label" => "Standard Shipping",
+            "type" => "SHIPPING",
+            "selected" => true,
+            "amount" => [
+                "currency_code" => "USD",
+                "value" => number_format($shipping_cost, 2, '.', '')
+            ]
+        ]]
     ]]
 ];
 
