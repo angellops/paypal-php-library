@@ -3,52 +3,6 @@ require_once('../../includes/config.php');
 require_once('../../vendor/autoload.php');
 
 /**
- * Setup configuration for the PayPal library using vars from the config file.
- * Then load the PayPal object into $PayPal
- */
-$PayPalConfig = array(
-	'Sandbox' => $sandbox,
-	'PayPalAPIMode' => $api_mode,
-  'PayPalAPIUpgrade' => $api_upgrade,
-  'APIUsername' => $api_username,
-	'APIPassword' => $api_password,
-	'APISignature' => $api_signature,
-	'ClientID' => $rest_client_id,
-	'ClientSecret' => $rest_client_secret,
-	'PrintHeaders' => $print_headers, 
-	'LogResults' => $log_results, 
-	'LogPath' => $log_path,
-);
-$PayPalCommonFunctions = new angelleye\PayPal\PayPalCommonFunctions($PayPalConfig);
-
-// Set buyer email in session
-$_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
-
-/**
- * Define PayPal receiver identifiers for parallel payments.
- *
- * Each receiver can be identified using either:
- * - The merchant's PayPal email address, or
- * - The merchant's PayPal Merchant ID (Payer ID).
- *
- * In parallel payments, each receiver must be uniquely identified so that
- * PayPal can correctly split and route the funds.
- *
- * The following values represent two separate PayPal **sandbox** accounts
- * configured as receivers for testing split/parallel payments.
- */
-$seller_a = 'paypal-facilitator@angelleye.com';
-$seller_b = 'sandbox-seller@angelleye.com';
-
-/**
- * Merchant IDs (Payer IDs) for the corresponding sandbox seller accounts.
- * These can be used instead of email addresses when constructing the
- * PayPal request payload.
- */
-$seller_merchant_id_a = '76CLKUEZXHAUC';
-$seller_merchant_id_b = 'QEV4T5D83THAJ';
-
-/**
  * Here we are building a very simple, static shopping cart to use
  * throughout this demo.  In most cases, you will working with a dynamic
  * shopping cart system of some sort.
@@ -61,7 +15,10 @@ $_SESSION['multiparty_items'][0] = array(
   'name' => 'Widget',
   'qty' => '1',
   'price' => '10.00',
-  'seller_id' => ($api_mode === 'rest') ? $seller_merchant_id_a : $seller_a,
+  'shipping' => 0,
+  'handling' => 0,
+  'tax' => 0,
+  'seller_id' => '76CLKUEZXHAUC',
 );
 
 $_SESSION['multiparty_items'][1] = array(
@@ -69,9 +26,13 @@ $_SESSION['multiparty_items'][1] = array(
   'name' => 'Gadget',
   'qty' => '1',
   'price' => '5.00',
-  'seller_id' => ($api_mode === 'rest') ? $seller_merchant_id_b : $seller_b,
+  'shipping' => 0,
+  'handling' => 0,
+  'tax' => 0,
+  'seller_id' => 'QEV4T5D83THAJ',
 );
 $_SESSION['shopping_cart'] = array(
+  'buyer_email' => 'paypal-buyer@angelleye.com',
 	'multiparty_items' => $_SESSION['multiparty_items'],
 	'subtotal' => 15.00,
 	'shipping' => 0,
@@ -112,6 +73,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <script type="text/javascript" src="../assets/js/scripts.js"></script>
     <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
     <script src="<?php echo $sdk_url; ?>"></script>
+    <script src="multiparty-payments.js"></script>
   </head>
   <body>
     <div class="container">
@@ -154,18 +116,24 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                 <th class="center">Name</th>
                 <th class="center">Price</th>
                 <th class="center">QTY</th>
+                <th class="center">Shipping</th>
+                <th class="center">Handling</th>
+                <th class="center">Tax</th>
                 <th class="center">Total</th>
               </tr>
             </thead>
             <tbody>
               <?php foreach($_SESSION['shopping_cart']['multiparty_items'] as $cart_item) { ?>
-              <tr>
-                <td class="center"><?php echo $cart_item['id']; ?></td>
-                <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
-                <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
-                <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
-                <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
-              </tr>
+                <tr>
+                  <td class="center"><?php echo $cart_item['id']; ?></td>
+                  <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
+                  <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
+                  <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
+                  <td class="center"> $<?php echo number_format($cart_item['shipping'],2); ?></td>
+                  <td class="center"> $<?php echo number_format($cart_item['handling'],2); ?></td>
+                  <td class="center"> $<?php echo number_format($cart_item['tax'],2); ?></td>
+                  <td class="center font-lightbold"> $<?php echo number_format(($cart_item['qty'] * $cart_item['price'] + $cart_item['shipping'] + $cart_item['handling'] + $cart_item['tax']),2); ?></td>
+                </tr>
               <?php } ?>
             </tbody>
           </table>
@@ -196,7 +164,18 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <td class="paypalbtn" colspan="2"><a href="SetExpressCheckout.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a></td>
+                    <td class="paypalbtn" colspan="2">
+                      <?php if( $api_mode === 'classic' ) : ?>
+                        <a href="#" disabled>
+                          <img src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif">
+                        </a>
+                      <?php else: ?>
+                        <div id="paypal-button-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
+                          <div id="paypalError"></div>
+                          <paypal-button type="pay" hidden></paypal-button>
+                        </div>
+                      <?php endif; ?>
+                    </td>
                   </tr>
                 </tbody>
               </table>

@@ -1,5 +1,10 @@
 <?php
 require_once('../../includes/config.php');
+
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
 ?>
 <html lang="en">
   <head>
@@ -59,7 +64,7 @@ require_once('../../includes/config.php');
             </div>
           <?php } ?>
           <h2 class="main-title">Payment Complete!</h2>
-          <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed!  We have added the PayPal transaction IDs (one for each transaction in the Parallel Payment split) to the Billing Information, which was provided in the DoExpressCheckoutPayment response.</p>
+          <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed!  We have added the PayPal transaction IDs (one for each transaction in the Parallel Payment split) to the Billing Information, which was provided in the response.</p>
           <table class="table table-items table-bordered">
             <thead>
               <tr>
@@ -67,6 +72,9 @@ require_once('../../includes/config.php');
                 <th class="center">Name</th>
                 <th class="center">Price</th>
                 <th class="center">QTY</th>
+                <th class="center">Shipping</th>
+                <th class="center">Handling</th>
+                <th class="center">Tax</th>
                 <th class="center">Total</th>
               </tr>
             </thead>
@@ -78,7 +86,10 @@ require_once('../../includes/config.php');
                     <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
                     <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
                     <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
-                    <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
+                    <td class="center"> $<?php echo number_format($cart_item['shipping'],2); ?></td>
+                    <td class="center"> $<?php echo number_format($cart_item['handling'],2); ?></td>
+                    <td class="center"> $<?php echo number_format($cart_item['tax'],2); ?></td>
+                    <td class="center font-lightbold"> $<?php echo number_format(($cart_item['qty'] * $cart_item['price'] + $cart_item['shipping'] + $cart_item['handling'] + $cart_item['tax']),2); ?></td>
                   </tr>
               <?php }
                 } 
