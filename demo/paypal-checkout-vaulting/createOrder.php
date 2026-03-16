@@ -5,6 +5,11 @@
 require_once('../../includes/config.php');
 require_once('../../vendor/autoload.php');
 
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {  
+    header('Location: ./');
+}
+
 /**
  * Setup configuration for the PayPal library using vars from the config file.
  * Then load the PayPal object into $PayPal
@@ -21,6 +26,11 @@ $PayPalConfig = array(
 	'LogPath' => $log_path,
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
+
+// GET data
+$_SESSION['paypal_setup_token'] = !empty($_GET['setupToken']) ? $_GET['setupToken'] : '';
+$_SESSION['paypal_customer_id'] = !empty($_GET['customerID']) ? $_GET['customerID'] : '';
+$_SESSION['paypal_vault_token'] = !empty($_GET['paymentToken']) ? $_GET['paymentToken'] : '';
 
 /**
  * Create PayPal order payload

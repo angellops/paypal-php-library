@@ -1,5 +1,10 @@
 <?php
 require_once('../../includes/config.php');
+
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
 ?>
 <html lang="en">
   <head>
@@ -129,8 +134,9 @@ require_once('../../includes/config.php');
                     <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
                   </tr>
                   <tr>
-                    <?php $redirectURL = ( $api_mode === 'classic' ) ? 'DoExpressCheckoutPayment.php' : 'order-complete.php' ; ?>
-                    <td class="button-center" colspan="2"><a href="<?php echo $redirectURL; ?>" class="btn btn-success btn-lg" role="button">Complete Order</a></td>
+                    <td class="button-center" colspan="2">
+                      <a href="order-complete.php" class="btn btn-success btn-lg" role="button">Complete Order</a>
+                    </td>
                   </tr>
                 </tbody>
               </table>

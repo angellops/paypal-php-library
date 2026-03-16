@@ -1792,23 +1792,7 @@ class PayPalREST extends PayPal
      */
     public function createVaultSetupToken($DataArray) {
         try {
-            $payloadData = [
-                'payment_source' => [
-                    'paypal' => [
-                        'usage_type' => 'MERCHANT',
-                        'customer_type'=> 'CONSUMER',
-                        'experience_context' => [
-                            'brand_name' => isset($DataArray['brand_name']) ? $DataArray['brand_name'] : 'My Store',
-                            'locale' => isset($DataArray['locale']) ? $DataArray['locale'] : 'en-US',
-                            'shipping_preference' => 'NO_SHIPPING',
-                            'return_url' => isset($DataArray['return_url']) ? $DataArray['return_url'] : '',
-                            'cancel_url' => isset($DataArray['cancel_url']) ? $DataArray['cancel_url'] : '',
-                        ]
-                    ]
-                ]
-            ];
-
-            $response = $this->makeRequest('/v3/vault/setup-tokens', 'POST', $payloadData, null, false, true);
+            $response = $this->makeRequest('/v3/vault/setup-tokens', 'POST', $DataArray, null, false, true);
 
             if (in_array($response['status_code'], [200, 201])) {
                 return [
@@ -1826,7 +1810,7 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'error' => 'Failed to create setup token',
                 'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
-                'full_response' => $response['body'],
+                'errors' => $response['body'],
                 'raw_response' => $response['raw_response']
             ];
         } catch (\Exception $e) {
@@ -1855,6 +1839,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'setup_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                    'customer_id' => isset($response['body']['customer']['id']) ? $response['body']['customer']['id'] : '',
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
                     'raw_response' => $response['raw_response']
