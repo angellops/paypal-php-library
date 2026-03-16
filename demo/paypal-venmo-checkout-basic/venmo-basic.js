@@ -3,8 +3,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if ( !venmoButtonContainer ) return;
 
     const checkoutData = JSON.parse(venmoButtonContainer.dataset.checkout);
+    let selectedPaymentSource = null;
 
-    async function createOrder() {
+    async function createOrder(paymentSource) {
         try {
             const items = checkoutData.venmo_items.map(item => ({
                 name: item.name,
@@ -34,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                 ],
                 payment_source: {
-                    venmo: {
+                    [paymentSource]: {
                         experience_context: {
                             brand_name: "AngellEYE",
                             shipping_preference: "GET_FROM_FILE"
@@ -79,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const captureResult = await response.json();
 
             if (captureResult.status === "COMPLETED") {
-                window.location.href = `getOrder.php?order_id=${data.orderId}`;
+                window.location.href = `getOrder.php?payment_source=${data.paymentSource}&order_id=${data.orderId}`;
             } else {
                 throw new Error("Payment capture failed.");
             }
@@ -91,11 +92,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const paymentSessionOptions = {
-        fundingSource: "venmo",
         async onApprove(data) {
             try {
                 const orderData = await captureOrder({
                     orderId: data.orderId,
+                    paymentSource: selectedPaymentSource
                 });
             } catch (error) {
                 showPaypalError(error.message);
@@ -117,12 +118,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const sdkInstance = await window.paypal.createInstance({
                 clientToken: token,
-                components: ["venmo-payments"],
+                components: ["paypal-payments", "venmo-payments"],
             });
 
             const paymentMethods = await sdkInstance.findEligibleMethods({
                 currencyCode: "USD"
             });
+
+            const isPayPalEligible = paymentMethods.isEligible("paypal");
+            if (isPayPalEligible) {
+                setupPayPalButton(sdkInstance);
+            }
+
             const isVenmoEligible = paymentMethods.isEligible("venmo");
             if (isVenmoEligible) {
                 setupVenmoButton(sdkInstance);
@@ -131,6 +138,34 @@ document.addEventListener("DOMContentLoaded", function () {
             showPaypalError(`Initialization error: ${error.message}`);
             throw error;
         }
+    }
+
+    async function setupPayPalButton(sdkInstance) {
+        const paypalPaymentSession = sdkInstance.createPayPalOneTimePaymentSession(
+            paymentSessionOptions,
+        );
+
+        // Get reference to the Venmo button element
+        const paypalButton = document.querySelector("#paypal-button");
+        
+        // Show the button since Venmo is eligible
+        paypalButton.removeAttribute("hidden");
+
+        paypalButton.addEventListener("click", async () => {
+            try {
+                selectedPaymentSource = "paypal";
+
+                // Start the payment session
+                await paypalPaymentSession.start({ 
+                        presentationMode: "auto" 
+                    },
+                    createOrder('paypal')
+                );
+            } catch (error) {
+                showPaypalError(`Error: ${error.message}`);
+                throw error;
+            }
+        });
     }
 
     async function setupVenmoButton(sdkInstance) {
@@ -146,11 +181,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         venmoButton.addEventListener("click", async () => {
             try {
-                // Start the payment session
+                selectedPaymentSource = "venmo";
+
                 await venmoPaymentSession.start({ 
                         presentationMode: "auto" 
                     },
-                    createOrder()
+                    createOrder('venmo')
                 );
             } catch (error) {
                 showPaypalError(`Error: ${error.message}`);

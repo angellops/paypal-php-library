@@ -168,8 +168,8 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                   </tr>
                   <tr>
                     <td class="paypalbtn vaulting-btns" colspan="2">
-                      <a href="SetExpressCheckout.php"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>
                       <div id="venmo-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
+                        <paypal-button id="paypal-button" type="pay" hidden></paypal-button>
                         <venmo-button id="venmo-button" type="pay" hidden></venmo-button>
                       </div>
                     </td>
