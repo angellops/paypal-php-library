@@ -164,7 +164,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 components: ["card-fields"],
             });
 
-            const paymentMethods = await sdkInstance.findEligibleMethods();
+            const paymentMethods = await sdkInstance.findEligibleMethods({
+                currencyCode: "USD",
+                paymentFlow: "VAULT_WITH_PAYMENT",
+            });
+            
             const isCardFieldsEligible = paymentMethods.isEligible("advanced_cards");
             if (isCardFieldsEligible) {
                 setupCardFields(sdkInstance);
