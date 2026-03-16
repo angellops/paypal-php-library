@@ -65,7 +65,6 @@ if ($api_mode === 'classic') {
           <?php } ?>
           <h2 class="main-title">Order Review</h2>
           <p class="main-info">Here we display a final review to the buyer now that we've calculated shipping, handling, and tax. The billing and shipping information provided here is what we obtained in the <strong>getOrder</strong> response.</p>
-          <p class="main-info">The payment has not been processed at this point because we have not yet called the final <strong>captureOrder</strong> API. That is what will happen when we click the "<strong>Complete Order</strong>" button below.</p>
           <table class="table table-items table-bordered">
             <thead>
               <tr>

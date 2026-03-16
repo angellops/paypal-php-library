@@ -468,6 +468,14 @@ body.cart-page .quantity-controls {
     margin-top: 20px;
     word-break: break-all;
 }
+#paylater-button-container {
+    text-align: right;
+    margin-top: 10px;
+}
+#paylater-button-container #paypalError {
+    text-align: right;
+    margin-bottom: 10px;
+ }
 #pay-button {
     font-style: normal;
 }

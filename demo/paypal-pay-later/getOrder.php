@@ -26,6 +26,9 @@ $PayPalConfig = array(
 );
 $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
+// get order ID
+$_SESSION['paypal_token'] = !empty($_GET['order_id']) ? $_GET['order_id'] : '';
+
 $PayPalResult = $PayPal->getOrder($_SESSION['paypal_token']);
 
 if ( $PayPalResult['success'] ) {
@@ -40,6 +43,10 @@ if ( $PayPalResult['success'] ) {
     $_SESSION['billing_country_code'] = isset($PayPalResult['order']['payer']['address']['country_code']) ? $PayPalResult['order']['payer']['address']['country_code'] : '';
 
     $purchaseUnit = $PayPalResult['order']['purchase_units'][0];
+    
+    // Get reference id for the patch order
+    $_SESSION['reference_id'] = !empty($purchaseUnit['reference_id']) ? $purchaseUnit['reference_id'] : '';
+
     $shipping = isset( $purchaseUnit['shipping'] ) ? $purchaseUnit['shipping'] : [];
     $_SESSION['shipping_name'] = isset($shipping['name']['full_name']) ? $shipping['name']['full_name'] : '';
     $_SESSION['shipping_street'] = isset($shipping['address']['address_line_1']) ? $shipping['address']['address_line_1'] : '';

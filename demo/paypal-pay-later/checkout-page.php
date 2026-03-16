@@ -54,13 +54,19 @@ if (empty($items)) {
  */
 $subtotal = $PayPalCommonFunctions->calculate_subtotal($items);
 $_SESSION['shopping_cart'] = [
-  'paylater_items'    => $items,
+  'paylater_items' => $items,
   'subtotal' => $subtotal,
   'shipping' => 10.00,
   'handling' => 2.50,
 ];
 $_SESSION['shopping_cart']['tax'] = number_format(($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling']) * 0.08, 2);
 $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
+
+$checkoutData = [
+  'payer' => $_SESSION['payer'],
+  'billing' => $_SESSION['billing'],
+  'cart' => $_SESSION['shopping_cart']
+];
 ?>
 <html lang="en">
   <head>
@@ -188,9 +194,10 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
             amount="<?php echo number_format($_SESSION['shopping_cart']['grand_total'], 2); ?>"
             currency-code="USD">
           </paypal-message>
-          <a href="createOrder.php" class="paylater-btn">
+          <div id="paylater-button-container" data-checkout='<?php echo json_encode($checkoutData); ?>'>
+            <div id="paypalError"></div>
             <paypal-pay-later-button hidden></paypal-pay-later-button>
-          </a>
+          </div>
         </div>
       </div>
     </div>

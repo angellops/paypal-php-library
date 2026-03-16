@@ -23,7 +23,6 @@ $_SESSION['billing'] = array(
 	'countrycode' => 'US', 			// Required.  Country code.
 	'zip' => '33770', 			// Required.  Postal code of payer.
 );
-
 ?>
 
 <html lang="en">
