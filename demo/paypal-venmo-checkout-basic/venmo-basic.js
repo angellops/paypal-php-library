@@ -122,7 +122,8 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const paymentMethods = await sdkInstance.findEligibleMethods({
-                currencyCode: "USD"
+                currencyCode: "USD",
+                paymentFlow: "VAULT_WITH_PAYMENT",
             });
 
             const isPayPalEligible = paymentMethods.isEligible("paypal");

@@ -107,6 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const paymentMethods = await sdkInstance.findEligibleMethods({
                 currencyCode: "USD",
+                paymentFlow: "VAULT_WITH_PAYMENT",
             });
 
             if (paymentMethods.isEligible("paypal")) {
