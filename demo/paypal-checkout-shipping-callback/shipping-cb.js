@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             brand_name: "AngellEYE",
                             shipping_preference: "GET_FROM_FILE",
                             order_update_callback_config: {
-                                callback_url: 'shippingCallback.php',
+                                callback_url: checkoutData.shipping_callback_url,
                                 callback_events: ['SHIPPING_ADDRESS'],
                             }
                         }

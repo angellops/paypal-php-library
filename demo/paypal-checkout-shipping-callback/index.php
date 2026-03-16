@@ -26,6 +26,7 @@ $_SESSION['shopping_cart'] = array(
 	'shipping' => 0,
 	'handling' => 0,
 	'tax' => 0,
+  'shipping_callback_url' => $domain . '/demo/paypal-checkout-shipping-callback/shippingCallback.php',
 );
 $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
 ?>

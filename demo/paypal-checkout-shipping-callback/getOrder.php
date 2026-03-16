@@ -54,6 +54,11 @@ if( $PayPalResult['success'] ) {
     $_SESSION['billing_country_code'] = isset($PayPalResult['order']['payer']['address']['country_code']) ? $PayPalResult['order']['payer']['address']['country_code'] : '';
 
     $purchaseUnit = $PayPalResult['order']['purchase_units'][0];
+    
+    $captures = !empty($purchaseUnit['payments']['captures'][0]) ? $purchaseUnit['payments']['captures'][0] : [];
+    $_SESSION['paypal_transaction_id'] = isset($captures['id']) ? $captures['id'] : '';
+    $_SESSION['paypal_fee'] = isset( $captures['seller_receivable_breakdown']['paypal_fee']['value'] ) ? $captures['seller_receivable_breakdown']['paypal_fee']['value'] : 0.00;
+    
     $shipping = isset( $purchaseUnit['shipping'] ) ? $purchaseUnit['shipping'] : [];
     $_SESSION['shipping_name'] = isset($shipping['name']['full_name']) ? $shipping['name']['full_name'] : '';
     $_SESSION['shipping_street'] = isset($shipping['address']['address_line_1']) ? $shipping['address']['address_line_1'] : '';
