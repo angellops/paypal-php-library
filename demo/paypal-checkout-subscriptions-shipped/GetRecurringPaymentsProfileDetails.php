@@ -3,6 +3,11 @@
 require_once('../../includes/config.php');
 require_once('../../autoload.php');
 
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
+
 // Create PayPal object.
 $PayPalConfig = array(
 	'Sandbox' => $sandbox,
@@ -19,19 +24,15 @@ $PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 // Prepare request arrays
 $PayPalRequestData = array(
-	'token' => isset($_GET['token']) ? $_GET['token'] : '',
-        'ba_token' => isset($_GET['ba_token']) ? $_GET['ba_token'] : '',
-        'subscription_id' => isset($_GET['subscription_id']) ? $_GET['subscription_id'] : '',
+	'subscription_id' => isset($_GET['subscription_id']) ? $_GET['subscription_id'] : '',
 );
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
 $PayPalResult = $PayPal->GetSubscriptionProfile($PayPalRequestData);
 
-if( $PayPalResult['success'] || ( $api_upgrade && $PayPalResult['ACK'] && strtoupper($PayPalResult['ACK']) === 'SUCCESS' ) ) {
+if( $PayPalResult['success'] ) {
         $full_response = ( !$api_upgrade && isset( $PayPalResult['full_response'] ) ) ? $PayPalResult['full_response'] : [];
-        $_SESSION['RecurringProfileId'] = ( ! $api_upgrade )
-                                        ? ( ( !empty( $full_response ) && isset( $full_response['id'] ) ) ? $full_response['id'] : '' )
-                                        : ( isset( $PayPalResult['PROFILEID'] ) ? $PayPalResult['PROFILEID'] : '' );
+        $_SESSION['RecurringProfileId'] = ( !empty( $full_response ) && isset( $full_response['id'] ) ) ? $full_response['id'] : '';
 
         header('Location: order-complete.php');
 } else {

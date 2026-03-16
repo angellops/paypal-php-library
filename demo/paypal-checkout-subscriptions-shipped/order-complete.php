@@ -3,6 +3,11 @@
  * Include our config file and the PayPal library.
  */
 require_once('../../includes/config.php');
+
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
 ?>
 <html lang="en">
   <head>
@@ -110,7 +115,8 @@ require_once('../../includes/config.php');
                   echo $_SESSION['first_name'] . ' ' . $_SESSION['last_name'] . '<br />' . 
                   $_SESSION['email'] . '<br />'. 
                   $_SESSION['phone_number'] . '<br />' .
-                  '<strong>Recurring Payment Profile ID : </strong>' .$_SESSION['RecurringProfileId'];
+                  '<strong>PayPal Transaction ID: </strong>' . $_SESSION['paypal_transaction_id'] . '<br />' .
+                  '<strong>Recurring Payment Profile ID: </strong>' .$_SESSION['RecurringProfileId'];
                 ?>
               </p>
             </div>
