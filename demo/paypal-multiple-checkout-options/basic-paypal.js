@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Initialize PayPal Pay Later Messages on load
-    initPayPalMessages();
+    initPayPal();
 
     // CreateOrder and PayLater
     let checkoutData = null;
-    const payLaterBtnContainer = document.getElementById("paylater-container");
+    const payLaterBtnContainer = document.getElementById("paypal-container");
     if ( payLaterBtnContainer !== undefined && payLaterBtnContainer !== null ) {
         checkoutData = JSON.parse(payLaterBtnContainer.dataset.checkout);
     }
@@ -86,9 +86,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showPaypalError(message) {
-        const paylaterContainer = document.getElementById('paylater-container');
-        if( paylaterContainer !== undefined && paylaterContainer !== null ) {
-            const errorContainer = paylaterContainer.querySelector('#paypalError');
+        const payPalContainer = document.getElementById('paypal-container');
+        if( payPalContainer !== undefined && payPalContainer !== null ) {
+            const errorContainer = payPalContainer.querySelector('#paypalError');
             if( errorContainer !== undefined && errorContainer !== null ) {
                 errorContainer.style.display = "block";
                 errorContainer.innerHTML = message;
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const captureResult = await response.json();
 
             if (captureResult.status === "COMPLETED") {
-                window.location.href = `getOrder.php?payment_mode=paylater&order_id=${data.orderId}`;
+                window.location.href = `getOrder.php?payment_mode=paypal&order_id=${data.orderId}`;
             } else {
                 throw new Error("Payment capture failed.");
             }
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * PAYPAL V6 SDK INITIALIZATION
      * Fetches a client token and sets up the financing messages.
      */
-    async function initPayPalMessages() {
+    async function initPayPal() {
         try {
             const res = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_client_token');
             const { token } = await res.json();
@@ -156,8 +156,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 currencyCode: "USD",
             });
 
-            if (paymentMethods.isEligible("paylater")) {
-                setUpPayLaterButton(sdkInstance, paymentMethods);
+            if (paymentMethods.isEligible("paypal")) {
+                setUpPayLaterButton(sdkInstance);
             }
         } catch (error) {
             console.error("PayPal Message Init Error:", error);
@@ -166,23 +166,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Set up standard PayPal button
     async function setUpPayLaterButton(sdkInstance, paymentMethods) {
-        const payLaterPaymentMethodDetails = paymentMethods.getDetails("paylater");
-        const { productCode, countryCode } = payLaterPaymentMethodDetails;
-
-        // Initialize PayLater Messaging
-        const messagesInstance = sdkInstance.createPayPalMessages();
-        
-        const paypalPaymentSession = sdkInstance.createPayLaterOneTimePaymentSession(
+        const paypalPaymentSession = sdkInstance.createPayPalOneTimePaymentSession(
             paymentSessionOptions,
         );
 
-        const payLaterButton = document.querySelector("paypal-pay-later-button");
-        if ( !payLaterButton ) return;
+        const payPalButton = document.querySelector("paypal-button");
+        if ( !payPalButton ) return;
 
-        payLaterButton.productCode = productCode;
-        payLaterButton.countryCode = countryCode;
-        payLaterButton.removeAttribute("hidden");
-        payLaterButton.addEventListener("click", async () => {
+        payPalButton.removeAttribute("hidden");
+        payPalButton.addEventListener("click", async () => {
             try {
                 await paypalPaymentSession.start(
                     { presentationMode: "auto" },

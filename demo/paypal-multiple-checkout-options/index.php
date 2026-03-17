@@ -112,6 +112,7 @@ $checkoutData = [
         ?>
         <script src="<?php echo $sdk_url; ?>"></script>
         <script src="<?php echo $sdk_messages_url; ?>"></script>
+        <script src="basic-paypal.js"></script>
         <script src="paylater.js"></script>
         <script src="venmo.js"></script>
         <script src="guest-checkout.js"></script>
@@ -221,7 +222,10 @@ $checkoutData = [
                                                 </paypal-message>
                                             </div>
                                             <div class="inline-buttons other-buttons">
-                                                <a href="createOrder.php?payment_mode=paypal"><?php $PayPalCommonFunctions->renderPayPalButton(); ?></a>
+                                                <div id="paypal-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
+                                                    <div id="paypalError"></div>
+                                                    <paypal-button type="pay" hidden></paypal-button>
+                                                </div>
                                                 <div id="guest-checkout-container" data-mode="rest" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
                                                     <paypal-basic-card-container>
                                                         <paypal-basic-card-button id="paypal-basic-card-button" hidden></paypal-basic-card-button>
@@ -232,9 +236,10 @@ $checkoutData = [
                                                 <div id="venmo-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
                                                     <venmo-button id="venmo-button" type="pay" hidden></venmo-button>
                                                 </div>
-                                                <a href="createOrder.php?payment_mode=paylater" class="paylater-btn">
+                                                <div id="paylater-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
+                                                    <div id="paypalError"></div>
                                                     <paypal-pay-later-button hidden></paypal-pay-later-button>
-                                                </a>
+                                                </div>
                                             </div>
                                             <div class="or-wrapper">OR</div>
                                             <div id="acdc-container" data-mode="rest" data-checkout='<?php echo json_encode($checkoutData); ?>'>

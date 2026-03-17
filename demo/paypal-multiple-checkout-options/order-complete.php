@@ -1,5 +1,10 @@
 <?php
 require_once('../../includes/config.php');
+
+// Redirect to Pay Later Product Page if API mode is classic
+if ($api_mode === 'classic') {
+  header('Location: ./');
+}
 ?>
 <html lang="en">
     <head>
