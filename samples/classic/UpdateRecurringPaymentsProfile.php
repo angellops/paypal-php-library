@@ -20,9 +20,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('classic');
-
 // Prepare request arrays
 $URPPFields = array(
 	'profileid' => 'I-WD0NGX5RW04W', 			// Required.  Recurring payments ID.

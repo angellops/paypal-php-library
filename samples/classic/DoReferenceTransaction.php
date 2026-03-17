@@ -18,9 +18,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('classic');
-
 $DRTFields = array(
 	'referenceid' => 'B-26G90383GW321384N', 
 	'paymentaction' => 'Sale', 

@@ -17,9 +17,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('rest');
-
 // Vault token ID
 $VaultTokenID = '';
 

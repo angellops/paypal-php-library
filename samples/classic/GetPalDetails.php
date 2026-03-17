@@ -20,9 +20,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('classic');
-
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
 $PayPalResult = $PayPal->GetPalDetails();
 

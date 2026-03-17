@@ -20,9 +20,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('classic');
-
 // Prepare request arrays
 $DRTFields = array(
     'referenceid' => '', 						// Required.  A transaction ID from a previous purchase, such as a credit card charage using DoDirectPayment, or a billing agreement ID

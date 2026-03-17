@@ -16,9 +16,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('rest');
-
 // Get Order ID stored in session from create order response
 $orderId = $_SESSION['createOrderResponse']['order_id'];
 

@@ -17,9 +17,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('rest');
-
 $ReplaceFields = array(
 	"op" => "replace",
         "path" => "",

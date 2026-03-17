@@ -17,9 +17,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('rest');
-
 $ProductData = array(
         "name" => "Angell EYE Web Hosting",
         "description" => "Web hosting recurring subscription",

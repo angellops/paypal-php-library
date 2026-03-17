@@ -9,6 +9,7 @@ namespace angelleye\PayPal;
 class PayPalMapper extends PayPal
 {
     public $rest;
+    protected string $requiredMode = 'classic';
 
     public function __construct($config)
     {

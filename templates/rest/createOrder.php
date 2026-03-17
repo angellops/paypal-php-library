@@ -16,9 +16,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('rest');
-
 /**
  * Amount breakdown required for Pay Later and order validation
  */

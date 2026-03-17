@@ -20,9 +20,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('classic');
-
 // Prepare request arrays
 $GBFields = array('returnallcurrencies' => '');
 $PayPalRequestData = array('GBFields'=>$GBFields);

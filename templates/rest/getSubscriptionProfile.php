@@ -17,9 +17,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('rest');
-
 $subscriptionID = isset($_GET['subscription_id']) ? $_GET['subscription_id'] : '';
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult

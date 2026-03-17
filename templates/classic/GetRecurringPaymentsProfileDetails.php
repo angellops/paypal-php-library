@@ -20,9 +20,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('classic');
-
 // Prepare request arrays
 $GRPPDFields = array(
 	'profileid' => isset($_GET['subscription_id']) ? $_GET['subscription_id'] : ''			// Profile ID of the profile you want to get details for.

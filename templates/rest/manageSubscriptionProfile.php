@@ -17,9 +17,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('rest');
-
 // Prepare request arrays
 $PayPalRequestData = array(
         'subscription_id' => '',                                // Subscription ID of the profile you want to manage

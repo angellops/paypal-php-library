@@ -73,6 +73,7 @@ class PayPal
     protected array $CVV2Codes;
     protected array $CurrencyCodes;
     protected string $ButtonSource = 'AngellEYELLC_SI';
+    protected string $requiredMode = 'classic';
 
 /**
      * Constructor
@@ -102,6 +103,12 @@ class PayPal
         $this->api_url = 'https://gtctgyk7fh.execute-api.us-east-2.amazonaws.com/default/PayPalPaymentsTracker';
         $this->api_key = 'srGiuJFpDO4W7YCDXF56g2c9nT1JhlURVGqYD7oa';
         $this->allow_method = array('DoExpressCheckoutPayment', 'DoDirectPayment', 'DoCapture', 'ProcessTransaction', 'PayPal_Rest');
+        
+        // Centralized validation for the API Modes
+        if (!$this->isValidMode()) {
+            throw new \Exception("Invalid API mode: This method requires '{$this->requiredMode}' mode, but current mode is '{$this->PayPalAPIMode}'.");
+        }
+        
         if ($this->Sandbox) {
         // Show Errors
             error_reporting(E_ALL);
@@ -1914,11 +1921,17 @@ class PayPal
         return $NVPResponseArray;
     }
 
-    // Inside class PayPal
-    function ValidateMode($requiredMode) {
-        if ($this->PayPalAPIMode !== $requiredMode) {
-            throw new \Exception("Invalid API Call: This method requires '{$requiredMode}' mode, but current mode is '{$this->PayPalAPIMode}'.");
+    // Centralized validation function
+    protected function isValidMode() {
+        if ($this->PayPalAPIMode === $this->requiredMode) {
+            return true;
         }
+
+        if ($this->requiredMode === 'rest' && $this->PayPalAPIMode === 'classic' && $this->PayPalAPIUpgrade === true) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

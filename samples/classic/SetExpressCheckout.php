@@ -19,9 +19,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('classic');
-
 $SECFields = array(
 	'token' => '', 								// A timestamped token, the value of which was returned by a previous SetExpressCheckout call.
 	'maxamt' => '200.00', 						// The expected maximum total amount the order will be, including S&H and sales tax.

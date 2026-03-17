@@ -14,6 +14,7 @@ class PayPalREST extends PayPal
     private $client_id;
     private $client_secret;
     private $base_url;
+    protected string $requiredMode = 'rest';
 
     public function __construct($config)
     {

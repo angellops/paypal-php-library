@@ -18,9 +18,6 @@ $PayPalConfig = array(
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
-// Validate API mode
-$PayPal->ValidateMode('classic');
-
 $CRPPFields = array(
 	'token' => 'EC-2A900424LS312982Y',			// Token returned from PayPal SetExpressCheckout.  Can also use token returned from SetCustomerBillingAgreement.
 );
