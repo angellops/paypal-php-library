@@ -1144,6 +1144,10 @@ class PayPal
      */
     function UpdateAuthorization($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->UpdateAuthorizationMapper($DataArray);
+        }
+
         $UAFieldsNVP = '&METHOD=UpdateAuthorization';
 
         $UAFields = isset($DataArray['UAFields']) ? $DataArray['UAFields'] : array();
@@ -1212,6 +1216,10 @@ class PayPal
      */
     function MassPay($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->MassPayMapper($DataArray);
+        }
+
         $MPFieldsNVP = '&METHOD=MassPay';
         $MPItemsNVP = '';
 
@@ -1928,7 +1936,14 @@ class PayPal
         }
 
         if ($this->requiredMode === 'rest' && $this->PayPalAPIMode === 'classic' && $this->PayPalAPIUpgrade === true) {
-            return true;
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+            foreach ($trace as $step) {
+                if (isset($step['class']) && $step['class'] === 'PayPalMapper') {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         return false;

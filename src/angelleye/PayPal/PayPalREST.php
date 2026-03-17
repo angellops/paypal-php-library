@@ -228,7 +228,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'order_id' => $response['body']['id'],
-                    'status' => $response['body']['status'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'approval_url' => $this->getApprovalUrl($response['body']['links']),
                     'full_response' => $response['body'],
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -238,7 +238,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => 'Failed to create order',
-                'status_code' => $response['status_code'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
             ];
@@ -264,6 +264,7 @@ class PayPalREST extends PayPal
             if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
                     'success' => true,
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'order' => $response['body'],
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
                 ];
@@ -272,7 +273,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => 'Failed to get order details',
-                'status_code' => $response['status_code'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
             ];
@@ -299,7 +300,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'authorization_id' => $response['body']['purchase_units'][0]['payments']['authorizations'][0]['id'],
-                    'status' => $response['body']['status'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
                 ];
@@ -308,7 +309,7 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => 'Failed to authorize order',
-                'status_code' => $response['status_code'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
             ];
@@ -335,7 +336,7 @@ class PayPalREST extends PayPal
                 return [
                     'success' => true,
                     'capture_id' => $response['body']['purchase_units'][0]['payments']['captures'][0]['id'],
-                    'status' => $response['body']['status'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
                 ];
@@ -343,8 +344,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
-                'error' => 'Failed to capture order',
-                'status_code' => $response['status_code'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
             ];
@@ -368,6 +368,68 @@ class PayPalREST extends PayPal
         }
         return null;
     }
+
+    /**
+     * Reauthorize a previously authorized PayPal transaction.
+     */
+    public function updateAuthorization($transactionID)
+    {   
+        try {
+            $response = $this->makeRequest('/v2/payments/authorizations/' . $transactionID . '/reauthorize', 'POST');
+
+            if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
+                return [
+                    'success' => true,
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'order' => $response['body'],
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Executes a PayPal Payouts (Mass Payments) request via REST API.
+     */
+    public function massPayments($DataArray)
+    {
+        try {
+            $response = $this->makeRequest('/v1/payments/payouts', 'POST', $DataArray);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
     
     /**
      * Obtain the available balance for a PayPal account.
@@ -375,7 +437,7 @@ class PayPalREST extends PayPal
      * @access  public
      * @return  mixed[] Returns an array structure of the PayPal HTTP response params as well as parsed balance results, errors and the raw request/response.
      */
-    function getBalances()
+    public function getBalances()
     {
         try {
             $response = $this->makeRequest('/v1/reporting/balances');

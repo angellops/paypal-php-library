@@ -1015,4 +1015,134 @@ class PayPalMapper extends PayPal
 
         return $result;
     }
+
+    /**
+     * Maps the REST reauthorization response to NVP (Name-Value Pair) format.
+     * 
+     * @return array
+     */
+    public function UpdateAuthorizationMapper($DataArray)
+    {
+        $UAFields = !empty($DataArray['UAFields']) ? $DataArray['UAFields'] : [];
+        $transactionID = !empty($UAFields['transactionid']) ? $UAFields['transactionid'] : '';
+
+        // Call the REST method to updateAuthorization
+        $response = $this->rest->updateAuthorization($transactionID);
+
+        // Define the primary headers first
+        $headers = [
+            'TIMESTAMP' => gmdate('c'),
+            'ACK'       => 'Success',
+            'VERSION'   => $this->APIVersion,
+        ];
+
+        if (isset($response['success']) && !empty($response['success'])) {
+            $result = array_merge(
+                $headers,
+                [
+                    'L_LONGMESSAGE0' => isset($response['body']) ? $response['body'] : ['message' => ''],
+                    'ERRORS'         => [],
+                    'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ]
+            );
+
+            return $result;
+        }
+
+        // Call function to convert REST Errors to NVP
+        $NVPErrors = $this->convertRESTErrorsToNVP($response);
+
+        $result = array_merge(
+            $headers,
+            $NVPErrors['flatErrors'], 
+            [
+                'ERRORS'         => $NVPErrors['errorsList'],
+                'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Maps Classic MassPay request data to PayPal REST Payouts API format.
+     * 
+     * @return array
+     */
+    public function MassPayMapper($DataArray)
+    {
+        // Extract MassPay Fields from DataArray
+        $MPFields = !empty($DataArray['MPFields']) ? $DataArray['MPFields'] : [];
+        $MPItems = !empty($DataArray['MPItems']) ? $DataArray['MPItems'] : [];
+
+        // Create Batch Headers
+        $SenderBatchHeaders = [
+            'sender_batch_id' => uniqid('batch_'), // unique batch id
+            'email_subject'   => !empty($MPFields['emailsubject']) ? $MPFields['emailsubject'] : 'You have a payout',
+            'email_message'   => 'You have received a payout!'
+        ];
+
+        // Create Items
+        $Items = [];
+        foreach ($MPItems as $item) {
+            $recipientType = 'PHONE';
+            if (!empty($MPFields['receivertype'])) {
+                if ($MPFields['receivertype'] === 'EmailAddress') {
+                    $recipientType = 'EMAIL';
+                }
+            }
+
+            $Items[] = [
+                "recipient_type" => $recipientType,
+                "amount" => [
+                    "value"    => $item['l_amt'],
+                    "currency" => $MPFields['currencycode']
+                ],
+                "receiver" => !empty($item['l_email']) ? $item['l_email'] : $item['l_receiverid'],
+                "note" => !empty($item['l_note']) ? $item['l_note'] : '',
+                "sender_item_id" => !empty($item['l_uniqueid']) ? $item['l_uniqueid'] : uniqid('item_')
+            ];
+        }
+
+        $PayPalRequestData = [
+            'sender_batch_header' => $SenderBatchHeaders,
+            'items' => $Items
+        ];
+
+        // Call the REST method to updateAuthorization
+        $response = $this->rest->massPayments($PayPalRequestData);
+
+        // Define the primary headers first
+        $headers = [
+            'TIMESTAMP' => gmdate('c'),
+            'ACK'       => 'Success',
+            'VERSION'   => $this->APIVersion,
+        ];
+
+        if (isset($response['success']) && !empty($response['success'])) {
+            $result = array_merge(
+                $headers,
+                [
+                    'ERRORS'         => [],
+                    'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ]
+            );
+
+            return $result;
+        }
+
+        // Call function to convert REST Errors to NVP
+        $NVPErrors = $this->convertRESTErrorsToNVP($response);
+
+        $result = array_merge(
+            $headers,
+            $NVPErrors['flatErrors'], 
+            [
+                'ERRORS'         => $NVPErrors['errorsList'],
+                'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ]
+        );
+
+        return $result;
+    }
 }
