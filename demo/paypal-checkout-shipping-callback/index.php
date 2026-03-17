@@ -91,7 +91,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
             </div>
           <?php } ?>
           <h2 class="main-title"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
-          <p class="main-info">Here we are using a basic shopping cart for display purposes, however, for this basic demo, all we are sending to PayPal is the order total without any line item details. We are assuming that we have not collected any billing or shipping information from the buyer yet because we'll be obtaining those details from PayPal after the user logs in and is returned back to the site.</p>
+          <p class="main-info">Here we are using a basic shopping cart for display, sending only the order total to PayPal without line item details, and assuming billing and shipping information will be collected after the user logs in and returns from PayPal. Additionally, we invoke the shipping callback URL after order creation and before redirecting to PayPal to fetch the buyer’s shipping details, apply shipping, handling, and tax, and recalculate the final order amount accordingly.</p>
           <div class="demo-cred">
             <h2>Demo Credentials</h2>
             <p>Email: paypal-buyer@angelleye.com</p>

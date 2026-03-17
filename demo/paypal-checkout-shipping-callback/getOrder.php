@@ -53,7 +53,7 @@ if( $PayPalResult['success'] ) {
     $_SESSION['last_name']      = isset($PayPalResult['order']['payer']['name']['surname']) ? $PayPalResult['order']['payer']['name']['surname'] : '';
     $_SESSION['billing_country_code'] = isset($PayPalResult['order']['payer']['address']['country_code']) ? $PayPalResult['order']['payer']['address']['country_code'] : '';
 
-    $purchaseUnit = $PayPalResult['order']['purchase_units'][0];
+    $purchaseUnit = $PayPalResult['order']['purchase_units'][0]; 
     
     $captures = !empty($purchaseUnit['payments']['captures'][0]) ? $purchaseUnit['payments']['captures'][0] : [];
     $_SESSION['paypal_transaction_id'] = isset($captures['id']) ? $captures['id'] : '';
@@ -67,6 +67,31 @@ if( $PayPalResult['success'] ) {
     $_SESSION['shipping_zip'] = isset($shipping['address']['postal_code']) ? $shipping['address']['postal_code'] : '';
     $_SESSION['shipping_country_code'] = isset($shipping['address']['country_code']) ? $shipping['address']['country_code'] : '';
     $_SESSION['shipping_country_name'] = 'United States';
+
+    /**
+     * At this point, we now have the buyer's shipping address available in our app.
+     * We could now run the data through a shipping calculator to retrieve rate
+     * information for this particular order.
+     *
+     * This would also be the time to calculate any sales tax you may need to
+     * add to the order, as well as handling fees.
+     */
+    $breakdown = !empty($purchaseUnit['amount']['breakdown']) ? $purchaseUnit['amount']['breakdown'] : [];
+    $shipping = isset($breakdown['shipping']['value']) ? (float)$breakdown['shipping']['value'] : 0;
+    $handling = isset($breakdown['handling']['value']) ? (float)$breakdown['handling']['value'] : 0;
+    $tax = isset($breakdown['tax_total']['value']) ? (float)$breakdown['tax_total']['value'] : 0; 
+    
+    // Store in session
+    $_SESSION['shopping_cart']['shipping'] = $shipping;
+    $_SESSION['shopping_cart']['handling'] = $handling;
+    $_SESSION['shopping_cart']['tax'] = $tax;  
+
+    // Recalculate grand total
+    $_SESSION['shopping_cart']['grand_total'] = number_format(
+        $_SESSION['shopping_cart']['subtotal']
+        + $shipping
+        + $handling
+        + $tax, 2);
     
     /**
      * Now we will redirect the user to a final review

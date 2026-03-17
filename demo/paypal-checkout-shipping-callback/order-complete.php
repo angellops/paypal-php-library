@@ -64,7 +64,7 @@ if ($api_mode === 'classic') {
             </div>
           <?php } ?>
           <h2 class="main-title">Payment Complete!</h2>
-          <p class="main-info">We have now reached the final thank you / receipt page and the payment has been processed!  We have added the PayPal transaction ID to the Billing Information, which was provided in the <strong>DoExpressCheckoutPayment</strong> response.</p>
+          <p class="main-info">We have now reached the final thank you/receipt page, and the payment has been successfully processed. The PayPal transaction ID has been added to the Billing Information as received in the <strong>getOrder</strong> response. Additionally, the order total was recalculated after applying shipping, handling, and tax via the shipping callback URL, and the updated amount was used for the final transaction.</p>
           <table class="table table-items table-bordered">
             <thead>
               <tr>
