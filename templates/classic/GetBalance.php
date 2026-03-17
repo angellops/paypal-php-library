@@ -14,7 +14,7 @@ $PayPalConfig = array(
 					'LogPath' => $log_path,
 					);
 
-$PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
+$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
 
 // Prepare request arrays
 $GBFields = array('returnallcurrencies' => true);

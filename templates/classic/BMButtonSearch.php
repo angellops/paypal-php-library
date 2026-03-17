@@ -5,23 +5,23 @@ require_once('../../autoload.php');
 
 // Create PayPal object.
 $PayPalConfig = array(
-					'Sandbox' => $sandbox,
-					'APIUsername' => $api_username,
-					'APIPassword' => $api_password,
-					'APISignature' => $api_signature, 
-					'PrintHeaders' => $print_headers, 
-					'LogResults' => $log_results,
-					'LogPath' => $log_path,
-					);
+	'Sandbox' => $sandbox,
+	'PayPalAPIMode' => $api_mode,
+	'APIUsername' => $api_username,
+	'APIPassword' => $api_password,
+	'APISignature' => $api_signature, 
+	'PrintHeaders' => $print_headers, 
+	'LogResults' => $log_results,
+	'LogPath' => $log_path,
+);
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
 // Prepare request arrays
-$BMButtonSearchFields = array
-						(
-						'startdate' => '', 			// Required.  Starting date for the search.  UTC/GMT format: 2009-08-24T05:38:48Z
-						'enddate' => ''				// Ending date for the search.  UTC/GMT format: 2010-05-01T05:38:48Z  
-						);
+$BMButtonSearchFields = array(
+	'startdate' => '', 		// Required.  Starting date for the search.  UTC/GMT format: 2009-08-24T05:38:48Z
+	'enddate' => ''			// Ending date for the search.  UTC/GMT format: 2010-05-01T05:38:48Z  
+);
 				
 $PayPalRequestData = array('BMButtonSearchFields'=>$BMButtonSearchFields);
 

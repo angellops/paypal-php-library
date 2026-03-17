@@ -1,29 +1,600 @@
 @charset "utf-8";
 /* CSS Document */
-
+#header {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+@media (max-width: 600px) {
+    #header {
+        justify-content: space-between;
+    }
+}
+#header .column {
+    padding: 0;
+}
+#angelleye_logo img,
+#paypal_partner_logo img {
+    width: 240px;
+    @media (max-width: 600px) {
+        width: 140px;
+    }
+}
 #paypal_partner_logo {
-    width: 351px;
-    height: 49px;
-    float:right;
-    margin: 5% 0 3% 0;
+    float: right;
 }
-
+.accept-text {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 4px;
+}
+.paypal-text {
+    color: #003087;
+}
+.venmo-text {
+    color: #008CFF;
+}
+.warning-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 24px;
+    background: #FCF9E7;
+    color: #3F3F3F;
+    font-size: 14px;
+    border-left: 4px solid #F0C100;
+    margin-top: 20px;
+}
+.warning-info.demo-warning-info {
+    margin-top: 0;
+}
+.warning-info.onboarded-warning {
+    margin-bottom: 20px;
+}
+.warning-info .warning-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F0C100;
+    color: #FFF;
+    padding: 2px;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+}
+.main-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+.main-title.demo-title {
+    justify-content: flex-start;
+}
+.main-title img {
+    width: 32px;
+    height: 32px;
+}
+.pp-ref-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 40px 0;
+}
+.pp-ref-card {
+    background: #FFF;
+    max-width: 560px;
+    padding: 32px 24px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+}
+.pp-ref-card .pp-ref-logo {
+    width: 160px;
+    margin: 20px 0;
+}
+.main-info {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+.main-info p {
+    margin-bottom: 4px;
+}
+.demo-main-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+@media (min-width: 768px) {
+    .demo-main-wrapper {
+        flex-direction: row;
+        gap: 32px;
+    }
+    .demo-main-wrapper .demo-cred {
+        width: calc(50% - 16px);
+    }
+}
+.demo-cred {
+    background: #EFF6FF;
+    padding: 24px;
+    border-left: 4px solid;
+    border-left-color: #3B82F6;
+}
+.demo-cred h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1E3A8A;
+    margin: 0 0 12px 0;
+}
+.demo-cred p {
+    color: #1E40AF;
+    margin-bottom: 4px;
+}
+.table-items {
+    margin: 20px 0;
+}
+.table-items thead {
+    background: #F4f4F4;
+}
+.table-items thead th {
+    text-transform: uppercase;
+    font-weight: 500;
+}
+.table-items thead th, .table-items tbody td {
+    vertical-align: middle !important;
+}
+.table-items thead th:not(:last-child) {
+    border-right: 2px solid #DDD;
+}
+.table-items tbody td:not(:last-child) {
+    border-right: 1px solid #DDD;
+}
+.table-items tbody ul {
+    padding-left: 16px;
+    margin-bottom: 0;
+}
+.table-items tbody td ul li:not(:last-child) {
+    margin-bottom: 8px;
+}
+.merchant-title {
+    margin: 0;
+}
+.table-summary tr td {
+    border-top: none !important;
+    padding: 4px !important;
+}
+.table-summary tr td:last-child {
+    text-align: end !important;
+}
+.table-summary tr td.total-border-top {
+    border-top: 2px solid #DDD !important;
+}
+.font-lightbold {
+    font-weight: 500;
+}
+.table-items th,
+.table-items td {
+    font-size: 14px;
+}
 th.center {
-	text-align:center;
+	text-align: center;
 }
-
-td.center{
-	text-align:center;	
+td.center {
+	text-align: center;
 }
-
+.table-summary tr td.button-center {
+    padding: 0 !important;
+}
+.button-center a {
+    background-color: #4F46E5;
+    border-color: #4F46E5;
+    margin: 20px 0 10px;
+}
+.button-center a:hover {
+    background-color: #4338CA;
+    border-color: #4338CA;
+}
+.table-summary .paypalbtn {
+    padding: 0 !important;
+}
+.paypalbtn #paypal-button-container {
+    margin: 20px 0;
+}
+.paypalbtn a {
+    display: block;
+    margin: 20px 0;
+}
+.paypalbtn a[disabled] {
+    pointer-events: none;
+}
+.paypalbtn.vaulting-btns {
+    padding-top: 16px !important;
+}
+.main-center {
+    text-align: center;
+}
+.donation-review {
+    width: 480px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 4px 3px rgba(0, 0, 0, 0.1);
+}
+.donation-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0 0;
+}
+.donation-button:hover {
+    text-decoration: none;
+}
+.donation-button .donate-label {
+    width: fit-content;
+    padding-left: 34px;
+}
+.update-order-form {
+    width: 480px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 4px 3px rgba(0, 0, 0, 0.1);
+}
+.update-order-form input {
+    width: 100%;
+}
+.paypalbtn.vaulting-btns a {
+    margin: 10px 0;
+}
+.paypalbtn a:hover {
+    text-decoration: none;
+}
+#paypalError {
+    display: none;
+    color: #D43F3A;
+    margin-top: 20px;
+    text-align: left;
+}
 #paypal_errors {
-	margin-top:25px;	
+	margin-top: 25px;
 }
-
+.donation-title {
+    justify-content: space-between;
+}
+.donate-label {
+    font-weight: 400;
+    color: #003087;
+    margin: 6px 0;
+	padding-right: 36px;
+}
+.paypalbtn a:has(.donate-label):hover {
+    text-decoration: none;
+}
 .general_message {
 	margin: 20px 0 20px 0;	
 }
-
 .bg-info {
-	padding:15px;	
+	padding: 15px;	
+}
+.heading-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+}
+body.cart-page .heading-wrapper {
+    margin: 20px 0 40px 0;
+}
+body.checkout-page .heading-wrapper {
+    margin: 20px 0;
+}
+.heading {
+    margin: 0;
+}
+.cart-link,
+.back-link {
+    text-decoration: none;
+    color: #2563eb;
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.cart-link img,
+.back-link img {
+    width: 22px;
+}
+.cart-link:hover,
+.back-link:hover {
+    text-decoration: none;
+    color: #2563eb;
+}
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 30px;
+}
+.product-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 4px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+.product-card:hover {
+    transform: translateY(-4px);
+}
+.product-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+}
+.product-image {
+    width: 54px;
+    position: absolute;
+    right: 24px;
+}
+body.cart-page paypal-message {
+    text-align: right;
+}
+.cart-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+.price {
+    font-size: 18px;
+    color: #2563eb;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+.cart-item-image img {
+    width: 48px;
+}
+.qty-wrapper {
+    margin-top: 10px;
+}
+.quantity-label {
+    display: block;
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+.quantity-controls {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    border-radius: 8px;
+    width: fit-content;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+body.cart-page .quantity-controls {
+    margin-bottom: 0;
+}
+.cart-btns {
+    background: #2563eb;
+    border: 1px solid #2563eb;
+    outline: none;
+    padding: 12px 20px;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    border-radius: 8px;
+}
+.cart-btns:hover {
+    color: white;
+    text-decoration: none;
+}
+.qty-btn {
+    border: none;
+    background: transparent;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s;
+}
+.qty-btn:hover { 
+    background: #e2e8f0; 
+}
+.qty-value {
+    width: 40px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+}
+.add-btn {
+    width: 100%;
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.add-btn:hover { 
+    background: #1d4ed8; 
+}
+.empty-cart-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+}
+.empty-cart-wrapper img {
+    width: 150px;
+}
+.empty-cart-wrapper h3 {
+    margin: 0;
+}
+.empty-cart-message {
+    font-size: 16px;
+    width: 600px;
+    margin: 0 auto;
+}
+.paylater-btn {
+    display: block;
+    text-align: right;
+    margin-top: 10px;
+}
+.disabled {
+    pointer-events: none;
+}
+#googlepay-button-container,
+#applepay-button-container,
+#acdc-container,
+#venmo-container {
+    font-style: italic;
+    color: #b00020;
+    margin-top: 20px;
+    word-break: break-all;
+}
+#paypalError {
+    font-style: italic;
+    color: #b00020;
+    margin-top: 20px;
+    word-break: break-all;
+}
+#paylater-button-container {
+    text-align: right;
+    margin-top: 10px;
+}
+#paylater-button-container #paypalError {
+    text-align: right;
+    margin-bottom: 10px;
+ }
+#pay-button {
+    font-style: normal;
+}
+.shipping-tracker-progress-bar-wrapper {
+    padding: 0px 0px 35px;
+}
+ol.progress-tracker {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+ol.progress-tracker li {
+    display: inline-block;
+    text-align: center;
+    line-height: 3em;
+}
+ol.progress-tracker[data-progress-tracker-steps="2"] li { width: 49%; }
+ol.progress-tracker[data-progress-tracker-steps="3"] li { width: 33%; }
+ol.progress-tracker[data-progress-tracker-steps="4"] li { width: 24%; }
+ol.progress-tracker[data-progress-tracker-steps="5"] li {width: calc(20% - 3.25px);}
+ol.progress-tracker[data-progress-tracker-steps="6"] li { width: 16%; }
+ol.progress-tracker[data-progress-tracker-steps="7"] li { width: 14%; }
+ol.progress-tracker[data-progress-tracker-steps="8"] li { width: 12%; }
+ol.progress-tracker[data-progress-tracker-steps="9"] li { width: 11%; }
+ol.progress-tracker li.progress-tracker-done {
+    color: black;
+    border-bottom: 4px solid #01ba7c;
+}
+ol.progress-tracker li.progress-tracker-todo {
+    color: silver; 
+    border-bottom: 4px solid silver;
+}
+ol.progress-tracker li:after {
+    content: "\00a0\00a0";
+}
+ol.progress-tracker li:before {
+    position: relative;
+    bottom: -2.5em;
+    float: left;
+    left: 50%;
+    line-height: 1em;
+}
+ol.progress-tracker li.progress-tracker-done:before {
+    content: "\2713";
+    color: white;
+    background-color: #01ba7c;
+    height: 1.2em;
+    width: 1.2em;
+    line-height: 1.2em;
+    border: none;
+    border-radius: 1.2em;
+}
+ol.progress-tracker li.progress-tracker-todo:before {
+    content: "\039F";
+    color: silver;
+    background-color: white;
+    font-size: 1.5em;
+    bottom: -1.6em;
+}
+.card-fields-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 20px 0;
+}
+#paypal-card-fields-number {
+    flex: 1 0 100%;
+}
+#paypal-card-fields-expiry, 
+#paypal-card-fields-cvv {
+    flex: 1;
+}
+.card-field {
+	height: 44px;
+}
+#paypal-loader {
+    color: #333;
+    margin-top: 10px;
+}
+.inline-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+.inline-buttons paypal-basic-card-container {
+    width: auto;
+}
+.inline-buttons #venmo-container {
+    margin-top: 0;
+}
+.inline-buttons.other-buttons {
+    margin-top: 10px;
+}
+.paypalbtn .inline-buttons a {
+    margin: 0;
+}
+.or-wrapper {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    font-weight: 600;
+    margin-top: 20px;
+    color: #b4b4b4;
+}
+.or-wrapper::before,
+.or-wrapper::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #ccc;
+}
+.or-wrapper::before {
+    margin-right: 10px;
+}
+.or-wrapper::after {
+    margin-left: 10px;
+}
+.paylater-message {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
 }
