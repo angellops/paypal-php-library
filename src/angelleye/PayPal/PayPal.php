@@ -3368,7 +3368,7 @@ class PayPal
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
             curl_exec($curl);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
         }
     }
 }

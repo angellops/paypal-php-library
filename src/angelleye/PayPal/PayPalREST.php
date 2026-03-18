@@ -13,6 +13,7 @@ class PayPalREST extends PayPal
     private $tokenExpiry;
     private $client_id;
     private $client_secret;
+    private $merchant_id;
     private $print_headers;
     private $base_url;
     protected string $requiredMode = 'rest';
@@ -28,6 +29,7 @@ class PayPalREST extends PayPal
         // Set REST-specific credentials
         $this->client_id = isset($config['ClientID']) ? $config['ClientID'] : '';
         $this->client_secret = isset($config['ClientSecret']) ? $config['ClientSecret'] : '';
+        $this->merchant_id = isset($config['MerchantID']) ? $config['MerchantID'] : '';
         $this->print_headers = isset($config['PrintHeaders']) ? $config['PrintHeaders'] : false;
 
         // Parent class already handles: sandbox, print_headers, log_results, log_path, base URLs
@@ -49,7 +51,7 @@ class PayPalREST extends PayPal
     /**
      * Get standard headers for API requests
      */
-    private function getHeaders($includeAuth = true, $contentType = 'application/json', $requestId = null)
+    private function getHeaders($includeAuth = true, $contentType = 'application/json', $requestId = null, $isInvoiceRequest = false, $includeAuthAssertion = true)
     {
         $headers = [
             'Content-Type: ' . $contentType,
@@ -64,6 +66,14 @@ class PayPalREST extends PayPal
 
         if (!empty($requestId)) {
             $headers[] = 'PayPal-Request-Id: ' . $requestId;
+        }
+
+        if ($includeAuthAssertion) {
+            $headers[] = 'PayPal-Auth-Assertion: ' . $this->paypalAuthAssertion();
+        }
+
+        if ($isInvoiceRequest) {
+            $headers[] = 'Prefer: return=representation';
         }
 
         return $headers;
@@ -82,6 +92,44 @@ class PayPalREST extends PayPal
             'Accept: application/json',
             'PayPal-Partner-Attribution-Id: ' . $this->ButtonSource
         ];
+    }
+
+    /**
+     * Generate a PayPal-Auth-Assertion token.
+     *
+     * @access  public
+     * @return  string  A dot-separated JWT string containing the header and payload.
+     */
+    private function paypalAuthAssertion()
+    {
+        $temp = array(
+            "alg" => "none"
+        );
+        $returnData = base64_encode(json_encode($temp)) . '.';
+        $temp = array(
+            "iss" => $this->client_id,
+            "payer_id" => $this->merchant_id
+        );
+        $returnData .= base64_encode(json_encode($temp)) . '.';
+        return $returnData;
+    }
+
+    /**
+     * Parse raw HTTP header string into an associative array.
+     */
+    private function parseHeaders($headerString)
+    {
+        $headers = [];
+        $lines = explode("\r\n", $headerString);
+
+        foreach ($lines as $line) {
+            if (strpos($line, ':') !== false) {
+                list($key, $value) = explode(':', $line, 2);
+                $headers[trim($key)] = trim($value);
+            }
+        }
+
+        return $headers;
     }
 
     /**
@@ -175,9 +223,9 @@ class PayPalREST extends PayPal
     /**
      * Make authenticated REST API request
      */
-    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null)
+    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null, $isInvoiceRequest = false, $includeAuth = false)
     {
-        $headers = $this->getHeaders(true, 'application/json', $requestId);
+        $headers = $this->getHeaders(true, 'application/json', $requestId, $isInvoiceRequest, $includeAuth);
 
         $url = $this->base_url . $endpoint;
 
@@ -239,8 +287,9 @@ class PayPalREST extends PayPal
         return [
             'status_code' => $httpCode,
             'debug_id' => $debugId,
+            'headers' => $parsedHeaders,
             'body' => json_decode($body, true),
-            'raw_response' => $response
+            'raw_response' => $body
         ];
     }
 
@@ -296,11 +345,12 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId);
 
-            if (in_array($response['status_code'], [200, 201, 204])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
-                    'order_id' => $response['body']['id'],
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'order_id' => $response['body']['id'],
                     'approval_url' => $this->getApprovalUrl($response['body']['links']),
                     'full_response' => $response['body'],
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -309,6 +359,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'error' => 'Failed to create order',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -330,9 +381,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET');
 
-            if (in_array($response['status_code'], [200, 201, 204])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'order' => $response['body'],
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -341,6 +393,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'error' => 'Failed to get order details',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -362,9 +415,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/authorize', 'POST');
 
-            if (in_array($response['status_code'], [200, 201, 204])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'authorization_id' => $response['body']['purchase_units'][0]['payments']['authorizations'][0]['id'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -374,6 +428,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'error' => 'Failed to authorize order',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -395,9 +450,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST');
 
-            if (in_array($response['status_code'], [200, 201, 204])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'capture_id' => $response['body']['purchase_units'][0]['payments']['captures'][0]['id'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -407,6 +463,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -443,6 +500,7 @@ class PayPalREST extends PayPal
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'order' => $response['body'],
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -451,6 +509,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -471,9 +530,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v1/payments/payouts', 'POST', $DataArray);
 
-            if (in_array($response['status_code'], [200, 201])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -482,6 +542,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -513,7 +574,7 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v2/payments/captures/' . $transactionId . '/refund', 'POST', $refundFields);
 
-            if (in_array($response['status_code'], [200, 201])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 $refundTransactionID = !empty($response['body']['id']) ? $response['body']['id'] : '';
                 
                 return $this->getRefundPaymentsDetails($refundTransactionID);
@@ -521,6 +582,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -545,9 +607,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/payments/refunds/' . $transactionId);
 
-            if (in_array($response['status_code'], [200, 201])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'refund_id' => !empty($response['body']['id']) ? $response['body']['id'] : '',
                     'full_response' => $response['body'],
@@ -557,6 +620,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -580,12 +644,13 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v1/reporting/balances');
             
-            if (in_array($response['status_code'], [200, 201])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 $body = $response['body'];
                 
                 // Normal REST-style response
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $body,
                     'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -594,7 +659,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
-                'error' => '',
+                'headers' => $response['headers'],
                 'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -658,6 +723,7 @@ class PayPalREST extends PayPal
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
+                'headers' => $response['headers'],
                 'id' => isset($response['body']['id']) ? $response['body']['id'] : '',
                 'response' => $response,
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -666,6 +732,7 @@ class PayPalREST extends PayPal
 
         return [
             'success' => false,
+            'headers' => $response['headers'],
             'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
             'errors' => isset($response['body']) ? $response['body'] : [],
             'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -691,6 +758,7 @@ class PayPalREST extends PayPal
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
+                'headers' => $response['headers'],
                 'id' => isset($response['body']['id']) ? $response['body']['id'] : '',
                 'response' => $response,
                 'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -699,6 +767,7 @@ class PayPalREST extends PayPal
 
         return [
             'success' => false,
+            'headers' => $response['headers'],
             'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
             'errors' => isset($response['body']) ? $response['body'] : [],
             'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
@@ -724,6 +793,7 @@ class PayPalREST extends PayPal
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
+                'headers' => $response['headers'],
                 'subscription_id' => !empty($response['body']['id']) ? $response['body']['id'] : '',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'approval_url' => $this->getApprovalUrl($response['body']['links']),
@@ -734,6 +804,7 @@ class PayPalREST extends PayPal
 
         return [
             'success' => false,
+            'headers' => $response['headers'],
             'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
             'errors' => !empty($response['body']) ? $response['body'] : [],
             'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -751,9 +822,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionID, 'GET');
 
-            if (in_array($response['status_code'], [200, 201])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
                     'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -762,6 +834,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => !empty($response['body']) ? $response['body'] : [],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -791,6 +864,7 @@ class PayPalREST extends PayPal
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
                     'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -799,6 +873,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -828,6 +903,7 @@ class PayPalREST extends PayPal
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
                     'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -836,6 +912,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -860,9 +937,10 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v1/identity/oauth2/userinfo?schema=paypalv1.1');
 
-            if (in_array($response['status_code'], [200, 201])) {
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
                     'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -871,6 +949,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
@@ -879,6 +958,490 @@ class PayPalREST extends PayPal
             return [
                 'success' => false,
                 'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Creates a new invoice using the PayPal Invoicing API (v2).
+     *
+     * This method sends a POST request to the `/v2/invoicing/invoices` endpoint with the provided
+     * invoice data. If successful, it returns the created invoice's ID, status, and full response.
+     */
+    public function createInvoice($InvoiceData)
+    {
+        try {
+            $response = $this->makeRequest('/v2/invoicing/invoices', 'POST', $InvoiceData, null, true);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                return [
+                    'success' => true,
+                    'headers' => $response['headers'],
+                    'invoice_id' => !empty($response['body']['id']) ? $response['body']['id'] : null,
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'headers' => $response['headers'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Sends a PayPal invoice to the recipient using the PayPal Invoicing API (v2).
+     *
+     * This method triggers the sending of an existing draft invoice identified by its Invoice ID.
+     * The API endpoint `/v2/invoicing/invoices/{invoice_id}/send` is used to send the invoice
+     * to the customer via email.
+     */
+    public function sendInvoice($InvoiceID)
+    {
+        try {
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/send', 'POST', null, null, true);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                return [
+                    'success' => true,
+                    'headers' => $response['headers'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'headers' => $response['headers'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Create and send a PayPal invoice using the PayPal Invoicing REST API (v2).
+     *
+     * This method first creates a new invoice using the provided invoice data, then immediately sends
+     * the created invoice to the recipient. It performs both API calls sequentially:
+     *  1. Create the invoice via `/v2/invoicing/invoices`
+     *  2. Send the created invoice via `/v2/invoicing/invoices/{invoice_id}/send`
+     */
+    public function createAndSendInvoice($InvoiceData)
+    {
+        try {
+            $createInvoiceResponse = $this->makeRequest('/v2/invoicing/invoices', 'POST', $InvoiceData, null, true);
+
+            $responseSimplified = array();
+
+            // Check if product creation succeeded (status 2xx)
+            if ($createInvoiceResponse['status_code'] >= 200 && $createInvoiceResponse['status_code'] < 300) {
+                // Attach created product_id to the plan data
+                $InvoiceID = isset($createInvoiceResponse['body']['id']) ? $createInvoiceResponse['body']['id'] : '';
+
+                // Step 2: Create a billing plan associated with the product
+                $sendInvoiceResponse = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/send', 'POST', null, null, true);
+
+                if ($sendInvoiceResponse['status_code'] >= 200 && $sendInvoiceResponse['status_code'] < 300) {
+                    $responseSimplified = array(
+                        'success' => true,
+                        'headers' => $sendInvoiceResponse['headers'],
+                        'status' => !empty($sendInvoiceResponse['body']['status']) ? $sendInvoiceResponse['body']['status'] : $sendInvoiceResponse['status_code'],
+                        'response' => !empty($sendInvoiceResponse['body']) ? $sendInvoiceResponse['body'] : [],
+                        'raw_response' => !empty($sendInvoiceResponse['raw_response']) ? $sendInvoiceResponse['raw_response'] : [],
+                    );
+                } else {
+                    $responseSimplified = array(
+                        'success' => false,
+                        'headers' => $sendInvoiceResponse['headers'],
+                        'status' => !empty($sendInvoiceResponse['body']['status']) ? $sendInvoiceResponse['body']['status'] : $sendInvoiceResponse['status_code'],
+                        'errors' => !empty($sendInvoiceResponse['body']) ? $sendInvoiceResponse['body'] : [],
+                        'raw_response' => !empty($sendInvoiceResponse['raw_response']) ? $sendInvoiceResponse['raw_response'] : [],
+                    );
+                }
+            } else {
+                $responseSimplified = array(
+                    'success' => false,
+                    'headers' => $createInvoiceResponse['headers'],
+                    'status' => !empty($createInvoiceResponse['body']['status']) ? $createInvoiceResponse['body']['status'] : $createInvoiceResponse['status_code'],
+                    'errors' => !empty($createInvoiceResponse['body']) ? $createInvoiceResponse['body'] : [],
+                    'raw_response' => !empty($createInvoiceResponse['raw_response']) ? $createInvoiceResponse['raw_response'] : [],
+                );
+            }
+
+            return $responseSimplified;
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Retrieves detailed information about a specific PayPal invoice.
+     *
+     * This method calls the PayPal REST API endpoint `/v2/invoicing/invoices/{invoice_id}`
+     * to fetch full invoice details including status, amount, payer, and metadata.
+     */
+    public function getInvoiceDetails($InvoiceID)
+    {
+        try {
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID, 'GET', null, null, true);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                return [
+                    'success' => true,
+                    'headers' => $response['headers'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'headers' => $response['headers'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Cancels an existing PayPal invoice.
+     *
+     * This method sends a POST request to the PayPal REST API endpoint 
+     * `/v2/invoicing/invoices/{invoice_id}/cancel` to cancel a specific invoice.
+     * Optionally, it can send an email notification to both the payer and the merchant.
+     */
+    public function cancelInvoice($InvoiceData)
+    {
+        try {
+            $InvoiceID = isset($InvoiceData['InvoiceID']) ? $InvoiceData['InvoiceID'] : '';
+            $PayloadData = isset($InvoiceData['PayloadData']) ? $InvoiceData['PayloadData'] : [];
+
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/cancel', 'POST', $PayloadData, null, true);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                return [
+                    'success' => true,
+                    'headers' => $response['headers'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice canceled successfully which may not return a body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'headers' => $response['headers'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice canceled successfully which may not return a body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Deletes an existing invoice from PayPal using the REST API (v2).
+     *
+     * This method sends a DELETE request to the PayPal Invoicing API endpoint to permanently 
+     * remove an invoice identified by the provided Invoice ID. 
+     * 
+     * Note: A successful DELETE operation may return an empty response body.
+     */
+    public function deleteInvoice($InvoiceID)
+    {
+        try {
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID, 'DELETE', null, null, true);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                return [
+                    'success' => true,
+                    'headers' => $response['headers'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice deleted successfully which may not return a body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'headers' => $response['headers'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice deleted successfully which may not return a body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Marks a PayPal invoice as paid using the REST API (v2).
+     *
+     * This method records a payment against an existing PayPal invoice by sending
+     * a POST request to the `/v2/invoicing/invoices/{invoice_id}/payments` endpoint.
+     * 
+     * The provided payload should contain payment details such as the method,
+     * transaction ID, and payment date. A successful operation marks the invoice
+     * as paid and updates its status accordingly.
+     */
+    public function markInvoiceAsPaid($InvoiceData)
+    {
+        try {
+            $payload = !empty($InvoiceData['MarkInvoiceAsPaidFields']) ? $InvoiceData['MarkInvoiceAsPaidFields'] : [];
+            $InvoiceID = isset($InvoiceData['InvoiceID']) ? $InvoiceData['InvoiceID'] : '';
+
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/payments', 'POST', $payload, null, true);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                return [
+                    'success' => true,
+                    'headers' => $response['headers'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'headers' => $response['headers'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Marks a PayPal invoice as refunded using the REST API.
+     *
+     * This method sends a POST request to the PayPal Invoicing API to record a refund 
+     * against a specific invoice. It requires the invoice ID and refund details 
+     * such as amount, note, or refund type (if applicable) in the payload.
+     */
+    public function markInvoiceAsRefunded($InvoiceData)
+    {
+        try {
+            $payload = !empty($InvoiceData['MarkInvoiceAsRefundedFields']) ? $InvoiceData['MarkInvoiceAsRefundedFields'] : [];
+            $InvoiceID = isset($InvoiceData['InvoiceID']) ? $InvoiceData['InvoiceID'] : '';
+
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/refunds', 'POST', $payload, null, true);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                return [
+                    'success' => true,
+                    'headers' => $response['headers'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'headers' => $response['headers'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'details' => $response['body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Sends a reminder for a specific invoice using the PayPal REST API.
+     *
+     * This method triggers a reminder email to the recipient of the specified invoice.
+     * It makes a POST request to the `/v2/invoicing/invoices/{invoice_id}/remind` endpoint.
+     */
+    public function remindInvoice($InvoiceData)
+    {
+        try {
+            $payload = !empty($InvoiceData['RemindInvoiceFields']) ? $InvoiceData['RemindInvoiceFields'] : [];
+            $InvoiceID = isset($InvoiceData['InvoiceID']) ? $InvoiceData['InvoiceID'] : '';
+
+            $response = $this->makeRequest('/v2/invoicing/invoices/' . $InvoiceID . '/remind', 'POST', $payload, null, true);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                return [
+                    'success' => true,
+                    'headers' => $response['headers'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice reminder sent successfully which may not return a body'],
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'headers' => $response['headers'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'details' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice reminder sent successfully which may not return a body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Searches and filters PayPal invoices using REST API.
+     *
+     * This method retrieves a paginated list of invoices from the PayPal Invoicing API
+     * and applies optional filters such as status, email, currency, amount range, and memo.
+     * It supports client-side filtering using the provided `$Parameters` array.
+     */
+    public function searchInvoices($InvoiceData)
+    {
+        try {
+            $SearchInvoicesFields = !empty($InvoiceData['SearchInvoicesFields']) ? $InvoiceData['SearchInvoicesFields'] : [];
+            $Parameters = !empty($InvoiceData['Parameters']) ? $InvoiceData['Parameters'] : [];
+
+            $page = isset($SearchInvoicesFields['Page']) ? $SearchInvoicesFields['Page'] : 1;
+            $page_size = isset($SearchInvoicesFields['PageSize']) ? $SearchInvoicesFields['PageSize'] : 20;
+
+            // Build query parameters for filtering
+            $query = [];
+
+            // Pagination parameters
+            $query['page'] = $page;
+            $query['page_size'] = $page_size;
+
+            // Build the query string
+            $query_string = http_build_query($query);
+
+            // Make REST API request
+            $response = $this->makeRequest('/v2/invoicing/invoices?' . $query_string, 'GET', null, null, true);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                $invoices = $response['body']['items'];
+
+                $filteredInvoices = array_filter($invoices, function ($invoice) use ($Parameters) {
+                    $statusMatch = true;
+                    $emailMatch = true;
+                    $invoiceEmailMatch = true;
+                    $invoiceNumberMatch = true;
+                    $currencyMatch = true;
+                    $amountMatch = true;
+                    $memoMatch = true;
+
+                    // Filter: Status
+                    if (!empty($Parameters['Status'])) {
+                        $statusMatch = isset($invoice['status']) && strtoupper($invoice['status']) === strtoupper($Parameters['Status']);
+                    }
+
+                    // Filter: Email
+                    if (!empty($Parameters['Email'])) {
+                        $recipientEmail = $invoice['primary_recipients'][0]['billing_info']['email_address'] ?? '';
+                        $emailMatch = strcasecmp($recipientEmail, $Parameters['Email']) === 0;
+                    }
+
+                    // Filter: Invoicer email
+                    if (!empty($Parameters['MerchantEmail'])) {
+                        $invoicerEmail = $invoice['invoicer']['email_address'] ?? '';
+                        $emailMatch = strcasecmp($invoicerEmail, $Parameters['MerchantEmail']) === 0;
+                    }
+
+                    // Filter: Invoice number
+                    if (!empty($Parameters['InvoiceNumber'])) {
+                        $invoiceNumberMatch = isset($invoice['detail']['invoice_number']) && $invoice['detail']['invoice_number'] == $Parameters['InvoiceNumber'];
+                    }
+
+                    // Filter: Currency code
+                    if (!empty($Parameters['CurrencyCode'])) {
+                        $currencyMatch = isset($invoice['detail']['currency_code']) && $invoice['detail']['currency_code'] == $Parameters['CurrencyCode'];
+                    }
+
+                    // Filter: Amount range
+                    if (!empty($Parameters['LowerAmount']) || !empty($Parameters['UpperAmount'])) {
+                        $total = $invoice['amount']['value'] ?? 0;
+                        $lower = $Parameters['LowerAmount'] ?? 0;
+                        $upper = $Parameters['UpperAmount'] ?? 999999;
+                        $amountMatch = ($total >= $lower && $total <= $upper);
+                    }
+
+                    // Filter: Memo (check detail.note or similar)
+                    if (!empty($Parameters['Memo'])) {
+                        $memo = $invoice['detail']['note'] ?? '';
+                        $memoMatch = stripos($memo, $Parameters['Memo']) !== false;
+                    }
+
+                    // Must satisfy all filters
+                    return $statusMatch && $emailMatch && $invoiceEmailMatch && $invoiceNumberMatch && $currencyMatch && $amountMatch && $memoMatch;
+                });
+
+                $result = [
+                    'success' => true,
+                    'headers' => $response['headers'],
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'total_items' => count($filteredInvoices),
+                    'invoices' => array_values($filteredInvoices),
+                    'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+
+                return $result;
+            }
+
+            return [
+                'success' => false,
+                'headers' => $response['headers'],
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'message' => !empty($response['body']['message']) ? $response['body']['message'] : 'Unknown error',
+                'full_response' => $response['body'],
+                'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'status_code' => 500,
+                'message' => $e->getMessage(),
             ];
         }
     }
