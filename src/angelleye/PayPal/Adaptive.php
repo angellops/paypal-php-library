@@ -57,6 +57,11 @@ class Adaptive extends PayPal
 	 */
 	function __construct($DataArray)
 	{
+		// Throw exception if calling any Adaptive Methods
+		throw new \Exception(
+			"Deprecated Notice: The Adaptive PayPal methods are deprecated. Please upgrade to the REST-based implementation to ensure compatibility with future updates."
+		);
+
 		parent::__construct($DataArray);
 		
 		$this->XMLNamespace = 'http://svcs.paypal.com/types/ap';
