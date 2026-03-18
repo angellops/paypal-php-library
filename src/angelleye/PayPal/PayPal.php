@@ -1277,6 +1277,10 @@ class PayPal
      */
     function RefundTransaction($DataArray)
     {
+        if ($this->use_mapper) {
+            return $this->mapper->RefundTransactionMapper($DataArray);
+        }
+
         $RTFieldsNVP = '&METHOD=RefundTransaction';
 
         $RTFields = isset($DataArray['RTFields']) ? $DataArray['RTFields'] : array();
@@ -1938,7 +1942,7 @@ class PayPal
         if ($this->requiredMode === 'rest' && $this->PayPalAPIMode === 'classic' && $this->PayPalAPIUpgrade === true) {
             $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
             foreach ($trace as $step) {
-                if (isset($step['class']) && $step['class'] === 'PayPalMapper') {
+                if (isset($step['class']) && $step['class'] === 'angelleye\PayPal\PayPalMapper') {
                     return true;
                 }
             }

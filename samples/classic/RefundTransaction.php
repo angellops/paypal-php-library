@@ -5,26 +5,30 @@ require_once('../../autoload.php');
 
 // Create PayPal object.
 $PayPalConfig = array(
-					'Sandbox' => $sandbox,
-					'APIUsername' => $api_username,
-					'APIPassword' => $api_password,
-					'APISignature' => $api_signature, 
-					'PrintHeaders' => $print_headers, 
-					'LogResults' => $log_results,
-					'LogPath' => $log_path,
-					);
+    'Sandbox' => $sandbox,
+    'PayPalAPIMode' => $api_mode,
+    'PayPalAPIUpgrade' => $api_upgrade,
+    'APIUsername' => $api_username,
+    'APIPassword' => $api_password,
+    'APISignature' => $api_signature, 
+    'ClientID' => $rest_client_id,
+    'ClientSecret' => $rest_client_secret,
+    'PrintHeaders' => $print_headers, 
+    'LogResults' => $log_results,
+    'LogPath' => $log_path,
+);
 
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
 // Prepare request arrays
 $RTFields = array(
-    'transactionid' => 'ABC', 							// Required.  PayPal transaction ID for the order you're refunding.
+    'transactionid' => '7GC28773HG079532V', 		// Required.  PayPal transaction ID for the order you're refunding.
     'payerid' => '', 								// Encrypted PayPal customer account ID number.  Note:  Either transaction ID or payer ID must be specified.  127 char max
     'invoiceid' => '', 								// Your own invoice tracking number.
-    'refundtype' => 'Full', 							// Required.  Type of refund.  Must be Full, Partial, or Other.
-    'amt' => '', 									// Refund Amt.  Required if refund type is Partial.
-    'currencycode' => '', 							// Three-letter currency code.  Required for Partial Refunds.  Do not use for full refunds.
-    'note' => '',  									// Custom memo about the refund.  255 char max.
+    'refundtype' => 'Partial', 						// Required.  Type of refund.  Must be Full, Partial, or Other.
+    'amt' => '10.00', 								// Refund Amt.  Required if refund type is Partial.
+    'currencycode' => 'USD', 						// Three-letter currency code.  Required for Partial Refunds.  Do not use for full refunds.
+    'note' => 'Refund Issued!',  					// Custom memo about the refund.  255 char max.
     'retryuntil' => '', 							// Maximum time until you must retry the refund.  Note:  this field does not apply to point-of-sale transactions.
     'refundsource' => '', 							// Type of PayPal funding source (balance or eCheck) that can be used for auto refund.  Values are:  any, default, instant, eCheck
     'merchantstoredetail' => '', 					// Information about the merchant store.
@@ -40,14 +44,14 @@ $RTFields = array(
 // You may include up to 16 $MerchantDataVar arrays within the $MerchantDataVars array.
 $MerchantDataVars = array();
 $MerchantDataVar = array(
-    'key' => 'Key1',                            // The key name of a merchant data key-value pair passed with the transaction.
-    'value' => 'Value1',                          // The value of the data passed for the key.
+    'key' => 'Key1',                                // The key name of a merchant data key-value pair passed with the transaction.
+    'value' => 'Value1',                            // The value of the data passed for the key.
 );
 array_push($MerchantDataVars, $MerchantDataVar);
 
 $MerchantDataVar = array(
-    'key' => 'Key2',                            // The key name of a merchant data key-value pair passed with the transaction.
-    'value' => 'Value2',                          // The value of the data passed for the key.
+    'key' => 'Key2',                                // The key name of a merchant data key-value pair passed with the transaction.
+    'value' => 'Value2',                            // The value of the data passed for the key.
 );
 array_push($MerchantDataVars, $MerchantDataVar);
 

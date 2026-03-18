@@ -13,6 +13,7 @@ class PayPalREST extends PayPal
     private $tokenExpiry;
     private $client_id;
     private $client_secret;
+    private $print_headers;
     private $base_url;
     protected string $requiredMode = 'rest';
 
@@ -27,6 +28,7 @@ class PayPalREST extends PayPal
         // Set REST-specific credentials
         $this->client_id = isset($config['ClientID']) ? $config['ClientID'] : '';
         $this->client_secret = isset($config['ClientSecret']) ? $config['ClientSecret'] : '';
+        $this->print_headers = isset($config['PrintHeaders']) ? $config['PrintHeaders'] : false;
 
         // Parent class already handles: sandbox, print_headers, log_results, log_path, base URLs
     }
@@ -86,7 +88,7 @@ class PayPalREST extends PayPal
      * Get OAuth 2.0 access token
      * Caches token for 9 hours to avoid redundant API calls
      */
-    private function getAccessToken()
+    private function getAccessToken( $load_sdk_btn = false )
     {
         // Check if we have a valid cached token
         if ($this->accessToken && $this->tokenExpiry > time()) {
@@ -96,22 +98,70 @@ class PayPalREST extends PayPal
         $auth = base64_encode($this->client_id . ':' . $this->client_secret);
 
         $headers = $this->getOAuthHeaders();
-        $postData = 'grant_type=client_credentials';
+        $postData = ['grant_type' => 'client_credentials'];
+
+        if ($load_sdk_btn) {
+            $postData['response_type'] = 'client_token';
+        }
+
+        $url = $this->base_url . '/v1/oauth2/token';
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->base_url . '/v1/oauth2/token');
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 
+        if ($this->print_headers) {
+            curl_setopt($ch, CURLOPT_HEADER, true);
+        }
+
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        $parsedHeaders = [];
+        $debugId = null;
+        if ($this->print_headers) {
+            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $headerString = substr($response, 0, $headerSize);
+            $body = substr($response, $headerSize);
+
+            $parsedHeaders = $this->parseHeaders($headerString);
+            $debugId = !empty($parsedHeaders['paypal-debug-id']) ? $parsedHeaders['paypal-debug-id'] : null;
+        } else {
+            $body = $response;
+        }
         curl_close($ch);
 
+        $tokenType = $load_sdk_btn ? 'ClientToken' : 'AccessToken';
+        $tokenSource = $load_sdk_btn ? 'paypal_js_sdk' : 'server_api';
+
+        // Request Log
+        $request_log = [
+            'type' => $tokenType,
+            'source' => $tokenSource,
+            'url' => $url,
+            'method' => 'POST',
+            'headers' => $headers,
+            'payload' => $postData
+        ];
+        $this->Logger($this->LogPath, $tokenType . 'Request', $request_log);
+
+        // Response Log
+        $response_log = [
+            'type' => $tokenType,
+            'source' => $tokenSource,
+            'status_code' => $httpCode,
+            'debug_id' => $debugId,
+            'headers' => $parsedHeaders,
+            'body' => json_decode($body, true)
+        ];
+        $this->Logger($this->LogPath, $tokenType . 'Response', $response_log);
+
         if ($httpCode === 200) {
-            $data = json_decode($response, true);
+            $data = json_decode($body, true);
             $this->accessToken = $data['access_token'];
             // Set expiry with 1 minute buffer (9 hours - 1 minute)
             $this->tokenExpiry = time() + ($data['expires_in'] - 60);
@@ -119,7 +169,7 @@ class PayPalREST extends PayPal
             return $this->accessToken;
         }
 
-        throw new \Exception('Failed to get OAuth token: ' . $response);
+        throw new \Exception('Failed to get OAuth token: ' . $body);
     }
 
     /**
@@ -142,29 +192,54 @@ class PayPalREST extends PayPal
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 
-        if ($data && ($method === 'POST' || $method === 'PUT' || $method === 'PATCH')) {
+        if($this->print_headers) {
+            curl_setopt($ch, CURLOPT_HEADER, true);
+        }
+
+        if ($data && in_array($method, ['POST','PUT','PATCH'])) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
+        $parsedHeaders = [];
+        $debugId = null;
+        if ($this->print_headers) {
+            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $headerString = substr($response, 0, $headerSize);
+            $body = substr($response, $headerSize);
+
+            $parsedHeaders = $this->parseHeaders($headerString);
+            $debugId = !empty($parsedHeaders['paypal-debug-id']) ? $parsedHeaders['paypal-debug-id'] : null;
+        } else {
+            $body = $response;
+        }
         curl_close($ch);
 
+        // Request Log
         $request_log = [
-            'request' => [
-                'url' => $url,
-                'method' => $method,
-                'headers' => $headers,
-                'payload' => $data
-            ]
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'payload' => $data,
+            'request_id' => $requestId
         ];
-
-        // Log the request
         $this->Logger($this->LogPath, $callerFunction . 'Request', $request_log);
+
+        // Response Log
+        $response_log = [
+            'status_code' => $httpCode,
+            'debug_id' => $debugId,
+            'headers' => $parsedHeaders,
+            'body' => json_decode($body, true)
+        ];
+        $this->Logger($this->LogPath, $callerFunction . 'Response', $response_log);
 
         return [
             'status_code' => $httpCode,
-            'body' => json_decode($response, true),
+            'debug_id' => $debugId,
+            'body' => json_decode($body, true),
             'raw_response' => $response
         ];
     }
@@ -221,9 +296,6 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId);
 
-            // Log the response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
                     'success' => true,
@@ -258,9 +330,6 @@ class PayPalREST extends PayPal
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET');
 
-            // Log the response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
                     'success' => true,
@@ -292,9 +361,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/authorize', 'POST');
-
-            // Log the response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
@@ -328,9 +394,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST');
-
-            // Log the response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if (in_array($response['status_code'], [200, 201, 204])) {
                 return [
@@ -430,6 +493,81 @@ class PayPalREST extends PayPal
             ];
         }
     }
+
+    /**
+     * Issues a refund for a captured PayPal payment.
+     *
+     * This method sends a POST request to the PayPal REST API endpoint
+     * `/v2/payments/captures/{transaction_id}/refund` to process a full or partial refund
+     * for a completed payment capture.
+     */
+    public function refundPayments($DataArray)
+    {
+        try {
+            $transactionId = isset($DataArray['transaction_id']) ? $DataArray['transaction_id'] : '';
+            $refundType = isset($DataArray['refund_type']) ? $DataArray['refund_type'] : 'full';
+            $refundFields = isset($DataArray['refund_fields']) ? $DataArray['refund_fields'] : [];
+            if( !empty($refundType) && $refundType === 'full' ) {
+                $refundFields = [];
+            }
+
+            $response = $this->makeRequest('/v2/payments/captures/' . $transactionId . '/refund', 'POST', $refundFields);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                $refundTransactionID = !empty($response['body']['id']) ? $response['body']['id'] : '';
+                
+                return $this->getRefundPaymentsDetails($refundTransactionID);
+            }
+
+            return [
+                'success' => false,
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Issues a refund for a captured PayPal payment.
+     *
+     * This method sends a POST request to the PayPal REST API endpoint
+     * `/v2/payments/captures/{transaction_id}/refund` to process a full or partial refund
+     * for a completed payment capture.
+     */
+    public function getRefundPaymentsDetails($transactionId)
+    {
+        try {
+            $response = $this->makeRequest('/v2/payments/refunds/' . $transactionId);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'refund_id' => !empty($response['body']['id']) ? $response['body']['id'] : '',
+                    'full_response' => $response['body'],
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+
+            return [
+                'success' => false,
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
     
     /**
      * Obtain the available balance for a PayPal account.
@@ -441,9 +579,6 @@ class PayPalREST extends PayPal
     {
         try {
             $response = $this->makeRequest('/v1/reporting/balances');
-            
-            // call logger
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
             
             if (in_array($response['status_code'], [200, 201])) {
                 $body = $response['body'];
@@ -520,9 +655,6 @@ class PayPalREST extends PayPal
     {
         $response = $this->makeRequest('/v1/catalogs/products', 'POST', $ProductData);
 
-        // Log the response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
@@ -555,9 +687,6 @@ class PayPalREST extends PayPal
         $PlanData['product_id'] = $productId;
 
         $response = $this->makeRequest('/v1/billing/plans', 'POST', $PlanData);
-
-        // Log the response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
@@ -592,9 +721,6 @@ class PayPalREST extends PayPal
 
         $response = $this->makeRequest('/v1/billing/subscriptions', 'POST', $SubscriptionData);
 
-        // Log the response
-        $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
@@ -624,9 +750,6 @@ class PayPalREST extends PayPal
     public function getSubscriptionProfile($subscriptionID) {
         try {
             $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionID, 'GET');
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if (in_array($response['status_code'], [200, 201])) {
                 return [
@@ -665,9 +788,6 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionId . '/' . $subscriptionAction, 'POST', $subscriptionReason);
             
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
@@ -705,9 +825,6 @@ class PayPalREST extends PayPal
 
             $response = $this->makeRequest('/v1/billing/subscriptions/' . $subscriptionId, 'PATCH', $patches);
 
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
-
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
@@ -742,9 +859,6 @@ class PayPalREST extends PayPal
     public function getPayPalUserInfo() {
         try {
             $response = $this->makeRequest('/v1/identity/oauth2/userinfo?schema=paypalv1.1');
-
-            // Log Response
-            $this->Logger($this->LogPath, __FUNCTION__ . 'Response', $response);
 
             if (in_array($response['status_code'], [200, 201])) {
                 return [

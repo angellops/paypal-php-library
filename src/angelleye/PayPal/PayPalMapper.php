@@ -1109,7 +1109,7 @@ class PayPalMapper extends PayPal
             'items' => $Items
         ];
 
-        // Call the REST method to updateAuthorization
+        // Call the REST method to MassPay
         $response = $this->rest->massPayments($PayPalRequestData);
 
         // Define the primary headers first
@@ -1123,6 +1123,83 @@ class PayPalMapper extends PayPal
             $result = array_merge(
                 $headers,
                 [
+                    'PAYOUTBATCHID'  => !empty($response['full_response']['batch_header']['payout_batch_id']) ? $response['full_response']['batch_header']['payout_batch_id'] : '',
+                    'ERRORS'         => [],
+                    'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ]
+            );
+
+            return $result;
+        }
+
+        // Call function to convert REST Errors to NVP
+        $NVPErrors = $this->convertRESTErrorsToNVP($response);
+
+        $result = array_merge(
+            $headers,
+            $NVPErrors['flatErrors'], 
+            [
+                'ERRORS'         => $NVPErrors['errorsList'],
+                'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Maps Classic MassPay request data to PayPal REST Payouts API format.
+     * 
+     * @return array
+     */
+    public function RefundTransactionMapper($DataArray)
+    {
+        // Extract MassPay Fields from DataArray
+        $RTFields = !empty($DataArray['RTFields']) ? $DataArray['RTFields'] : [];
+
+        $PayPalRequestData = [
+            'transaction_id' => !empty($RTFields['transactionid']) ? $RTFields['transactionid'] : '',
+            'refund_type' => !empty($RTFields['refundtype']) ? strtolower($RTFields['refundtype']) : 'full',
+            'refund_fields' => []
+        ];
+
+        if (!empty($RTFields['note'])) {
+            $PayPalRequestData['refund_fields']['note_to_payer'] = $RTFields['note'];
+        }
+
+        if (strtolower($RTFields['refundtype']) !== 'full') {
+            $PayPalRequestData['refund_fields']['amount'] = [
+                'value' => !empty($RTFields['amt']) ? $RTFields['amt'] : '',
+                'currency_code' => !empty($RTFields['currencycode']) ? $RTFields['currencycode'] : 'USD'
+            ];
+        }
+
+        // Call the REST method to RefundTransaction
+        $response = $this->rest->refundPayments($PayPalRequestData);
+
+        // Define the primary headers first
+        $headers = [
+            'TIMESTAMP' => gmdate('c'),
+            'ACK'       => 'Success',
+            'VERSION'   => $this->APIVersion,
+        ];
+
+        if (isset($response['success']) && !empty($response['success'])) {
+            $full_response = !empty($response['full_response']) ? $response['full_response'] : [];
+            $amount = !empty($full_response['amount']) ? $full_response['amount'] : [];
+            $seller_breakdown = !empty($full_response['seller_payable_breakdown']) ? $full_response['seller_payable_breakdown'] : [];
+
+            $result = array_merge(
+                $headers,
+                [
+                    'FEEREFUNDAMT' => !empty($seller_breakdown['paypal_fee']['value']) ? $seller_breakdown['paypal_fee']['value'] : '0.00',
+                    'REFUNDTRANSACTIONID' => !empty($full_response['id']) ? $full_response['id'] : '',
+                    'GROSSREFUNDAMT' => !empty($amount['value']) ? $amount['value'] : '0.00',
+                    'PENDINGREASON' => 'None',
+                    'CURRENCYCODE' => !empty($amount['currency_code']) ? $amount['currency_code'] : 'USD',
+                    'NETREFUNDAMT' => !empty($seller_breakdown['net_amount']['value']) ? $seller_breakdown['net_amount']['value'] : '0.00',
+                    'REFUNDSTATUS' => (isset($full_response['status']) && $full_response['status'] === 'COMPLETED') ? 'Instant' : 'Pending',
+                    'TOTALREFUNDEDAMOUNT' => !empty($seller_breakdown['total_refunded_amount']['value']) ? $seller_breakdown['total_refunded_amount']['value'] : '0.00',
                     'ERRORS'         => [],
                     'RAWRESPONSE'    => isset($response['raw_response']) ? $response['raw_response'] : [],
                 ]
