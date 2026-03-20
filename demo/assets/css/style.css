@@ -96,8 +96,13 @@ h1, h2, h3, h4 {
 }
 .logo-img {
   display: block;
-  max-height: 3.625rem;
+  max-height: 3rem;
   width: auto;
+}
+@media (min-width: 30rem) {
+  .logo-img {
+    max-height: 3.625rem;
+  }
 }
 #paypal_partner_logo {
   display: flex;
@@ -106,12 +111,20 @@ h1, h2, h3, h4 {
 }
 .paypal-partner-img {
   display: block;
-  max-height: 2rem;
+  max-height: 1.5rem;
   width: auto;
 }
 .accept-text {
-  font-size: 12px;
+  font-size: 0.625rem;
   color: var(--muted-fg);
+}
+@media (min-width: 30rem) {
+  .paypal-partner-img {
+    max-height: 2rem;
+  }
+  .accept-text {
+    font-size: 0.75rem;
+  }
 }
 .paypal-text { 
   color: #003087; 
@@ -356,7 +369,7 @@ h1, h2, h3, h4 {
 .section-divider {
   margin: 3rem 0;
   border: none;
-  height: 1px;
+  height: 2px;
   background: linear-gradient(to right, transparent, var(--border), transparent);
 }
 
