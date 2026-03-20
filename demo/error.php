@@ -36,17 +36,7 @@ $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
   </head>
   <body>
     <!--- HEADER --->
-    <header class="header">
-      <div class="container header-inner">
-        <a href="#" class="logo">
-          <img alt="Angell EYE PayPal PHP Class Library Demo" src="assets/images/logo.png" class="logo-img" />
-        </a>
-        <div id="paypal_partner_logo">
-          <img alt="PayPal Partner and Certified Developer" src="assets/images/paypal-partner-logo.png" class="paypal-partner-img" />
-          <div class="accept-text">We accept <strong class="paypal-text">PayPal</strong> and <strong class="venmo-text">Venmo</strong></div>
-        </div>
-      </div>
-    </header>
+    <?php require_once('partials/header.php'); ?>
 
     <!--- Main Content --->
     <main id="paypal_errors">
@@ -67,11 +57,6 @@ $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
     </main>
 
     <!--- FOOTER --->
-    <footer>
-      <div class="container">
-        <p>© <span id="year"></span> AngelEye Consulting Services. All rights reserved.</p>
-        <p>PayPal Partner. Not directly affiliated with PayPal, Inc.</p>
-      </div>
-    </footer>
+    <?php require_once('partials/footer.php'); ?>
   </body>
 </html>

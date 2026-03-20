@@ -1,0 +1,9 @@
+/* --- FOOTER --- */
+footer {
+  border-top: 0.0625rem solid var(--border-light);
+  background: var(--bg);
+  padding: 1.625rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--muted-fg);
+}

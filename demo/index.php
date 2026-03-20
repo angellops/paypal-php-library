@@ -1,19 +1,5 @@
-<?php
-/**
- * Reads and returns the raw SVG content from a given file path.
- * * Useful for embedding SVG code directly into HTML to allow for 
- * CSS manipulation and reducing HTTP requests.
- *
- * @param string $path The absolute or relative server path to the SVG file.
- * @return string Returns the SVG XML content if found, or an empty string if the file does not exist.
- */
-function inline_svg($path) {
-  if (file_exists($path)) {
-    return file_get_contents($path);
-  }
-  return '';
-}
-?>
+<?php require_once('core/useful-functions.php'); ?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -37,17 +23,7 @@ function inline_svg($path) {
   </head>
   <body>
     <!--- HEADER --->
-    <header class="header">
-      <div class="container header-inner">
-        <a href="#" class="logo">
-          <img alt="Angell EYE PayPal PHP Class Library Demo" src="assets/images/logo.png" class="logo-img" />
-        </a>
-        <div id="paypal_partner_logo">
-          <img alt="PayPal Partner and Certified Developer" src="assets/images/paypal-partner-logo.png" class="paypal-partner-img" />
-          <div class="accept-text">We accept <strong class="paypal-text">PayPal</strong> and <strong class="venmo-text">Venmo</strong></div>
-        </div>
-      </div>
-    </header>
+    <?php require_once('partials/header.php'); ?>
 
     <!--- HERO --->
     <section class="hero">
@@ -150,11 +126,6 @@ function inline_svg($path) {
     </main>
 
     <!--- FOOTER --->
-    <footer>
-      <div class="container">
-        <p>© <span id="year"></span> AngelEye Consulting Services. All rights reserved.</p>
-        <p>PayPal Partner. Not directly affiliated with PayPal, Inc.</p>
-      </div>
-    </footer>
+    <?php require_once('partials/footer.php'); ?>
   </body>
 </html>

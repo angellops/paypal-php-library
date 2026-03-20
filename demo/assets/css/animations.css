@@ -1,0 +1,10 @@
+@keyframes btn-pulse {
+  0%, 80%, 100% { 
+    transform: scale(0.7); 
+    opacity: 0.4; 
+  }
+  40% { 
+    transform: scale(1);  
+    opacity: 1;   
+  }
+}

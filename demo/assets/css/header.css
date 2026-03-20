@@ -1,0 +1,60 @@
+/* --- Header --- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  border-bottom: 0.0625rem solid var(--border-light);
+  background: var(--bg);
+  backdrop-filter: blur(1.25rem);
+  -webkit-backdrop-filter: blur(1.25rem);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 5rem;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.logo-img {
+  display: block;
+  max-height: 3rem;
+  width: auto;
+}
+@media (min-width: 30rem) {
+  .logo-img {
+    max-height: 3.625rem;
+  }
+}
+#paypal_partner_logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.paypal-partner-img {
+  display: block;
+  max-height: 1.5rem;
+  width: auto;
+}
+.accept-text {
+  font-size: 0.625rem;
+  color: var(--muted-fg);
+}
+@media (min-width: 30rem) {
+  .paypal-partner-img {
+    max-height: 2rem;
+  }
+  .accept-text {
+    font-size: 0.75rem;
+  }
+}
+.paypal-text { 
+  color: #003087; 
+}
+.venmo-text { 
+  color: #3D95CE; 
+}
