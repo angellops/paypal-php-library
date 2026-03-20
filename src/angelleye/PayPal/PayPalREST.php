@@ -1281,7 +1281,7 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
-                'details' => $response['body'],
+                'errors' => $response['body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {
@@ -1320,7 +1320,7 @@ class PayPalREST extends PayPal
                 'success' => false,
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
-                'details' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice reminder sent successfully which may not return a body'],
+                'errors' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice reminder sent successfully which may not return a body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {
@@ -1434,7 +1434,7 @@ class PayPalREST extends PayPal
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'message' => !empty($response['body']['message']) ? $response['body']['message'] : 'Unknown error',
-                'full_response' => $response['body'],
+                'errors' => $response['body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
             ];
         } catch (\Exception $e) {
