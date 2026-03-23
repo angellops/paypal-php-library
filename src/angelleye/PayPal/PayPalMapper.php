@@ -467,7 +467,7 @@ class PayPalMapper extends PayPal
                         'SHIPTOSTATE' => !empty($address['admin_area_1']) ? $address['admin_area_1'] : '',
                         'SHIPTOZIP' => !empty($address['postal_code']) ? $address['postal_code'] : '',
                         'SHIPTOCOUNTRYCODE' => !empty($address['country_code']) ? $address['country_code'] : '',
-                        'SHIPTOCOUNTRYNAME' => '',
+                        'SHIPTOCOUNTRYNAME' => !empty($address['country_code']) ? $address['country_code'] : '',
                         'SHIPTOPHONENUM' => !empty($shipping['phone_number']['national_number']) ? $shipping['phone_number']['national_number'] : '',
                         'ADDRESSSTATUS' => '',
                         'AMT' => !empty($amount['value']) ? $amount['value'] : '',

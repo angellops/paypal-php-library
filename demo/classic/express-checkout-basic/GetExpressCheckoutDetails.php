@@ -10,14 +10,19 @@ require_once('../../../vendor/autoload.php');
  * Then load the PayPal object into $PayPal
  */
 $PayPalConfig = array(
-    'Sandbox' => $sandbox,
-    'APIUsername' => $api_username,
-    'APIPassword' => $api_password,
-    'APISignature' => $api_signature,
-    'PrintHeaders' => $print_headers,
-    'LogResults' => $log_results,
-    'LogPath' => $log_path,
+	'Sandbox' => $sandbox,
+	'PayPalAPIMode' => $api_mode,
+	'PayPalAPIUpgrade' => $api_upgrade,
+	'APIUsername' => $api_username,
+	'APIPassword' => $api_password,
+	'APISignature' => $api_signature, 
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
+	'PrintHeaders' => $print_headers,
+	'LogResults' => $log_results,
+	'LogPath' => $log_path,
 );
+
 $PayPal = new angelleye\PayPal\PayPal($PayPalConfig);
 
 /**
@@ -58,7 +63,7 @@ if($PayPal->APICallSuccessful($PayPalResult['ACK']))
     $_SESSION['first_name'] = isset($PayPalResult['FIRSTNAME']) ? $PayPalResult['FIRSTNAME'] : '';
     $_SESSION['last_name'] = isset($PayPalResult['LASTNAME']) ? $PayPalResult['LASTNAME'] : '';
 
-    $payments = $PayPal->GetPayments($PayPalResult);
+    $payments = ( $api_mode === 'classic' && $api_upgrade === false ) ? $PayPal->GetPayments($PayPalResult) : $PayPalResult['PAYMENTS'];
 
     foreach($payments as $payment)
     {
