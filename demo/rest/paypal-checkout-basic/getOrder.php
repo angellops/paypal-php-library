@@ -2,12 +2,12 @@
 /**
  * Include our config file and the PayPal library.
  */
-require_once('../../includes/config.php');
-require_once('../../vendor/autoload.php');
+require_once('../../../includes/config.php');
+require_once('../../../vendor/autoload.php');
 
 // Redirect to Pay Later Product Page if API mode is classic
 if ($api_mode === 'classic') {
-  header('Location: ./');
+  header('Location: ../../');
 }
 
 /**
@@ -24,7 +24,7 @@ $PayPalConfig = array(
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
 );
-$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
+$PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
 /*
  * Here we call GetExpressCheckoutDetails to obtain payer information from PayPal
@@ -62,7 +62,7 @@ if( $PayPalResult['success'] ) {
     $_SESSION['shipping_state'] = isset($shipping['address']['admin_area_1']) ? $shipping['address']['admin_area_1'] : '';
     $_SESSION['shipping_zip'] = isset($shipping['address']['postal_code']) ? $shipping['address']['postal_code'] : '';
     $_SESSION['shipping_country_code'] = isset($shipping['address']['country_code']) ? $shipping['address']['country_code'] : '';
-    $_SESSION['shipping_country_name'] = 'United States';
+    $_SESSION['shipping_country_name'] = isset($shipping['address']['country_code']) ? $shipping['address']['country_code'] : '';
     
     /**
      * At this point, we now have the buyer's shipping address available in our app.

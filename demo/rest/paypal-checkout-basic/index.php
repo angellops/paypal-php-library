@@ -1,6 +1,11 @@
 <?php
-require_once('../../includes/config.php');
-require_once('../../vendor/autoload.php');
+require_once('../../../includes/config.php');
+require_once('../../../vendor/autoload.php');
+require_once('../../core/useful-functions.php');
+
+if ($api_mode === 'classic') {
+  header('Location: ../../');
+}
 
 // Set buyer email in session
 $_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
@@ -32,6 +37,7 @@ $_SESSION['shopping_cart'] = array(
 );
 $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
 ?>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -39,134 +45,187 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-
-    <!--link rel="stylesheet/less" href="less/bootstrap.less" type="text/css" /-->
-    <!--link rel="stylesheet/less" href="less/responsive.less" type="text/css" /-->
-    <!--script src="../assets/js/less-1.3.3.min.js"></script-->
-    <!--append ‘#!watch’ to the browser URL, then refresh the page. -->
-
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../assets/css/style.css" rel="stylesheet">
-
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-        <script src="../assets/js/html5shiv.js"></script>
-        <![endif]-->
+    <link rel="stylesheet" href="../../assets/css/style.css" />
 
     <!-- Fav and touch icons -->
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/images/apple-touch-icon-144-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/images/apple-touch-icon-114-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/images/apple-touch-icon-72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="../assets/images/apple-touch-icon-57-precomposed.png">
-    <link rel="shortcut icon" href="../assets/images/favicon.png">
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../assets/js/scripts.js"></script>
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../assets/images/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../assets/images/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../assets/images/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../../assets/images/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="../../assets/images/favicon.png">
+    
+    <script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
     <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
     <script src="<?php echo $sdk_url; ?>"></script>
     <script src="basic-paypal.js"></script>
   </head>
   <body>
-    <div class="container">
-      <div class="row clearfix">
-        <div class="col-md-12 column">
-          <div id="header" class="row clearfix">
-            <div class="col-md-6 column">
-              <div id="angelleye_logo">
-                <a href="/">
-                  <img alt="Angell EYE PayPal PHP Class Library Demo" src="../assets/images/logo.png">
-                </a>
-              </div>
-            </div>
-            <div class="col-md-6 column">
-              <div id="paypal_partner_logo">
-                <img alt="PayPal Partner and Certified Developer" src="../assets/images/paypal-partner-logo.png"/>
-                <div class="accept-text">
-                  We accept <strong class="paypal-text">PayPal</strong> and <strong class="venmo-text">Venmo</strong>
-                </div>
-              </div>
-            </div>
+    <!-- HEADER -->
+    <?php require_once('../../partials/header.php'); ?>
+
+    <!-- Main -->
+    <main class="cart-main">
+      <div class="container">
+
+        <!-- Page Title -->
+        <div class="cart-page-title">
+          <div class="cart-title-icon">
+            <?php echo inline_svg('../../assets/images/cart-icon.svg'); ?>
           </div>
-          <?php if( $api_mode === 'classic' ) { ?>
-            <div class="warning-info">
-              <span class="warning-icon">!</span>PayPal Classic API is deprecated. Please upgrade to the REST API for continued support and latest features.
-            </div>
-          <?php } ?>
-          <h2 class="main-title"><img src="../assets/images/cart.svg" alt="Cart">Shopping Cart</h2>
-          <p class="main-info">Here we are using a basic shopping cart for display purposes, however, for this basic demo, all we are sending to PayPal is the order total without any line item details. We are assuming that we have not collected any billing or shipping information from the buyer yet because we'll be obtaining those details from PayPal after the user logs in and is returned back to the site.</p>
-          <div class="demo-cred">
-            <h2>Demo Credentials</h2>
-            <p>Email: paypal-buyer@angelleye.com</p>
-            <p>Password: paypalphp</p>
+          <h1>Shopping Cart</h1>
+        </div>
+
+        <!-- Intro Text -->
+        <div class="cart-intro">
+          <p>Here we are using a basic shopping cart for display purposes, however, for this basic demo, 
+            all we are sending to PayPal is the order total without any line item details. We are assuming 
+            that we have not collected any billing or shipping information from the buyer yet because we'll 
+            be obtaining those details from PayPal after the user logs in and is returned back to the site.
+          </p>
+        </div>
+
+        <!-- Demo Credentials -->
+        <div class="demo-credentials">
+          <div class="demo-credentials-icon">
+            <?php echo inline_svg('../../assets/images/lock-icon.svg'); ?>
           </div>
-          <table class="table table-items">
-            <thead>
-              <tr>
-                <th class="center">ID</th>
-                <th class="center">Name</th>
-                <th class="center">Price</th>
-                <th class="center">QTY</th>
-                <th class="center">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach($_SESSION['shopping_cart']['basic_items'] as $cart_item) { ?>
-              <tr>
-                <td class="center"><?php echo $cart_item['id']; ?></td>
-                <td class="center font-lightbold"><?php echo $cart_item['name']; ?></td>
-                <td class="center"> $<?php echo number_format($cart_item['price'],2); ?></td>
-                <td class="center font-lightbold"><?php echo $cart_item['qty']; ?></td>
-                <td class="center font-lightbold"> $<?php echo number_format($cart_item['qty'] * $cart_item['price'],2); ?></td>
-              </tr>
-              <?php } ?>
-            </tbody>
-          </table>
-          <div class="row clearfix">
-            <div class="col-md-4 column"> </div>
-            <div class="col-md-3 column"> </div>
-            <div class="col-md-5 column">
-              <table class="table table-summary">
-                <tbody>
-                  <tr>
-                    <td>Subtotal</td>
-                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['subtotal'],2); ?></td>
-                  </tr>
-                  <tr>
-                    <td>Shipping</td>
-                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['shipping'],2); ?></td>
-                  </tr>
-                  <tr>
-                    <td>Handling</td>
-                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['handling'],2); ?></td>
-                  </tr>
-                  <tr>
-                    <td>Tax</td>
-                    <td class="font-lightbold">$<?php echo number_format($_SESSION['shopping_cart']['tax'],2); ?></td>
-                  </tr>
-                  <tr>
-                    <td class="font-lightbold total-border-top">Grand Total</td>
-                    <td class="font-lightbold total-border-top">$<?php echo number_format($_SESSION['shopping_cart']['grand_total'],2); ?></td>
-                  </tr>
-                  <tr>
-                    <td class="paypalbtn" colspan="2">
-                      <?php if( $api_mode === 'classic' ) : ?>
-                        <a href="#" disabled>
-                          <img src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif">
-                        </a>
-                      <?php else: ?>
-                        <div id="paypal-button-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
-                          <div id="paypalError"></div>
-                          <paypal-button type="pay" hidden></paypal-button>
-                        </div>
-                      <?php endif; ?>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+          <div>
+            <h3 class="demo-credentials-title">Demo Credentials</h3>
+            <div class="demo-credentials-row">
+              <span class="demo-credentials-label">Email</span>
+              <span class="demo-credentials-value">: paypal-buyer@angelleye.com</a>
+            </div>
+            <div class="demo-credentials-row">
+              <span class="demo-credentials-label">Password</span>
+              <span class="demo-credentials-value">: paypalphp</span>
             </div>
           </div>
         </div>
+
+
+        <!-- Two-column Layout -->
+        <div class="cart-layout">
+
+          <!-- LEFT: Cart Items -->
+          <section class="cart-items-card">
+            <div class="cart-items-header">
+              <h2>Your Items</h2>
+              <span class="cart-count">
+                <?php echo count($_SESSION['shopping_cart']['basic_items']); ?> items
+              </span>
+            </div>
+
+            <!-- Table Header -->
+            <div class="cart-table">
+              <div class="cart-table-head">
+                <span class="col-id">ID</span>
+                <span class="col-name">Name</span>
+                <span class="col-price">Price</span>
+                <span class="col-qty">Qty</span>
+                <span class="col-total">Total</span>
+              </div>
+
+              <!-- Item Rows -->
+              <?php foreach ($_SESSION['shopping_cart']['basic_items'] as $cart_item) { ?>
+                <div class="cart-table-row">
+                  <span class="col-id">
+                    <span class="item-id-badge">
+                      <?php echo $cart_item['id']; ?>
+                    </span>
+                  </span>
+                  <span class="col-name">
+                    <div class="item-icon">
+                      <?php echo strtoupper($cart_item['name'][0]); ?>
+                    </div>
+                    <div>
+                      <div class="item-name">
+                        <?php echo $cart_item['name']; ?>
+                      </div>
+                      <div class="item-sku">SKU:
+                        <?php echo $cart_item['id']; ?>
+                      </div>
+                    </div>
+                  </span>
+                  <span class="col-price">
+                    <?php echo '$' . number_format($cart_item['price'], 2); ?>
+                  </span>
+                  <span class="col-qty">
+                    <div class="qty-badge">
+                      <?php echo $cart_item['qty']; ?>
+                    </div>
+                  </span>
+                  <span class="col-total">
+                    <?php echo '$' . number_format($cart_item['qty'] * $cart_item['price'], 2); ?>
+                  </span>
+                </div>
+              <?php
+              }?>
+            </div>
+
+            <div class="cart-back-link">
+              <a href="<?php echo $domain . 'demo/'; ?>">
+                <?php echo inline_svg('../../assets/images/back-icon.svg'); ?>
+                Continue Shopping
+              </a>
+            </div>
+          </section>
+
+          <!-- Right: Order Summary -->
+          <aside class="cart-summary">
+            <div class="summary-card">
+              <h2 class="summary-title">Order Summary</h2>
+
+              <div class="summary-rows">
+                <div class="summary-row">
+                  <span>Subtotal</span>
+                  <span class="summary-value">
+                    <?php echo '$' . number_format($_SESSION['shopping_cart']['subtotal'], 2); ?>
+                  </span>
+                </div>
+                <div class="summary-row">
+                  <span>Shipping</span>
+                  <span
+                    class="summary-value <?php echo ($_SESSION['shopping_cart']['shipping'] === 0) ? 'summary-free' : ''; ?>">
+                    <?php echo '$' . number_format($_SESSION['shopping_cart']['shipping'], 2); ?>
+                  </span>
+                </div>
+                <div class="summary-row">
+                  <span>Handling</span>
+                  <span
+                    class="summary-value <?php echo ($_SESSION['shopping_cart']['handling'] === 0) ? 'summary-free' : ''; ?>">
+                    <?php echo '$' . number_format($_SESSION['shopping_cart']['handling'], 2); ?>
+                  </span>
+                </div>
+                <div class="summary-row">
+                  <span>Tax</span>
+                  <span
+                    class="summary-value <?php echo ($_SESSION['shopping_cart']['tax'] === 0) ? 'summary-free' : ''; ?>">
+                    <?php echo '$' . number_format($_SESSION['shopping_cart']['tax'], 2); ?>
+                  </span>
+                </div>
+              </div>
+
+              <div class="summary-divider"></div>
+
+              <div class="summary-total">
+                <span>Grand Total</span>
+                <span class="summary-total-amount">
+                  <?php echo '$' . number_format($_SESSION['shopping_cart']['grand_total'], 2); ?>
+                </span>
+              </div>
+
+              <!-- PayPal Button -->
+              <div id="paypal-button-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
+                <div id="paypalError"></div>
+                <paypal-button id="paypalbtn" type="pay" hidden></paypal-button>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
-    </div>
-  </body>
+    </main>
+
+    <!-- Footer -->
+    <?php require_once('../../partials/footer.php'); ?>
+  </body>  
 </html>

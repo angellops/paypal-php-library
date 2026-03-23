@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             };
 
-            const response = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_create_order', {
+            const response = await fetch('../../core/useful-functions.php?action=ae_create_order', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(orderPayload)
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function captureOrder(data) {
         try {
-            const response = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_capture_order', {
+            const response = await fetch('../../core/useful-functions.php?action=ae_capture_order', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: data.orderId }),
@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function init() {
         try {
-            const res = await fetch('../../src/angelleye/PayPal/api/paypal-api.php?action=ae_client_token');
+            const res = await fetch('../../core/useful-functions.php?action=ae_client_token');
             const { token } = await res.json();
 
             const sdkInstance = await window.paypal.createInstance({
@@ -125,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
             paymentSessionOptions,
         );
 
-        const paypalButton = document.querySelector("paypal-button");
+        const paypalButton = document.getElementById("paypalbtn");
         paypalButton.removeAttribute("hidden");
 
         paypalButton.addEventListener("click", async () => {

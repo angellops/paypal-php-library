@@ -2,6 +2,11 @@
 require_once('../../../includes/config.php');
 require_once('../../core/useful-functions.php');
 
+// Redirect to Demo Home if REST is enabled
+if ($api_mode === 'rest') {
+  header('Location: ../../');
+}
+
 /**
  * Here we are building a very simple, static shopping cart to use
  * throughout this demo.  In most cases, you will working with a dynamic
@@ -45,7 +50,6 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <link rel="shortcut icon" href="../../assets/images/favicon.png">
 
     <script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
-    <script type="text/javascript" src="../../assets/js/scripts.js"></script>
   </head>
 
   <body>
@@ -216,5 +220,4 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <!-- Footer -->
     <?php require_once('../../partials/footer.php'); ?>
   </body>
-
 </html>

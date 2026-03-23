@@ -1,6 +1,11 @@
 <?php
 require_once('../../../includes/config.php');
 require_once('../../core/useful-functions.php');
+
+// Redirect to Demo Home if REST is enabled
+if ($api_mode === 'rest') {
+  header('Location: ../../');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -19,7 +24,6 @@ require_once('../../core/useful-functions.php');
     <link rel="shortcut icon" href="../../assets/images/favicon.png">
 
     <script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
-    <script type="text/javascript" src="../../assets/js/scripts.js"></script>
   </head>
 
   <body>
@@ -258,5 +262,4 @@ require_once('../../core/useful-functions.php');
     <!--- FOOTER --->
     <?php require_once('../../partials/footer.php'); ?>
   </body>
-
 </html>

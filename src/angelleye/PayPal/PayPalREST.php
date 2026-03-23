@@ -221,6 +221,13 @@ class PayPalREST extends PayPal
     }
 
     /**
+     * Public method for external access 
+     **/
+    public function fetchAccessToken( $load_sdk_btn = false ){
+        return $this->getAccessToken( $load_sdk_btn );
+    }
+
+    /**
      * Make authenticated REST API request
      */
     protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null, $isInvoiceRequest = false, $includeAuth = false)

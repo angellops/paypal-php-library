@@ -5,6 +5,11 @@
 require_once('../../../includes/config.php');
 require_once('../../../vendor/autoload.php');
 
+// Redirect to Demo Home if REST is enabled
+if ($api_mode === 'rest') {
+  header('Location: ../../');
+}
+
 /**
  * Setup configuration for the PayPal library using vars from the config file.
  * Then load the PayPal object into $PayPal

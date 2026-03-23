@@ -359,7 +359,12 @@
   color: var(--fg);
 }
 
-/* --- PayPal Button --- */
+/* --- PayPal Button - Classic --- */
 .paypal-btn {
   text-align: -webkit-right;
+}
+
+/* --- PayPal Button - REST --- */
+#paypalbtn {
+  width: 100%;
 }
