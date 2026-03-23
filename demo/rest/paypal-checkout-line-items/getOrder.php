@@ -2,12 +2,12 @@
 /**
  * Include our config file and the PayPal library.
  */
-require_once('../../includes/config.php');
-require_once('../../vendor/autoload.php');
+require_once('../../../includes/config.php');
+require_once('../../../vendor/autoload.php');
 
-// Redirect to Pay Later Product Page if API mode is classic
+// Redirect to Demo Home if API mode is classic
 if ($api_mode === 'classic') {
-  header('Location: ./');
+  header('Location: ../../');
 }
 
 /**
@@ -24,7 +24,7 @@ $PayPalConfig = array(
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
 );
-$PayPal = angelleye\PayPal\PayPal::init($PayPalConfig);
+$PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
 /*
  * Here we call GetExpressCheckoutDetails to obtain payer information from PayPal
@@ -55,12 +55,11 @@ if( $PayPalResult['success'] ) {
     $_SESSION['paypal_fee'] = isset( $captures['seller_receivable_breakdown']['paypal_fee']['value'] ) ? $captures['seller_receivable_breakdown']['paypal_fee']['value'] : 0.00;
 
     /**
-     * Now we will redirect the user to a final review
-     * page so they can see the shipping/handling/tax
-     * that has been added to the order.
+     * Now we will redirect the user to a order
+     * completion page.
      */
     header('Location: order-complete.php');
 } else {
-    $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
+    $_SESSION['paypal_errors'] = $PayPalResult['errors'];
     header('Location: ../error.php');
 }

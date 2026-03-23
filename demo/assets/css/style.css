@@ -30,8 +30,8 @@ img {
   max-width: 100%; 
 }
 a { 
-  color: inherit;
-  text-decoration: none; 
+  color: #3D95CE;
+  text-decoration: none;
 }
 button { 
   cursor: pointer; 

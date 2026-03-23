@@ -5,7 +5,7 @@
 require_once('../../../includes/config.php');
 require_once('../../../vendor/autoload.php');
 
-// Redirect to Pay Later Product Page if API mode is classic
+// Redirect to Demo Home if API mode is classic
 if ($api_mode === 'classic') {
   header('Location: ../../');
 }
@@ -92,6 +92,6 @@ if( $PayPalResult['success'] ) {
      */
     header('Location: review.php');
 } else {
-    $_SESSION['paypal_errors'] = $PayPalResult['ERRORS'];
+    $_SESSION['paypal_errors'] = $PayPalResult['errors'];
     header('Location: ../error.php');
 }

@@ -2,11 +2,12 @@
 require_once('../../../includes/config.php');
 require_once('../../core/useful-functions.php');
 
-// Redirect to Demo Home if REST is enabled
+// Redirect to Demo Home if API mode is classic
 if ($api_mode === 'classic') {
   header('Location: ../../');
 }
 ?>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -194,7 +195,7 @@ if ($api_mode === 'classic') {
             <div class="summary-rows">
               <div class="summary-row">
                 <span>Subtotal</span>
-                <?php if (!empty($_SESSION['shopping_cart']['subtotal'])): ?>
+                <?php if (isset($_SESSION['shopping_cart']['subtotal'])): ?>
                   <span class="summary-value">
                     <?php echo '$' . number_format($_SESSION['shopping_cart']['subtotal'], 2); ?>
                   </span>
@@ -202,7 +203,7 @@ if ($api_mode === 'classic') {
               </div>
               <div class="summary-row">
                 <span>Shipping</span>
-                <?php if (!empty($_SESSION['shopping_cart']['shipping'])): ?>
+                <?php if (isset($_SESSION['shopping_cart']['shipping'])): ?>
                   <span class="summary-value <?php echo ($_SESSION['shopping_cart']['shipping'] === 0) ? 'summary-free' : ''; ?>">
                     <?php echo '$' . number_format($_SESSION['shopping_cart']['shipping'], 2); ?>
                   </span>
@@ -210,7 +211,7 @@ if ($api_mode === 'classic') {
               </div>
               <div class="summary-row">
                 <span>Handling</span>
-                <?php if (!empty($_SESSION['shopping_cart']['handling'])): ?>
+                <?php if (isset($_SESSION['shopping_cart']['handling'])): ?>
                   <span class="summary-value <?php echo ($_SESSION['shopping_cart']['handling'] === 0) ? 'summary-free' : ''; ?>">
                     <?php echo '$' . number_format($_SESSION['shopping_cart']['handling'], 2); ?>
                   </span>
@@ -218,7 +219,7 @@ if ($api_mode === 'classic') {
               </div>
               <div class="summary-row">
                 <span>Tax</span>
-                <?php if (!empty($_SESSION['shopping_cart']['tax'])): ?>
+                <?php if (isset($_SESSION['shopping_cart']['tax'])): ?>
                   <span class="summary-value <?php echo ($_SESSION['shopping_cart']['tax'] === 0) ? 'summary-free' : ''; ?>">
                     <?php echo '$' . number_format($_SESSION['shopping_cart']['tax'], 2); ?>
                   </span>
@@ -230,7 +231,7 @@ if ($api_mode === 'classic') {
 
             <div class="summary-total">
               <span>Grand Total</span>
-              <?php if (!empty($_SESSION['shopping_cart']['grand_total'])): ?>
+              <?php if (isset($_SESSION['shopping_cart']['grand_total'])): ?>
                 <span class="summary-total-amount">
                   <?php echo '$' . number_format($_SESSION['shopping_cart']['grand_total'], 2); ?>
                 </span>

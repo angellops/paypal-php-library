@@ -2,7 +2,7 @@
 require_once('../../../includes/config.php');
 require_once('../../core/useful-functions.php');
 
-// Redirect to Demo Home if REST is enabled
+// Redirect to Demo Home if API mode is REST
 if ($api_mode === 'rest') {
   header('Location: ../../');
 }
@@ -12,21 +12,22 @@ if ($api_mode === 'rest') {
  * throughout this demo.  In most cases, you will working with a dynamic
  * shopping cart system of some sort.
  */
-$_SESSION['ec_checkout_items'][0] = array(
-  'id' => '123-ABC',
-  'name' => 'Widget',
-  'qty' => '2',
-  'price' => '9.99',
-);
-
-$_SESSION['ec_checkout_items'][1] = array(
-  'id' => 'XYZ-456',
-  'name' => 'Gadget',
-  'qty' => '1',
-  'price' => '4.99',
+$ec_checkout_items = array(
+  array(
+    'id' => '123-ABC',
+    'name' => 'Widget',
+    'qty' => '2',
+    'price' => '9.99',
+  ),
+  array(
+    'id' => 'XYZ-456',
+    'name' => 'Gadget',
+    'qty' => '1',
+    'price' => '4.99',
+  )
 );
 $_SESSION['shopping_cart'] = array(
-  'ec_checkout_items' => $_SESSION['ec_checkout_items'],
+  'ec_checkout_items' => $ec_checkout_items,
   'subtotal' => 24.97,
   'shipping' => 0,
   'handling' => 0,

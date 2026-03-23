@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             };
 
-            const response = await fetch('../../core/useful-functions.php?action=ae_create_order', {
+            const response = await fetch('../../core/paypal-api.php?action=ae_create_order', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(orderPayload)
@@ -35,27 +35,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const data = await response.json();
             if (!data.order_id) {
-                showPaypalError("Unable to create PayPal order.");
+                showPaypalMessage("Unable to create PayPal order.", "error");
                 return;
             }
 
             return { orderId: data?.order_id };
         } catch (error) {
-            showPaypalError(error.message);
+            showPaypalMessage(error.message, "error");
             throw error;
         }
     }
 
-    function showPaypalError(message) {
-        const errorContainer = document.getElementById('paypalError');
-        if( !errorContainer ) return;
-        errorContainer.style.display = "block";
-        errorContainer.innerHTML = message;
+    // Show PayPal message
+    function showPaypalMessage(message, type = 'info') {
+        const container = document.getElementById('paypalMessage');
+        if (!container) return;
+
+        // Reset classes
+        container.className = 'paypal-message';
+
+        // Add type class (info / error)
+        container.classList.add(type);
+
+        container.style.display = 'block';
+        container.innerHTML = message;
+    }
+
+    // Hide PayPal message
+    function hidePaypalMessage() {
+        const container = document.getElementById('paypalMessage');
+        if (!container) return;
+
+        container.style.display = 'none';
+        container.innerHTML = '';
     }
 
     async function captureOrder(data) {
         try {
-            const response = await fetch('../../core/useful-functions.php?action=ae_capture_order', {
+            const response = await fetch('../../core/paypal-api.php?action=ae_capture_order', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: data.orderId }),
@@ -70,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
         } catch (error) {
-            showPaypalError(error.message);
+            showPaypalMessage(error.message, "error");
             throw error;
         }
     }
@@ -82,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     orderId: data.orderId,
                 });
             } catch (error) {
-                showPaypalError(error.message);
+                showPaypalMessage(error.message, "error");
                 throw error;
             }
         },
@@ -90,13 +107,15 @@ document.addEventListener("DOMContentLoaded", function () {
             location.reload();
         },
         onError(error) {
-            showPaypalError(error.message);
+            showPaypalMessage(error.message, "error");
         },
     };
 
     async function init() {
         try {
-            const res = await fetch('../../core/useful-functions.php?action=ae_client_token');
+            showPaypalMessage('Setting up PayPal Button, please wait...', 'info');
+
+            const res = await fetch('../../core/paypal-api.php?action=ae_client_token');
             const { token } = await res.json();
 
             const sdkInstance = await window.paypal.createInstance({
@@ -112,9 +131,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (paymentMethods.isEligible("paypal")) {
                 setUpPayPalButton(sdkInstance);
+                hidePaypalMessage();
             }
         } catch (error) {
-            showPaypalError(`Initialization error: ${error.message}`);
+            showPaypalMessage(`Initialization error: ${error.message}`, 'error');
             throw error;
         }
     }
@@ -135,7 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     createOrder(),
                 );
             } catch (error) {
-                showPaypalError(`PayPal payment start error: ${error}`)
+                showPaypalMessage(`PayPal payment start error: ${error}`, "error")
             }
         });
     }

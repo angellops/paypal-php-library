@@ -36,7 +36,6 @@
 /* --- Intro text --- */
 .cart-intro {
   font-size: 0.9375rem;
-  font-weight: 500;
   color: var(--muted-fg);
   margin-bottom: 1.75rem;
 }
@@ -367,4 +366,14 @@
 /* --- PayPal Button - REST --- */
 #paypalbtn {
   width: 100%;
+}
+
+/* PayPal Messaging */
+#paypalMessage {
+  display: none;
+  font-style: italic;
+  margin: 0.5rem 0;
+}
+#paypalMessage.error {
+  color: #d43f3a;
 }

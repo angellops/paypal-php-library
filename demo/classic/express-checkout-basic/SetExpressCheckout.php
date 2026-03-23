@@ -5,7 +5,7 @@
 require_once('../../../includes/config.php');
 require_once('../../../vendor/autoload.php');
 
-// Redirect to Demo Home if REST is enabled
+// Redirect to Demo Home if API mode is REST
 if ($api_mode === 'rest') {
   header('Location: ../../');
 }

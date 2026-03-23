@@ -3,33 +3,32 @@ require_once('../../../includes/config.php');
 require_once('../../../vendor/autoload.php');
 require_once('../../core/useful-functions.php');
 
+// Redirect to Demo Home if API mode is classic
 if ($api_mode === 'classic') {
   header('Location: ../../');
 }
-
-// Set buyer email in session
-$_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
 
 /**
  * Here we are building a very simple, static shopping cart to use
  * throughout this demo.  In most cases, you will working with a dynamic
  * shopping cart system of some sort.
  */
-$_SESSION['basic_items'][0] = array(
-  'id' => '123-ABC',
-  'name' => 'Widget',
-  'qty' => '2',
-  'price' => '9.99',
-);
-
-$_SESSION['basic_items'][1] = array(
+$basic_items = array(
+  array(
+    'id' => '123-ABC',
+    'name' => 'Widget',
+    'qty' => '2',
+    'price' => '9.99',
+  ),
+  array(
     'id' => 'XYZ-456',
     'name' => 'Gadget',
     'qty' => '1',
     'price' => '4.99',
+  )
 );
 $_SESSION['shopping_cart'] = array(
-	'basic_items' => $_SESSION['basic_items'],
+	'basic_items' => $basic_items,
 	'subtotal' => 24.97,
 	'shipping' => 0,
 	'handling' => 0,
@@ -53,7 +52,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../assets/images/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="../../assets/images/apple-touch-icon-57-precomposed.png">
     <link rel="shortcut icon" href="../../assets/images/favicon.png">
-    
+
     <script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
     <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
     <script src="<?php echo $sdk_url; ?>"></script>
@@ -216,7 +215,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
 
               <!-- PayPal Button -->
               <div id="paypal-button-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
-                <div id="paypalError"></div>
+                <div id="paypalMessage"></div>
                 <paypal-button id="paypalbtn" type="pay" hidden></paypal-button>
               </div>
             </div>
