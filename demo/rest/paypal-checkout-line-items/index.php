@@ -81,7 +81,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
         <div class="cart-intro">
           <p>
             Here we are using a basic shopping cart for display purposes, and we are expanding on the 
-            <a href="../paypal-checkout-basic/">basic demo</a> to include the cart line items with the 
+            <a href="../paypal-checkout-basic/" target="_blank">basic demo</a> to include the cart line items with the 
             PayPal payment so that they will appear on the PayPal review pages during checkout and in the 
             PayPal transaction details. Within the items, each product is categorized as <strong>digital goods</strong>. 
             Again, we are assuming that we have not collected any billing or shipping information from the buyer yet, 
