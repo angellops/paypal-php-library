@@ -347,10 +347,10 @@ class PayPalREST extends PayPal
     /**
      * Create an order (replaces SetExpressCheckout)
      */
-    public function createOrder($orderData, $paypalRequestId = null)
+    public function createOrder($orderData, $paypalRequestId = null, $includeAuth = false)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId);
+            $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId, false, $includeAuth);
 
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
@@ -383,10 +383,10 @@ class PayPalREST extends PayPal
     /**
      * Get order details (replaces GetExpressCheckoutDetails)
      */
-    public function getOrder($orderId)
+    public function getOrder($orderId, $paypalRequestId = null, $includeAuth = false)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET');
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET', [], $paypalRequestId, false, $includeAuth);
 
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
@@ -417,10 +417,10 @@ class PayPalREST extends PayPal
     /**
      * Authorize order (for auth-only transactions)
      */
-    public function authorizeOrder($orderId)
+    public function authorizeOrder($orderId, $paypalRequestId = null, $includeAuth = false)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/authorize', 'POST');
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/authorize', 'POST', [], $paypalRequestId, false, $includeAuth);
 
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
@@ -452,10 +452,10 @@ class PayPalREST extends PayPal
     /**
      * Capture order (replaces DoExpressCheckoutPayment)
      */
-    public function captureOrder($orderId)
+    public function captureOrder($orderId, $paypalRequestId = null, $includeAuth = false)
     {
         try {
-            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST');
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST', [], $paypalRequestId, false, $includeAuth);
 
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
@@ -923,6 +923,129 @@ class PayPalREST extends PayPal
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
                 'raw_response' => !empty($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Create a PayPal Vault Setup Token.
+     *
+     * This function initiates the PayPal Vault flow by creating a setup token.
+     * The setup token is used to redirect the buyer to PayPal for approval
+     * and later exchanged for a payment token (vaulted payment method).
+     *
+     * API:
+     * POST /v3/vault/setup-tokens
+     */
+    public function createVaultSetupToken($DataArray) {
+        try {
+            $response = $this->makeRequest('/v3/vault/setup-tokens', 'POST', $DataArray, null, false, true);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'setup_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                    'customer_id' => isset($response['body']['customer']['id']) ? $response['body']['customer']['id'] : '',
+                    'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'approval_url' => $this->getApprovalUrl($response['body']['links']),
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to create setup token',
+                'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => $response['raw_response']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Retrieve PayPal Vault Setup Token details.
+     *
+     * This function fetches the current status and details of a setup token.
+     * Commonly used to verify whether the buyer has approved the setup token
+     * before creating a payment token.
+     *
+     * API:
+     * GET /v3/vault/setup-tokens/{setup_token}
+     */
+    public function getVaultSetupTokenDetails($setupToken) {
+        try {
+            $response = $this->makeRequest('/v3/vault/setup-tokens/' . urlencode($setupToken), 'GET', null, null, false, true);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'setup_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                    'customer_id' => isset($response['body']['customer']['id']) ? $response['body']['customer']['id'] : '',
+                    'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to get setup token',
+                'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => $response['raw_response']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Create a PayPal Vault Payment Token from an approved setup token.
+     *
+     * This function exchanges an APPROVED setup token for a payment token.
+     * The payment token represents a vaulted PayPal payment method that can
+     * be reused for future payments without buyer interaction.
+     *
+     * API:
+     * POST /v3/vault/payment-tokens
+     */
+    public function createVaultPaymentToken($DataArray) {
+        try {
+            $vaultPaymentData = ( !empty($DataArray) && $DataArray['vault_payment_data'] ) ? $DataArray['vault_payment_data'] : [];
+            $paypalRequestId = uniqid('pprid_', true);
+
+            $response = $this->makeRequest('/v3/vault/payment-tokens', 'POST', $vaultPaymentData, $paypalRequestId, false, true);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'vault_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to create setup token',
+                'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => $response['raw_response']
             ];
         } catch (\Exception $e) {
             return [

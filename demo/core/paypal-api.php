@@ -40,23 +40,23 @@ if (!empty($action)) {
             echo json_encode($capture_response);
             break;
 
-        // case 'ae_create_vault_setup_token':
-        //   $create_vault_setuptoken_response = $PayPal->createVaultSetupToken($input);
-        //   echo json_encode($create_vault_setuptoken_response);
-        //   break;
+        case 'ae_create_vault_setup_token':
+          $create_vault_setuptoken_response = $PayPal->createVaultSetupToken($input);
+          echo json_encode($create_vault_setuptoken_response);
+          break;
 
-        // case 'ae_get_vault_setup_token':
-        //   $get_vault_setuptoken_response = $PayPal->getVaultSetupTokenDetails($input['id']);
-        //   echo json_encode($get_vault_setuptoken_response);
-        //   break;
+        case 'ae_get_vault_setup_token':
+          $get_vault_setuptoken_response = $PayPal->getVaultSetupTokenDetails($input['id']);
+          echo json_encode($get_vault_setuptoken_response);
+          break;
 
-        // case 'ae_create_vault_payment_token':
-        //   $vaultPaymentData = [
-        //       'vault_payment_data' => $input,
-        //   ];
-        //   $create_vault_paymenttoken_response = $PayPal->createVaultPaymentToken($vaultPaymentData);
-        //   echo json_encode($create_vault_paymenttoken_response);
-        //   break;
+        case 'ae_create_vault_payment_token':
+          $vaultPaymentData = [
+              'vault_payment_data' => $input,
+          ];
+          $create_vault_paymenttoken_response = $PayPal->createVaultPaymentToken($vaultPaymentData);
+          echo json_encode($create_vault_paymenttoken_response);
+          break;
 
         default:
             http_response_code(400);
