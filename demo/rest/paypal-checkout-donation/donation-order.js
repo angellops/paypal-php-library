@@ -1,26 +1,95 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Handle preset amount selection
+    const amountInput = document.getElementById('dn-amount');
+    const presets = document.querySelectorAll('.dn-preset');
+
+    // Add active class to clicked preset
+    if( presets !== undefined && presets !== null && presets.length > 0 ) {
+        presets.forEach(preset => {
+            preset.addEventListener('click', () => {
+                const value = preset.getAttribute('data-amount');
+                amountInput.value = Number(value).toFixed(2);
+                presets.forEach(p => p.classList.remove('dn-preset--active'));
+
+                // Add active to clicked
+                preset.classList.add('dn-preset--active');
+            });
+        });
+    }
+
+    // Handle manual input change
+    if( amountInput !== undefined && amountInput !== null ) {
+        amountInput.addEventListener('input', () => {
+            const inputValue = parseFloat(amountInput.value);
+            let matched = false;
+
+            if( presets !== undefined && presets !== null && presets.length > 0 ) {
+                presets.forEach(preset => {
+                    const presetValue = parseFloat(preset.getAttribute('data-amount'));
+
+                    if (presetValue === inputValue) {
+                        preset.classList.add('dn-preset--active');
+                        matched = true;
+                    } else {
+                        preset.classList.remove('dn-preset--active');
+                    }
+                });
+            }
+
+            // If no preset matches (e.g. 10.25), remove all active
+            if (!matched) {
+                presets.forEach(p => p.classList.remove('dn-preset--active'));
+            }
+        });
+    }
+
+    // Render PayPal button and create order
     const payPalBtnContainer = document.getElementById("paypal-button-container");
     if ( payPalBtnContainer !== undefined && payPalBtnContainer !== null ) {
         const checkoutData = JSON.parse(payPalBtnContainer.dataset.checkout);
 
         async function createOrder() {
             try {
+                const amount = Number(checkoutData.donation_amount).toFixed(2);
                 const orderPayload = {
                     intent: "CAPTURE",
                     purchase_units: [
                         {
+                            description: "Charity Donation",
+                            custom_id: JSON.stringify({
+                                name: checkoutData.donation_name,
+                                email: checkoutData.donation_email
+                            }),
+                            items: [
+                                {
+                                    name: "Donation",
+                                    description: "Support our cause",
+                                    quantity: "1",
+                                    unit_amount: {
+                                        currency_code: "USD",
+                                        value: amount
+                                    },
+                                    category: "DONATION"
+                                }
+                            ],
                             amount: {
                                 currency_code: "USD",
-                                value: Number(checkoutData.grand_total).toFixed(2),
-                            },
-                        },
+                                value: amount,
+                                breakdown: {
+                                    item_total: {
+                                        currency_code: "USD",
+                                        value: amount
+                                    }
+                                }
+                            }
+                        }
                     ],
                     payment_source: {
                         paypal: {
                             experience_context: {
                                 brand_name: "AngellEYE",
-                                shipping_preference: "GET_FROM_FILE",
-                                user_action: "CONTINUE"
+                                shipping_preference: "NO_SHIPPING",
+                                user_action: "PAY_NOW"
                             }
                         }
                     }
@@ -125,7 +194,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const paymentMethods = await sdkInstance.findEligibleMethods({
                     currencyCode: "USD",
-                    paymentFlow: "VAULT_WITH_PAYMENT",
                 });
 
                 if (paymentMethods.isEligible("paypal")) {
@@ -133,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     hidePaypalMessage();
                 }
             } catch (error) {
-                showPaypalMessage(`Initialization error: ${error.message}`, 'error');
+                showPaypalMessage(`Initialization error: ${error.message}`, "error");
                 throw error;
             }
         }
@@ -144,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 paymentSessionOptions,
             );
 
-            const paypalButton = document.getElementById("paypalbtn");
+            const paypalButton = document.querySelector("paypal-button");
             paypalButton.removeAttribute("hidden");
 
             paypalButton.addEventListener("click", async () => {
