@@ -73,7 +73,7 @@ if ($api_mode === 'classic') {
                 <span class="dnr-detail-label">Payment</span>
                 <span class="dnr-detail-value">
                   <span class="dnc-paypal-badge">
-                    PayPal
+                    PayPal 
                   </span>
                 </span>
               </div>
@@ -117,11 +117,11 @@ if ($api_mode === 'classic') {
 
         <!-- Action links -->
         <div class="dnc-actions">
-          <a href="donation.html" class="dnc-donate-again">
+          <a href="./" class="dnc-donate-again">
             <?php echo inline_svg('../../assets/images/heart-icon.svg'); ?>
             Donate Again
           </a>
-          <a href="demokits.html" class="rv-back-link">
+          <a href="../../" class="rv-back-link">
             <?php echo inline_svg('../../assets/images/back-icon.svg'); ?>
             Back to All Demos
           </a>
