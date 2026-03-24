@@ -154,6 +154,10 @@
   letter-spacing: 0.06em;
   color: var(--muted-fg);
 }
+.cm-cart-table-head,
+.cm-cart-table-row {
+  grid-template-columns: 7rem 1fr 9rem 6rem 4.5rem 6rem !important;
+}
 .cart-table-row {
   display: grid;
   grid-template-columns: 7rem 1fr 6rem 4.5rem 6rem;
@@ -189,7 +193,7 @@
   align-items: center;
   gap: 0.75rem; 
 }
-.col-price { 
+.cart-table-row .col-price { 
   font-weight: 500; 
 }
 .col-qty { 
@@ -258,8 +262,21 @@
 }
 .item-sku {
   font-size: 0.75rem;
+  font-weight: 500;
   color: var(--muted-fg);
   margin-top: 0.1rem;
+}
+.item-fee {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--muted-fg);
+}
+.item-fee-label {
+  min-width: 4rem;
+}
+.item-fee-value {
+  font-weight: 500;
 }
 
 /* --- Qty badge --- */
