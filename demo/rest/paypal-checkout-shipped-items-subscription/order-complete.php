@@ -11,10 +11,10 @@ if ($api_mode === 'classic') {
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PayPal Checkout Vaulting (Billing Agreement) Demo | Order Review | PHP Class Library | Angell EYE</title>
+    <title>PayPal Checkout Shipped Items + Recurring Payments Demo | Order Complete | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
-    <meta name="author" content=""> 
+    <meta name="author" content="">
 
     <link rel="stylesheet" href="../../assets/css/style.css" />
 
@@ -24,32 +24,31 @@ if ($api_mode === 'classic') {
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../assets/images/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="../../assets/images/apple-touch-icon-57-precomposed.png">
     <link rel="shortcut icon" href="../../assets/images/favicon.png">
+
     <script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
   </head>
   <body>
     <!-- HEADER -->
     <?php require_once('../../partials/header.php'); ?>
-
-    <!-- MAIN -->
+    <!-- Main -->
     <main class="cart-main">
       <div class="container">
 
         <!-- Page Title -->
         <div class="cart-page-title">
-          <div class="cart-title-icon rv-icon">
-            <?php echo inline_svg('../../assets/images/review-icon.svg'); ?>
+          <div class="cart-title-icon cp-icon">
+            <?php echo inline_svg('../../assets/images/pay-complete.svg'); ?>
           </div>
-          <h1>Order Review</h1>
+          <h1>Payment Complete!</h1>
         </div>
 
-        <!-- Intro -->
+        <!-- Intro Text -->
         <div class="cart-intro">
-          <p>Here we display a final review for the buyer after retrieving the order details from PayPal. The billing and shipping 
-            information shown here has been returned from PayPal after the buyer approved the order. We have also calculated shipping, 
-            handling, and tax before presenting the final summary.
-          </p>
-          <p>The buyer’s payment method will be securely stored after the payment is captured, enabling faster and seamless 
-            future checkouts using the saved payment method.
+          <p>We have now reached the final thank you / receipt page and the payment has been processed! We 
+            have added the <strong>PayPal Transaction ID</strong> from the shipped items in the cart and 
+            the <strong>Subscription Profile ID</strong> from the subscription to the Billing Information, 
+            which was provided in the <strong>getOrder</strong> and 
+            <strong>getSubscriptionProfile</strong> responses.
           </p>
         </div>
 
@@ -57,9 +56,9 @@ if ($api_mode === 'classic') {
         <div class="cart-items-card rv-items-card">
           <div class="cart-items-header">
             <h2>Order Items</h2>
-            <?php if (!empty($_SESSION['shopping_cart']['vaulting_items'])): ?>
+            <?php if (!empty($_SESSION['shopping_cart']['shipped_items'])): ?>
               <span class="cart-count">
-                <?php echo count($_SESSION['shopping_cart']['vaulting_items']); ?> items
+                <?php echo count($_SESSION['shopping_cart']['shipped_items']); ?> items
               </span>
             <?php endif; ?>
           </div>
@@ -75,8 +74,8 @@ if ($api_mode === 'classic') {
             </div>
 
             <!-- Item Rows -->
-            <?php if (!empty($_SESSION['shopping_cart']['vaulting_items'])) {
-              foreach ($_SESSION['shopping_cart']['vaulting_items'] as $cart_item) { ?>
+            <?php if (!empty($_SESSION['shopping_cart']['shipped_items'])) {
+              foreach ($_SESSION['shopping_cart']['shipped_items'] as $cart_item) { ?>
                 <div class="cart-table-row">
                   <span class="col-id">
                     <span class="item-id-badge">
@@ -189,12 +188,36 @@ if ($api_mode === 'classic') {
                   <?php echo !empty($_SESSION['shipping_country_name']) ? $_SESSION['shipping_country_name'] : ''; ?>
                 </span>
               </div>
+              <div class="rv-info-row cp-txn-row">
+                <span class="rv-info-label">Txn ID</span>
+                <span class="rv-info-value cp-txn-id">
+                  <?php echo !empty($_SESSION['paypal_transaction_id']) ? $_SESSION['paypal_transaction_id'] : ''; ?>
+                </span>
+              </div>
+              <div class="rv-info-row cp-txn-row">
+                <span class="rv-info-label">Recurring Profile ID</span>
+                <span class="rv-info-value cp-txn-id">
+                  <?php echo !empty($_SESSION['recurring_profile_id']) ? $_SESSION['recurring_profile_id'] : ''; ?>
+                </span>
+              </div>
             </div>
           </div>
 
           <!-- Order Summary -->
           <div class="rv-summary-card">
-            <h3 class="rv-summary-title">Order Summary</h3>
+            <h3 class="rv-summary-title shipped-subscription-title">Order Summary</h3>
+
+            <!-- Add Monthly Subscription Info -->
+            <div class="cart-table subscription-shipped-cart-table">
+              <div class="cart-table-head">
+                <span class="col-name">Name</span>
+                <span class="col-total">Amount</span>
+              </div>
+              <div class="cart-table-row">
+                <span class="col-name"><?php echo $_SESSION['shopping_cart']['subscription']['name'] ?></span>
+                <span class="col-total"><?php echo '$' . number_format($_SESSION['shopping_cart']['subscription']['amount'], 2); ?></span>
+              </div>
+            </div>
 
             <div class="summary-rows">
               <div class="summary-row">
@@ -242,14 +265,18 @@ if ($api_mode === 'classic') {
               <?php endif; ?>
             </div>
 
-            <a href="order-complete.php" class="rv-complete-btn">
-              <?php echo inline_svg('../../assets/images/check.svg'); ?>
-              Complete Order
-            </a>
+            <div class="summary-recurring">
+              + $<?php echo number_format($_SESSION['shopping_cart']['subscription']['amount'], 2) ?> / Month starting next month
+            </div>
 
-            <a href="./" class="rv-back-link">
+            <div class="cp-paid-badge">
+              <?php echo inline_svg('../../assets/images/check.svg'); ?>
+              Payment Received
+            </div>
+
+            <a href="../../" class="rv-back-link">
               <?php echo inline_svg('../../assets/images/back-icon.svg'); ?>
-              Back to Cart
+              Back to All Demos
             </a>
           </div>
 
@@ -257,8 +284,10 @@ if ($api_mode === 'classic') {
 
       </div>
     </main>
-
-    <!--- FOOTER --->
+   
+    <!-- Footer -->
     <?php require_once('../../partials/footer.php'); ?>
   </body>
 </html>
+<?php
+session_destroy();

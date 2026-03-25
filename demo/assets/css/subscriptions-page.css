@@ -1,0 +1,58 @@
+/* --- Subscription Demo CSS --- */
+.cart-table--subscription .cart-table-head,
+.cart-table--subscription .cart-table-row {
+    grid-template-columns: 1fr 9rem 6rem 5rem !important;
+}
+.cart-table--subscription .cart-table-row .col-sku {
+    font-weight: 500;
+    color: var(--muted-fg);
+}
+.cart-table--subscription .col-price {
+    text-align: right;
+}
+.cart-table--subscription .cart-table-row .col-price {
+    font-weight: 700;
+    color: var(--fg);
+}
+.summary-recurring {
+    background: #fff3cd;
+    color: #856404;
+    text-align: center;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.summary-total:has(+ .summary-recurring) {
+    margin-bottom: 0.625rem;
+}
+.subscription-body-row .rv-info-label {
+    min-width: 6rem;
+}
+.subscription-body-row .cp-txn-row .rv-info-label {
+    width: 5rem;
+}
+
+/* --- Shipped Items with Subscription --- */
+.shipped-subscription-title {
+    border-bottom: none;
+}
+.subscription-shipped-cart-table {
+    color: var(--muted-fg) !important;
+}
+.subscription-shipped-cart-table .cart-table-head,
+.subscription-shipped-cart-table .cart-table-row {
+    grid-template-columns: 1fr 8rem;
+    background: none;
+}
+.subscription-shipped-cart-table .cart-table-head {
+    padding: 0;
+    padding-bottom: 0.5rem;
+}
+.subscription-shipped-cart-table .cart-table-row {
+    font-size: 1rem !important;
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0px 2rem;
+    margin-bottom: 2rem;
+}

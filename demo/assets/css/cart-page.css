@@ -260,11 +260,11 @@
   font-size: 1rem;
   color: var(--fg);
 }
-.item-sku {
+.item-sku,
+.item-desc {
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--muted-fg);
-  margin-top: 0.1rem;
 }
 .item-fee {
   display: flex;

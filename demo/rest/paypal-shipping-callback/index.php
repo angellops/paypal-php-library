@@ -13,7 +13,7 @@ if ($api_mode === 'classic') {
  * throughout this demo.  In most cases, you will working with a dynamic
  * shopping cart system of some sort.
  */
-$basic_items = array(
+$callback_items = array(
   array(
     'id' => '123-ABC',
     'name' => 'Widget',
@@ -28,11 +28,12 @@ $basic_items = array(
   )
 );
 $_SESSION['shopping_cart'] = array(
-	'basic_items' => $basic_items,
+	'callback_items' => $callback_items,
 	'subtotal' => 24.97,
 	'shipping' => 0,
 	'handling' => 0,
 	'tax' => 0,
+  'shipping_callback_url' => $domain . 'demo/rest/paypal-shipping-callback/shippingCallback.php',
 );
 $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
 ?>
@@ -40,7 +41,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PayPal Checkout Basic Demo | PHP Class Library | Angell EYE</title>
+    <title>PayPal Checkout Shipping Callback | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -56,7 +57,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
     <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
     <script src="<?php echo $sdk_url; ?>"></script>
-    <script src="basic-paypal.js"></script>
+    <script src="shipping-cb.js"></script>
   </head>
   <body>
     <!-- HEADER -->
@@ -76,11 +77,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
 
         <!-- Intro Text -->
         <div class="cart-intro">
-          <p>Here we are using a basic shopping cart for display purposes, however, for this basic demo, 
-            all we are sending to PayPal is the order total without any line item details. We are assuming 
-            that we have not collected any billing or shipping information from the buyer yet because we'll 
-            be obtaining those details from PayPal after the user logs in and is returned back to the site.
-          </p>
+          <p>Here we are using a basic shopping cart for display, sending only the order total to PayPal without line item details, and assuming billing and shipping information will be collected after the user logs in and returns from PayPal. Additionally, we invoke the shipping callback URL after order creation and before redirecting to PayPal to fetch the buyer’s shipping details, apply shipping, handling, and tax, and recalculate the final order amount accordingly.</p>
         </div>
 
         <!-- Demo Credentials -->
@@ -92,7 +89,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
             <h3 class="demo-credentials-title">Demo Credentials</h3>
             <div class="demo-credentials-row">
               <span class="demo-credentials-label">Email</span>
-              <span class="demo-credentials-value">: paypal-buyer@angelleye.com</a>
+              <span class="demo-credentials-value">: paypal-buyer@angelleye.com</span>
             </div>
             <div class="demo-credentials-row">
               <span class="demo-credentials-label">Password</span>
@@ -110,7 +107,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
             <div class="cart-items-header">
               <h2>Your Items</h2>
               <span class="cart-count">
-                <?php echo count($_SESSION['shopping_cart']['basic_items']); ?> items
+                <?php echo count($_SESSION['shopping_cart']['callback_items']); ?> items
               </span>
             </div>
 
@@ -125,7 +122,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               </div>
 
               <!-- Item Rows -->
-              <?php foreach ($_SESSION['shopping_cart']['basic_items'] as $cart_item) { ?>
+              <?php foreach ($_SESSION['shopping_cart']['callback_items'] as $cart_item) { ?>
                 <div class="cart-table-row">
                   <span class="col-id">
                     <span class="item-id-badge">

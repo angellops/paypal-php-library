@@ -1,6 +1,5 @@
 <?php
 require_once('../../../includes/config.php');
-require_once('../../../vendor/autoload.php');
 require_once('../../core/useful-functions.php');
 
 // Redirect to Demo Home if API mode is classic
@@ -8,44 +7,60 @@ if ($api_mode === 'classic') {
   header('Location: ../../');
 }
 
+// Set buyer email in session
+$_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
+
 /**
  * Here we are building a very simple, static shopping cart to use
  * throughout this demo.  In most cases, you will working with a dynamic
  * shopping cart system of some sort.
+ *
+ * We will add subscription details to the shopping cart as well,
+ * so that everything is available to us for the future API calls
+ * to both DoExpressCheckoutPayment and CreateRecurringPaymentsProfile.
  */
-$line_items = array(
+$shipped_items = array(
   array(
     'id' => '123-ABC',
     'name' => 'Widget',
     'qty' => '2',
     'price' => '9.99',
-    'category' => 'DIGITAL_GOODS',
   ),
   array(
     'id' => 'XYZ-456',
     'name' => 'Gadget',
     'qty' => '1',
     'price' => '4.99',
-    'category' => 'DIGITAL_GOODS',
   )
 );
+
+$subscription_data = array(
+  'name' => 'Monthly Subscription',
+  'billing_period' => 'Month',
+  'billing_frequency' => '1',
+  'total_billing_cycles' => '0',
+  'amount' => '10.00',
+);
+
 $_SESSION['shopping_cart'] = array(
-  'line_items' => $line_items,
+  'shipped_items' => $shipped_items,
+  'subscription' => $subscription_data,
   'subtotal' => 24.97,
   'shipping' => 0,
   'handling' => 0,
   'tax' => 0,
 );
-$_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'], 2);
+$_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
 ?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PayPal Checkout w/ Line Items Demo | PHP Class Library | Angell EYE</title>
+    <title>PayPal Checkout Shipped Items + Recurring Payments Demo | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
+
     <link rel="stylesheet" href="../../assets/css/style.css" />
 
     <!-- Fav and touch icons -->
@@ -58,9 +73,8 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
     <script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
     <?php $sdk_url = $sandbox ? "https://www.sandbox.paypal.com/web-sdk/v6/core" : "https://www.paypal.com/web-sdk/v6/core"; ?>
     <script src="<?php echo $sdk_url; ?>"></script>
-    <script src="basic-paypal.js"></script>
+    <script src="subscription-shippped.js"></script>
   </head>
-
   <body>
     <!-- HEADER -->
     <?php require_once('../../partials/header.php'); ?>
@@ -79,13 +93,9 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
 
         <!-- Intro Text -->
         <div class="cart-intro">
-          <p>
-            Here we are using a basic shopping cart for display purposes, and we are expanding on the 
-            <a href="../paypal-checkout-basic/" target="_blank">basic demo</a> to include the cart line items with the 
-            PayPal payment so that they will appear on the PayPal review pages during checkout and in the 
-            PayPal transaction details. Within the items, each product is categorized as <strong>digital goods</strong>. 
-            Again, we are assuming that we have not collected any billing or shipping information from the buyer yet, 
-            because we will obtain those details from PayPal after the user logs in and is returned to the site.
+          <p>Here we are using a basic shopping cart for display purposes. This demo will send the line 
+            item details for the shipped items as well as subscription details for the recurring payments 
+            profile.
           </p>
         </div>
 
@@ -116,7 +126,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
             <div class="cart-items-header">
               <h2>Your Items</h2>
               <span class="cart-count">
-                <?php echo count($_SESSION['shopping_cart']['line_items']); ?> items
+                <?php echo count($_SESSION['shopping_cart']['shipped_items']); ?> items
               </span>
             </div>
 
@@ -131,7 +141,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               </div>
 
               <!-- Item Rows -->
-              <?php foreach ($_SESSION['shopping_cart']['line_items'] as $cart_item) { ?>
+              <?php foreach ($_SESSION['shopping_cart']['shipped_items'] as $cart_item) { ?>
                 <div class="cart-table-row">
                   <span class="col-id">
                     <span class="item-id-badge">
@@ -178,7 +188,19 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
           <!-- Right: Order Summary -->
           <aside class="cart-summary">
             <div class="summary-card">
-              <h2 class="summary-title">Order Summary</h2>
+              <h2 class="summary-title shipped-subscription-title">Order Summary</h2>
+
+              <!-- Add Monthly Subscription Info -->
+              <div class="cart-table subscription-shipped-cart-table">
+                <div class="cart-table-head">
+                  <span class="col-name">Name</span>
+                  <span class="col-total">Amount</span>
+                </div>
+                <div class="cart-table-row">
+                  <span class="col-name"><?php echo $_SESSION['shopping_cart']['subscription']['name'] ?></span>
+                  <span class="col-total"><?php echo '$' . number_format($_SESSION['shopping_cart']['subscription']['amount'], 2); ?></span>
+                </div>
+              </div>
 
               <div class="summary-rows">
                 <div class="summary-row">
@@ -219,6 +241,10 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
                 </span>
               </div>
 
+              <div class="summary-recurring">
+                + $<?php echo number_format($_SESSION['shopping_cart']['subscription']['amount'], 2) ?> / Month starting next month
+              </div>
+
               <!-- PayPal Button -->
               <div id="paypal-button-container" data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
                 <div id="paypalMessage"></div>
@@ -232,5 +258,5 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
 
     <!-- Footer -->
     <?php require_once('../../partials/footer.php'); ?>
-  </body>  
+  </body> 
 </html>

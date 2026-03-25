@@ -87,6 +87,6 @@ if ( $PayPalResult['success'] ) {
      */
     header('Location: review.php');
 } else {
-    $_SESSION['paypal_errors'] = $PayPalResult['error'];
-    header('Location: ../error.php');
+    $_SESSION['paypal_errors'] = $PayPalResult['errors'];
+    header('Location: ../../error.php');
 }

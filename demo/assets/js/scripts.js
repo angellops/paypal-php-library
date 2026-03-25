@@ -60,8 +60,8 @@ document.addEventListener("DOMContentLoaded", function () {
             title: "PayPal Partner Referral",
             subtitle: "Merchant Onboarding",
             description: "Learn how to implement Merchant Onboarding into PayPal Partner Referral.",
-            localPath: "rest/paypal-partner-referral/",
-            buyUrl: "https://www.angelleye.com/product/paypal-partner-referral-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
+            localPath: "rest/paypal-partner-referral-onboarding/",
+            buyUrl: "https://www.angelleye.com/product/paypal-partner-referral-onboarding-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
         },
         {
             id: "rest-multiparty",
@@ -93,8 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
             subtitle: "Credit Cards",
             description: "Accept direct credit card payments on your website from buyers who do not have a PayPal account. PayPal processes the payment in the background.",
             localPath: "rest/paypal-checkout-advanced-credit-cards/",
-            buyUrl: "https://www.angelleye.com/product/paypal-checkout-advanced-credit-cards-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits",
-            showCC: true
+            buyUrl: "https://www.angelleye.com/product/paypal-checkout-advanced-credit-cards-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
         },
         {
             id: "rest-shipping-callback",
@@ -102,8 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
             subtitle: "Shipping Callback Payment",
             description: "PayPal Shipping Callback integration using Web SDK v6, demonstrating a JS-driven payment flow where only pricing is passed to initiate checkout.",
             localPath: "rest/paypal-shipping-callback/",
-            buyUrl: "https://www.angelleye.com/product/paypal-shipping-callback-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits",
-            showCC: true
+            buyUrl: "https://www.angelleye.com/product/paypal-shipping-callback-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
         },
         {
             id: "rest-pay-later",
@@ -111,8 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
             subtitle: "PayLater",
             description: "PayPal Pay Later as a user-friendly payment option, integrated using the Web SDK v6 which allowing users to understand pricing, manage their cart, and complete checkout with minimal cognitive load.",
             localPath: "rest/paypal-pay-later/",
-            buyUrl: "https://www.angelleye.com/product/paypal-pay-later-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits",
-            showCC: true
+            buyUrl: "https://www.angelleye.com/product/paypal-pay-later-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
         },
         {
             id: "rest-multiple-checkout",
@@ -120,8 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
             subtitle: "Multiple Checkout Options",
             description: "Demo of multiple checkout options: PayPal, Guest Checkout, Venmo, Pay Later, and Direct Card Payments.",
             localPath: "rest/paypal-multiple-checkout-options/",
-            buyUrl: "https://www.angelleye.com/product/paypal-multiple-checkout-options-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits",
-            showCC: true
+            buyUrl: "https://www.angelleye.com/product/paypal-multiple-checkout-options-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
         },
         {
             id: "rest-venmo",
@@ -137,8 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
             subtitle: "Google Pay Payment",
             description: "Google Pay integration using Web SDK v6, demonstrating a JS-driven payment flow where only pricing is passed to initiate checkout.",
             localPath: "rest/google-pay/",
-            buyUrl: "https://www.angelleye.com/product/google-pay-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits",
-            showCC: true
+            buyUrl: "https://www.angelleye.com/product/google-pay-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
         },
         {
             id: "rest-apple-pay",
@@ -146,8 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
             subtitle: "Apple Pay Payment",
             description: "Apple Pay integration using Web SDK v6, demonstrating a JS-driven payment flow where only pricing is passed to initiate checkout.",
             localPath: "rest/apple-pay/",
-            buyUrl: "https://www.angelleye.com/product/apple-pay-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits",
-            showCC: true
+            buyUrl: "https://www.angelleye.com/product/apple-pay-demo/?utm_source=ae_paypal_php_sdk&utm_medium=demo_homepage&utm_campaign=demo_kits"
         }
     ];
 

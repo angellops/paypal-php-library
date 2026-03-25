@@ -191,7 +191,7 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
             <div class="cart-back-link">
               <a href="<?php echo $domain . 'demo/'; ?>">
                 <?php echo inline_svg('../../assets/images/back-icon.svg'); ?>
-                Continue Shopping
+                Back to All Demos
               </a>
             </div>
           </section>

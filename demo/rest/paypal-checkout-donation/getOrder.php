@@ -61,5 +61,5 @@ if( $PayPalResult['success'] ) {
     header('Location: order-complete.php');
 } else {
     $_SESSION['paypal_errors'] = $PayPalResult['errors'];
-    header('Location: ../error.php');
+    header('Location: ../../error.php');
 }

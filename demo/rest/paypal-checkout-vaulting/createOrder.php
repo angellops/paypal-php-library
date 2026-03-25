@@ -94,5 +94,5 @@ if ( $PayPalResult['success'] ) {
 } else {
     // Store errors and redirect to error page
     $_SESSION['paypal_errors'] = $PayPalResult['errors'];
-    header('Location: ../error.php');
+    header('Location: ../../error.php');
 }

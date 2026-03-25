@@ -11,45 +11,45 @@ if ($api_mode === 'classic') {
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PayPal Checkout Vaulting (Billing Agreement) Demo | Order Review | PHP Class Library | Angell EYE</title>
+    <title>PayPal Checkout Subscriptions Demo | Order Complete | PHP Class Library | Angell EYE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
-    <meta name="author" content=""> 
+    <meta name="author" content="">
 
     <link rel="stylesheet" href="../../assets/css/style.css" />
 
+    <!-- Fav and touch icons -->
     <!-- Fav and touch icons -->
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../assets/images/apple-touch-icon-144-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../assets/images/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../assets/images/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="../../assets/images/apple-touch-icon-57-precomposed.png">
     <link rel="shortcut icon" href="../../assets/images/favicon.png">
+
     <script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
   </head>
   <body>
     <!-- HEADER -->
     <?php require_once('../../partials/header.php'); ?>
 
-    <!-- MAIN -->
+    <!-- Main -->
     <main class="cart-main">
       <div class="container">
 
         <!-- Page Title -->
         <div class="cart-page-title">
-          <div class="cart-title-icon rv-icon">
-            <?php echo inline_svg('../../assets/images/review-icon.svg'); ?>
+          <div class="cart-title-icon cp-icon">
+            <?php echo inline_svg('../../assets/images/pay-complete.svg'); ?>
           </div>
-          <h1>Order Review</h1>
+          <h1>Payment Complete!</h1>
         </div>
 
-        <!-- Intro -->
+        <!-- Intro Text -->
         <div class="cart-intro">
-          <p>Here we display a final review for the buyer after retrieving the order details from PayPal. The billing and shipping 
-            information shown here has been returned from PayPal after the buyer approved the order. We have also calculated shipping, 
-            handling, and tax before presenting the final summary.
-          </p>
-          <p>The buyer’s payment method will be securely stored after the payment is captured, enabling faster and seamless 
-            future checkouts using the saved payment method.
+          <p>We have now reached the final thank you / receipt page and the payment has been processed and 
+            the subscription profile has been generated!  We have added the PayPal 
+            <strong>Subscription Profile ID</strong> to the Billing Information, which was returned in the 
+            <strong>getSubscriptionProfile</strong> response.
           </p>
         </div>
 
@@ -57,60 +57,50 @@ if ($api_mode === 'classic') {
         <div class="cart-items-card rv-items-card">
           <div class="cart-items-header">
             <h2>Order Items</h2>
-            <?php if (!empty($_SESSION['shopping_cart']['vaulting_items'])): ?>
+            <?php if (!empty($_SESSION['shopping_cart']['recurring_items'])): ?>
               <span class="cart-count">
-                <?php echo count($_SESSION['shopping_cart']['vaulting_items']); ?> items
+                <?php echo count($_SESSION['shopping_cart']['recurring_items']); ?> items
               </span>
             <?php endif; ?>
           </div>
 
-          <div class="cart-table">
-            <!-- Table Header -->
+          <div class="cart-table cart-table--subscription cart-table--subscription--complete">
             <div class="cart-table-head">
-              <span class="col-id">ID</span>
-              <span class="col-name">Name</span>
-              <span class="col-price">Price</span>
+              <span class="col-name">Description</span>
+              <span class="col-sku">SKU</span>
               <span class="col-qty">Qty</span>
-              <span class="col-total">Total</span>
+              <span class="col-price">Price</span>
             </div>
 
             <!-- Item Rows -->
-            <?php if (!empty($_SESSION['shopping_cart']['vaulting_items'])) {
-              foreach ($_SESSION['shopping_cart']['vaulting_items'] as $cart_item) { ?>
+            <?php if (!empty($_SESSION['shopping_cart']['recurring_items'])) {
+              foreach ($_SESSION['shopping_cart']['recurring_items'] as $cart_item) { ?>
                 <div class="cart-table-row">
-                  <span class="col-id">
-                    <span class="item-id-badge">
-                      <?php echo $cart_item['id']; ?>
-                    </span>
-                  </span>
                   <span class="col-name">
-                    <div class="item-icon">
-                      <?php echo strtoupper($cart_item['name'][0]); ?>
-                    </div>
                     <div>
                       <div class="item-name">
                         <?php echo $cart_item['name']; ?>
                       </div>
-                      <div class="item-sku">SKU:
-                        <?php echo $cart_item['id']; ?>
+                      <div class="item-desc">
+                        <?php echo $cart_item['desc']; ?>
                       </div>
                     </div>
                   </span>
-                  <span class="col-price">
-                    <?php echo '$' . number_format($cart_item['price'], 2); ?>
+                  <span class="col-sku">
+                    <?php echo $cart_item['id']; ?>
                   </span>
                   <span class="col-qty">
                     <div class="qty-badge">
                       <?php echo $cart_item['qty']; ?>
                     </div>
                   </span>
-                  <span class="col-total">
-                    <?php echo '$' . number_format($cart_item['qty'] * $cart_item['price'], 2); ?>
+                  <span class="col-price">
+                    <?php echo '$' . number_format($cart_item['amt'], 2); ?>
                   </span>
                 </div>
-            <?php
+              <?php
               }
-            } ?>
+            }?>
           </div>
         </div>
 
@@ -125,20 +115,26 @@ if ($api_mode === 'classic') {
               </div>
               <h3>Billing Information</h3>
             </div>
-            <div class="rv-info-body">
+            <div class="rv-info-body subscription-body-row">
               <div class="rv-info-row">
                 <span class="rv-info-label">Name</span>
                 <?php $first = !empty($_SESSION['first_name']) ? $_SESSION['first_name'] : '';
                   $last = !empty($_SESSION['last_name']) ? $_SESSION['last_name'] : '';
                   $name = trim($first . ' ' . $last); ?>
-                  <span class="rv-info-value">
-                    <?php echo !empty($name) ? $name : ''; ?>
-                  </span>
+                <span class="rv-info-value">
+                  <?php echo !empty($name) ? $name : ''; ?>
+                </span>
               </div>
               <div class="rv-info-row">
                 <span class="rv-info-label">Email</span>
                 <span class="rv-info-value">
                   <?php echo !empty($_SESSION['email']) ? $_SESSION['email'] : ''; ?>
+                </span>
+              </div>
+              <div class="rv-info-row cp-txn-row">
+                <span class="rv-info-label">Recurring Profile ID</span>
+                <span class="rv-info-value cp-txn-id">
+                  <?php echo !empty($_SESSION['recurring_profile_id']) ? $_SESSION['recurring_profile_id'] : ''; ?>
                 </span>
               </div>
             </div>
@@ -153,42 +149,46 @@ if ($api_mode === 'classic') {
               <h3>Shipping Information</h3>
             </div>
             <div class="rv-info-body">
-              <div class="rv-info-row">
-                <span class="rv-info-label">Name</span>
-                <span class="rv-info-value">
-                  <?php echo !empty($_SESSION['shipping_name']) ? $_SESSION['shipping_name'] : ''; ?>
-                </span>
-              </div>
-              <div class="rv-info-row">
-                <span class="rv-info-label">Address</span>
-                <span class="rv-info-value">
-                  <?php echo !empty($_SESSION['shipping_street']) ? $_SESSION['shipping_street'] : ''; ?>
-                </span>
-              </div>
-              <div class="rv-info-row">
-                <span class="rv-info-label">City</span>
-                <?php $city = !empty($_SESSION['shipping_city']) ? $_SESSION['shipping_city'] : '';
-                  $state = !empty($_SESSION['shipping_state']) ? $_SESSION['shipping_state'] : '';
-                  $zip = !empty($_SESSION['shipping_zip']) ? $_SESSION['shipping_zip'] : '';
-                  $line1 = trim(implode(', ', array_filter([$city, $state])));
-                  $line2 = trim($zip);
-                ?>  
-                <span class="rv-info-value">
-                  <?php if (!empty($line1))
+              <?php if( !empty($_SESSION['shipping_name']) || !empty($_SESSION['shipping_street']) || !empty($_SESSION['shipping_city']) || !empty($_SESSION['shipping_state']) || !empty($_SESSION['shipping_zip']) || !empty($_SESSION['shipping_country_name']) ): ?>
+                <div class="rv-info-row">
+                  <span class="rv-info-label">Name</span>
+                  <span class="rv-info-value">
+                    <?php echo !empty($_SESSION['shipping_name']) ? $_SESSION['shipping_name'] : ''; ?>
+                  </span>
+                </div>
+                <div class="rv-info-row">
+                  <span class="rv-info-label">Address</span>
+                  <span class="rv-info-value">
+                    <?php echo !empty($_SESSION['shipping_street']) ? $_SESSION['shipping_street'] : ''; ?>
+                  </span>
+                </div>
+                <div class="rv-info-row">
+                  <span class="rv-info-label">City</span>
+                  <?php $city = !empty($_SESSION['shipping_city']) ? $_SESSION['shipping_city'] : '';
+                    $state = !empty($_SESSION['shipping_state']) ? $_SESSION['shipping_state'] : '';
+                    $zip = !empty($_SESSION['shipping_zip']) ? $_SESSION['shipping_zip'] : '';
+                    $line1 = trim(implode(', ', array_filter([$city, $state])));
+                    $line2 = trim($zip);
+                  ?>
+                  <span class="rv-info-value">
+                    <?php if (!empty($line1))
                       echo $line1;
                     if (!empty($line2))
                       echo ($line1 ? ' ' : '') . $line2;
                     if (empty($line1) && empty($line2))
                       echo 'N/A';
-                  ?>
-                </span>
-              </div>
-              <div class="rv-info-row">
-                <span class="rv-info-label">Country</span>
-                <span class="rv-info-value">
-                  <?php echo !empty($_SESSION['shipping_country_name']) ? $_SESSION['shipping_country_name'] : ''; ?>
-                </span>
-              </div>
+                    ?>
+                  </span>
+                </div>
+                <div class="rv-info-row">
+                  <span class="rv-info-label">Country</span>
+                  <span class="rv-info-value">
+                    <?php echo !empty($_SESSION['shipping_country_name']) ? $_SESSION['shipping_country_name'] : ''; ?>
+                  </span>
+                </div>
+              <?php else : ?>
+                <div class="rv-info-row">No Shipping Information Available.</div>
+              <?php endif; ?>
             </div>
           </div>
 
@@ -242,14 +242,20 @@ if ($api_mode === 'classic') {
               <?php endif; ?>
             </div>
 
-            <a href="order-complete.php" class="rv-complete-btn">
-              <?php echo inline_svg('../../assets/images/check.svg'); ?>
-              Complete Order
-            </a>
+            <?php if( !empty($_SESSION['shopping_cart']['recurring_items'][1]['amt']) && $_SESSION['shopping_cart']['recurring_items'][1]['amt'] > 0 ) : ?>
+              <div class="summary-recurring">
+                + $<?php echo number_format($_SESSION['shopping_cart']['recurring_items'][1]['amt'], 2) ?> / Month starting next month
+              </div>
+            <?php endif; ?>
 
-            <a href="./" class="rv-back-link">
+            <div class="cp-paid-badge">
+              <?php echo inline_svg('../../assets/images/check.svg'); ?>
+              Payment Received
+            </div>
+
+            <a href="../../" class="rv-back-link">
               <?php echo inline_svg('../../assets/images/back-icon.svg'); ?>
-              Back to Cart
+              Back to All Demos
             </a>
           </div>
 
@@ -262,3 +268,6 @@ if ($api_mode === 'classic') {
     <?php require_once('../../partials/footer.php'); ?>
   </body>
 </html>
+<?php
+session_destroy();
+?>

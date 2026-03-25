@@ -50,24 +50,9 @@ if( $PayPalResult['success'] ) {
     $_SESSION['last_name']      = isset($PayPalResult['order']['payer']['name']['surname']) ? $PayPalResult['order']['payer']['name']['surname'] : '';
     $_SESSION['billing_country_code'] = isset($PayPalResult['order']['payer']['address']['country_code']) ? $PayPalResult['order']['payer']['address']['country_code'] : '';
     
-    // Initialize temporary arrays to collect data
-    $transaction_ids = [];
-    $paypal_fees = [];
-    if( isset( $PayPalResult['order']['purchase_units'] ) ) {
-        foreach( $PayPalResult['order']['purchase_units'] as $unit ) {
-            if( isset( $unit['payments']['captures'][0] ) ) {
-                $capture = $unit['payments']['captures'][0];
-                $transaction_ids[] = $capture['id'];
-                $paypal_fees[] = isset($capture['seller_receivable_breakdown']['paypal_fee']['value']) 
-                                ? $capture['seller_receivable_breakdown']['paypal_fee']['value'] 
-                                : '0.00';
-            }
-        }
-    }
-
-    // If only 1 item, store as string. If multiple, store as array.
-    $_SESSION['paypal_transaction_id'] = (count($transaction_ids) === 1) ? $transaction_ids[0] : $transaction_ids;
-    $_SESSION['paypal_fee']            = (count($paypal_fees) === 1) ? $paypal_fees[0] : $paypal_fees;
+    $captures = !empty($PayPalResult['order']['purchase_units'][0]['payments']['captures'][0]) ? $PayPalResult['order']['purchase_units'][0]['payments']['captures'][0] : [];
+    $_SESSION['paypal_transaction_id'] = isset($captures['id']) ? $captures['id'] : '';
+    $_SESSION['paypal_fee'] = isset( $captures['seller_receivable_breakdown']['paypal_fee']['value'] ) ? $captures['seller_receivable_breakdown']['paypal_fee']['value'] : 0.00;
 
     $purchaseUnit = $PayPalResult['order']['purchase_units'][0];
     $shipping = isset( $purchaseUnit['shipping'] ) ? $purchaseUnit['shipping'] : [];
@@ -90,22 +75,9 @@ if( $PayPalResult['success'] ) {
      * We're going to set static values for these things in our static
      * shopping cart, and then re-calculate our grand total.
      */
-    $_SESSION['shopping_cart']['shipping'] = 15.00;
-    $_SESSION['shopping_cart']['handling'] = 3.00;
+    $_SESSION['shopping_cart']['shipping'] = 10.00;
+    $_SESSION['shopping_cart']['handling'] = 2.50;
     $_SESSION['shopping_cart']['tax'] = 1.50;
-
-    /**
-     * Split shipping into seller cart item amounts.
-     */
-    $_SESSION['shopping_cart']['multiparty_items'][0]['shipping'] = 10.00;
-    $_SESSION['shopping_cart']['multiparty_items'][0]['handling'] = 2.00;
-    $_SESSION['shopping_cart']['multiparty_items'][0]['tax'] = 1.00;
-    $_SESSION['shopping_cart']['multiparty_items'][0]['price_addon'] = $_SESSION['shopping_cart']['multiparty_items'][0]['shipping'] + $_SESSION['shopping_cart']['multiparty_items'][0]['handling'] + $_SESSION['shopping_cart']['multiparty_items'][0]['tax'];
-
-    $_SESSION['shopping_cart']['multiparty_items'][1]['shipping'] = 5.00;
-    $_SESSION['shopping_cart']['multiparty_items'][1]['handling'] = 1.00;
-    $_SESSION['shopping_cart']['multiparty_items'][1]['tax'] = .50;
-    $_SESSION['shopping_cart']['multiparty_items'][1]['price_addon'] = $_SESSION['shopping_cart']['multiparty_items'][1]['shipping'] + $_SESSION['shopping_cart']['multiparty_items'][1]['handling'] + $_SESSION['shopping_cart']['multiparty_items'][1]['tax'];
 
     $_SESSION['shopping_cart']['grand_total'] = number_format(
         $_SESSION['shopping_cart']['subtotal']
@@ -118,7 +90,7 @@ if( $PayPalResult['success'] ) {
      * page so they can see the shipping/handling/tax
      * that has been added to the order.
      */
-    header('Location: order-complete.php');
+    header('Location: review.php');
 } else {
     $_SESSION['paypal_errors'] = $PayPalResult['errors'];
     header('Location: ../../error.php');

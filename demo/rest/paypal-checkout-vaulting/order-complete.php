@@ -50,12 +50,12 @@ if ($api_mode === 'classic') {
       <!-- Intro -->
       <div class="cart-intro">
         <p>We have now reached the final thank you / receipt page, and the payment has been successfully captured. The 
-          PayPal Transaction ID and Vault ID are displayed below. The Vault ID represents the securely stored payment
-          method and can be used for future transactions without requiring buyer approval.
+          PayPal <strong>Transaction ID</strong> and <strong>Vault ID</strong> are displayed below. The <strong>Vault ID</strong> 
+          represents the securely stored payment method and can be used for future transactions without requiring buyer approval.
         </p>
-        <p>At this point, you can store the Transaction ID and Vault ID in your database, associated with the customer. 
-          The Vault ID can be used in future REST API calls to create and capture payments using the saved payment method, 
-          enabling a faster and more seamless checkout experience.
+        <p>At this point, you can store the <strong>Transaction ID</strong> and <strong>Vault ID</strong> in your database, associated 
+          with the customer. The <strong>Vault ID</strong> can be used in future REST API calls to create and capture payments using the 
+          saved payment method, enabling a faster and more seamless checkout experience.
         </p>
       </div>
 
