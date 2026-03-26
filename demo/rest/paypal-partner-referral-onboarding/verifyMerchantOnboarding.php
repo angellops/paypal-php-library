@@ -28,7 +28,7 @@ $PayPalConfig = array(
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
 // Exit early if the 'onboarding' parameter is not present in the URL
-if( !$_GET['onbaording'] ) {
+if( !$_GET['onboarding'] ) {
     return;
 }
 

@@ -194,9 +194,9 @@
   font-size: 1.125rem; 
   font-weight: 700; 
   color: var(--amber-900); 
+  margin-bottom: 0.25rem;
 }
 .banner-body p {
-  margin-top: 0.5rem;
   font-size: 0.875rem;
   line-height: 1.6;
   color: var(--amber-800);

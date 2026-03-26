@@ -3,7 +3,7 @@
  * Include our config file and the PayPal library.
  */
 require_once('../../../includes/config.php');
-require_once('../../../vendor/autoload.php');
+require_once('../../core/useful-functions.php');
 
 // Redirect to Demo Home if API mode is classic
 if ($api_mode === 'classic') {
@@ -43,7 +43,7 @@ if( !isset( $_SESSION['verified_merchant_data'] ) ) {
 
     <!-- Main -->
     <main class="cart-main">
-      <div class="container dn-narrow">
+      <div class="container">
 
         <!-- Page Title -->
         <div class="cart-page-title">
@@ -63,89 +63,120 @@ if( !isset( $_SESSION['verified_merchant_data'] ) ) {
         <?php if( isset( $_SESSION['verified_merchant_data'] ) ) {
           $verifiedMerchantData = $_SESSION['verified_merchant_data'];
 
-          if(!$verifiedMerchantData['primary_email_confirmed']) { ?>
-            <div class="warning-info onboarded-warning">
-              <span class="warning-icon">!</span>Please confirm your PayPal email.
+          $messages = [];
+          if (empty($verifiedMerchantData['primary_email_confirmed'])) {
+            $messages[] = "Please confirm your PayPal email.";
+          }
+          if (empty($verifiedMerchantData['payments_receivable'])) {
+            $messages[] = "Your PayPal account cannot receive payments.";
+          }
+          if (!empty($messages)) { ?>
+            <div class="banner" id="deprecation-banner">
+              <div class="banner-icon-wrap">
+                <?php echo inline_svg('../../assets/images/warning-icon.svg'); ?>
+              </div>
+              <div class="banner-body">
+                <p><?php echo implode(' ', $messages); ?></p>
+              </div>
             </div>
           <?php } 
 
-          if(!$verifiedMerchantData['payments_receivable']) { ?>
-            <div class="warning-info onboarded-warning">
-              <span class="warning-icon">!</span>Your PayPal account cannot receive payments.
+            $merchantId   = isset($verifiedMerchantData['merchant_id']) ? $verifiedMerchantData['merchant_id'] : '';
+            $legalName    = isset($verifiedMerchantData['legal_name']) ? $verifiedMerchantData['legal_name'] : '';
+            $email        = isset($verifiedMerchantData['primary_email']) ? $verifiedMerchantData['primary_email'] : '';
+            $emailConfirm = !empty($verifiedMerchantData['primary_email_confirmed']) ? 'YES' : 'NO';
+            $payments     = !empty($verifiedMerchantData['payments_receivable']) ? 'YES' : 'NO';
+            $country      = isset($verifiedMerchantData['country']) ? $verifiedMerchantData['country'] : '';
+            $currency     = isset($verifiedMerchantData['primary_currency']) ? $verifiedMerchantData['primary_currency'] : '';
+          ?>
+          <div class="merchant-grid">
+            <div class="merchant-info-card">
+              <div class="merchant-account-info merchant-card">
+                <div class="merchant-account-info-header merchant-info-header">
+                  <h5 class="merchant-account-info-title">Merchant Account</h5>
+                </div>
+                <div class="merchant-account-info-body merchant-info-body">
+                  <div class="merchant-value-wrap">
+                    <span class="mechant-label">Merchant ID</span>
+                    <span class="merchant-value"><?php echo $merchantId; ?></span>
+                  </div>
+                  <div class="merchant-value-wrap">
+                    <span class="mechant-label">Legal Name</span>
+                    <span class="merchant-value"><?php echo $legalName; ?></span>
+                  </div>
+                  <div class="merchant-value-wrap">
+                    <span class="mechant-label">Primary Email</span>
+                    <span class="merchant-value"><?php echo $email; ?></span>
+                  </div>
+                  <div class="merchant-value-wrap">
+                    <span class="mechant-label">Country</span>
+                    <span class="merchant-value"><?php echo $country; ?></span>
+                  </div>
+                  <div class="merchant-value-wrap">
+                    <span class="mechant-label">Currency</span>
+                    <span class="merchant-value"><?php echo $currency; ?></span>
+                  </div>
+                  <div class="merchant-value-wrap merchant-wrap-no">
+                    <span class="mechant-label">Email Confirmed</span>
+                    <span class="merchant-value merchant-value-no">
+                      <?php echo inline_svg('../../assets/images/info.svg'); ?>
+                      <?php echo $emailConfirm; ?>
+                    </span>
+                  </div>
+                  <div class="merchant-value-wrap merchant-wrap-yes">
+                    <span class="mechant-label">Payments Receivable</span>
+                    <span class="merchant-value merchant-value-yes">
+                      <?php echo inline_svg('../../assets/images/pay-complete.svg'); ?>
+                      <?php echo $payments; ?>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="merchant-oauth-info merchant-card">
+                <div class="merchant-oauth-info-header merchant-info-header">
+                  <h5 class="merchant-oauth-info-title">OAuth Integrations</h5>
+                </div>
+                <div class="merchant-oauth-info-body merchant-info-body">
+                  <?php
+                    if (isset($verifiedMerchantData['oauth_integrations'][0]['oauth_third_party'][0]['scopes']) && is_array($verifiedMerchantData['oauth_integrations'][0]['oauth_third_party'][0]['scopes'])) { ?>
+                      <div class="merchant-oauth-entries">
+                        <?php foreach ($verifiedMerchantData['oauth_integrations'][0]['oauth_third_party'][0]['scopes'] as $scope) {
+                          echo '<div class="merchant-outh-entry cp-txn-id">' . $scope . '</div>';
+                        } ?>
+                      </div>
+                    <?php }
+                  ?>
+                </div>
+              </div>
             </div>
-          <?php }
-
-          $merchantId   = isset($verifiedMerchantData['merchant_id']) ? $verifiedMerchantData['merchant_id'] : '';
-          $legalName    = isset($verifiedMerchantData['legal_name']) ? $verifiedMerchantData['legal_name'] : '';
-          $email        = isset($verifiedMerchantData['primary_email']) ? $verifiedMerchantData['primary_email'] : '';
-          $emailConfirm = !empty($verifiedMerchantData['primary_email_confirmed']) ? 'YES' : 'NO';
-          $payments     = !empty($verifiedMerchantData['payments_receivable']) ? 'YES' : 'NO';
-          $country      = isset($verifiedMerchantData['country']) ? $verifiedMerchantData['country'] : '';
-          $currency     = isset($verifiedMerchantData['primary_currency']) ? $verifiedMerchantData['primary_currency'] : '';
-        ?>
-          <h4 class="merchant-title">Merchant Account Details</h4>
-          <table class="table table-items table-bordered">
-            <tr>
-              <th>Merchant ID:</th>
-              <td><?php echo $merchantId; ?></td>
-            </tr>
-            <tr>
-              <th>Legal Name:</th>
-              <td><?php echo $legalName; ?></td>
-            </tr>
-            <tr>
-              <th>Primary Email:</th>
-              <td><?php echo $email; ?></td>
-            </tr>
-            <tr>
-              <th>Email Confirmed:</th>
-              <td><?php echo $emailConfirm; ?></td>
-            </tr>
-            <tr>
-              <th>Payments Receivable:</th>
-              <td><?php echo $payments; ?></td>
-            </tr>
-            <tr>
-              <th>Country:</th>
-              <td><?php echo $country; ?></td>
-            </tr>
-            <tr>
-              <th>Currency:</th>
-              <td><?php echo $currency; ?></td>
-            </tr>
-
-            <!-- OAUTH SCOPES -->
-            <tr>
-              <th>OAuth Scopes:</th>
-              <td>
-                <?php
-                  if (isset($verifiedMerchantData['oauth_integrations'][0]['oauth_third_party'][0]['scopes']) && is_array($verifiedMerchantData['oauth_integrations'][0]['oauth_third_party'][0]['scopes'])) { ?>
-                    <ul>
-                      <?php foreach ($verifiedMerchantData['oauth_integrations'][0]['oauth_third_party'][0]['scopes'] as $scope) {
-                        echo '<li>' . $scope . '</li>';
-                      } ?>
-                    </ul>
-                  <?php }
-                ?>
-              </td>
-            </tr>
-
-            <!-- CAPABILITIES WITH STATUS -->
-            <tr>
-              <th>Capabilities:</th>
-              <td>
-                <?php if (isset($verifiedMerchantData['capabilities']) && is_array($verifiedMerchantData['capabilities'])) { ?>
-                  <ul>
-                    <?php foreach ($verifiedMerchantData['capabilities'] as $cap) { ?>
-                      <li><?php echo isset($cap['name']) ? $cap['name'] : '' ?> — <?php echo isset($cap['status']) ? $cap['status'] : 'N/A' ?></li>
-                    <?php } ?>
-                  </ul>
-                <?php } ?>
-              </td>
-            </tr>
-          </table> 
+            <div class="merchant-cap-card merchant-card">
+              <div class="merchant-capabilities">
+                <div class="merchant-capabilities-header merchant-info-header">
+                  <h5 class="merchant-capabilities-title">Merchant Capabilities</h5>
+                </div>
+                <div class="merchant-capabilities-body merchant-info-body">
+                  <?php if (isset($verifiedMerchantData['capabilities']) && is_array($verifiedMerchantData['capabilities'])) { ?>
+                    <div class="merchant-cap-entries">
+                      <?php foreach ($verifiedMerchantData['capabilities'] as $cap) {
+                        $status = isset($cap['status']) ? $cap['status'] : '';
+                        $statusClass = ($status === 'ACTIVE') ? 'merchant-value-yes' : 'merchant-value-no';
+                        $nameImg = ($status === 'ACTIVE') ? '../../assets/images/pay-complete.svg' : '../../assets/images/info.svg';
+                      ?>
+                        <div class="merchant-cap-entry">
+                          <span class="merchant-cap-name merchant-value <?php echo $statusClass; ?>">
+                            <?php echo inline_svg($nameImg); ?>
+                            <?php echo isset($cap['name']) ? $cap['name'] : '' ?>
+                          </span>
+                        </div>
+                      <?php } ?>
+                    </div>
+                  <?php } ?>
+                </div>
+              </div>
+            </div>
+          </div>
           <form method="post">
-            <button type="submit" name="disconnect" class="btn btn-danger">Disconnect from PayPal</button>
+            <button type="submit" name="disconnect" class="merchant-disconnect dnc-donate-again">Disconnect from PayPal</button>
           </form>
         <?php } ?>
       </div>

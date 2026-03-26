@@ -158,6 +158,12 @@
 .cm-cart-table-row {
   grid-template-columns: 7rem 1fr 9rem 6rem 4.5rem 6rem !important;
 }
+@media (max-width: 40rem) {
+  .cm-cart-table-head,
+  .cm-cart-table-row {
+    grid-template-columns: 1fr 3rem 5rem 3rem 3rem !important;
+  }
+}
 .cart-table-row {
   display: grid;
   grid-template-columns: 7rem 1fr 6rem 4.5rem 6rem;
@@ -267,6 +273,7 @@
 .item-fee {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.25rem;
   color: var(--muted-fg);
 }
@@ -390,5 +397,5 @@
   margin: 0.5rem 0;
 }
 #paypalMessage.error {
-  color: #d43f3a;
+  color: var(--error);
 }

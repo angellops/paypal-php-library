@@ -196,7 +196,7 @@
   font-family: Monospace;
   font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.025rem;
   color: var(--primary);
   background: rgba(0, 112, 186, 0.06);
   padding: 0.2rem 0.5rem;
