@@ -3,6 +3,12 @@
 .cart-table--subscription .cart-table-row {
     grid-template-columns: 1fr 9rem 6rem 5rem !important;
 }
+@media (max-width: 40rem) {
+    .cart-table--subscription .cart-table-head,
+    .cart-table--subscription .cart-table-row {
+        grid-template-columns: 1fr 4.5rem 4rem 4rem !important;
+    }
+}
 .cart-table--subscription .cart-table-row .col-sku {
     font-weight: 500;
     color: var(--muted-fg);
