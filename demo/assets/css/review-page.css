@@ -231,3 +231,8 @@
   height: 1.125rem;
   stroke: hsl(160, 60%, 28%);
 }
+
+/* --- Google Pay --- */
+#googlepay-button-container button {
+  width: 100%;
+}
