@@ -232,7 +232,8 @@
   stroke: hsl(160, 60%, 28%);
 }
 
-/* --- Google Pay --- */
-#googlepay-button-container button {
+/* --- Google Pay & Apple Pay --- */
+#googlepay-button-container button,
+#applepay-button-container apple-pay-button {
   width: 100%;
-}
+} 
