@@ -489,7 +489,7 @@ class PayPalREST extends PayPal
     private function getApprovalUrl($links)
     {
         foreach ($links as $link) {
-            if ($link['rel'] === 'approve' || $link['rel'] === 'payer-action') {
+            if ($link['rel'] === 'approve' || $link['rel'] === 'payer-action' || $link['rel'] === 'action_url') {
                 return $link['href'];
             }
         }
@@ -1035,6 +1035,75 @@ class PayPalREST extends PayPal
                     'success' => true,
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'vault_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to create setup token',
+                'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => $response['raw_response']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Create a PayPal merchant onboarding (partner referral).
+     *
+     * This method initiates the PayPal Partner Referrals API call
+     * to onboard a new merchant under the partner account.
+     */
+    public function createMerchantOnboarding($DataArray) {
+        try {
+            $response = $this->makeRequest('/v2/customer/partner-referrals', 'POST', $DataArray);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'approval_url' => $this->getApprovalUrl($response['body']['links']),
+                    'full_response' => $response['body'],
+                    'raw_response' => $response['raw_response']
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to create setup token',
+                'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => $response['raw_response']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Verify merchant onboarding status with PayPal.
+     *
+     * This method checks whether a merchant has successfully completed
+     * the onboarding flow and granted the requested permissions/scopes.
+     */
+    public function verifyMerchantOnboarding($merchantId) {
+        try {
+            $response = $this->makeRequest('/v1/customer/partners/' . $this->merchant_id . '/merchant-integrations/' . $merchantId);
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
                     'raw_response' => $response['raw_response']
                 ];

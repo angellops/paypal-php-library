@@ -1,0 +1,17 @@
+.onb-subtitle {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+.onb-image {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+.onb-logo {
+    width: auto;
+    height: 2.5rem;
+}
+.onb-icon svg {
+    width: 1.875rem;
+    height: 1.875rem;
+}
