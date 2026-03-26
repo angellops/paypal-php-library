@@ -124,7 +124,7 @@ if ($api_mode === 'classic') {
               </div>
               <h3>Billing Information</h3>
             </div>
-            <div class="rv-info-body">
+            <div class="rv-info-body subscription-body-row">
               <div class="rv-info-row">
                 <span class="rv-info-label">Name</span>
                 <?php $first = !empty($_SESSION['first_name']) ? $_SESSION['first_name'] : '';
@@ -138,6 +138,18 @@ if ($api_mode === 'classic') {
                 <span class="rv-info-label">Email</span>
                 <span class="rv-info-value">
                   <?php echo !empty($_SESSION['email']) ? $_SESSION['email'] : ''; ?>
+                </span>
+              </div>
+              <div class="rv-info-row cp-txn-row">
+                <span class="rv-info-label">Txn ID</span>
+                <span class="rv-info-value cp-txn-id">
+                  <?php echo !empty($_SESSION['paypal_transaction_id']) ? $_SESSION['paypal_transaction_id'] : ''; ?>
+                </span>
+              </div>
+              <div class="rv-info-row cp-txn-row">
+                <span class="rv-info-label">Recurring Profile ID</span>
+                <span class="rv-info-value cp-txn-id">
+                  <?php echo !empty($_SESSION['recurring_profile_id']) ? $_SESSION['recurring_profile_id'] : ''; ?>
                 </span>
               </div>
             </div>
@@ -186,18 +198,6 @@ if ($api_mode === 'classic') {
                 <span class="rv-info-label">Country</span>
                 <span class="rv-info-value">
                   <?php echo !empty($_SESSION['shipping_country_name']) ? $_SESSION['shipping_country_name'] : ''; ?>
-                </span>
-              </div>
-              <div class="rv-info-row cp-txn-row">
-                <span class="rv-info-label">Txn ID</span>
-                <span class="rv-info-value cp-txn-id">
-                  <?php echo !empty($_SESSION['paypal_transaction_id']) ? $_SESSION['paypal_transaction_id'] : ''; ?>
-                </span>
-              </div>
-              <div class="rv-info-row cp-txn-row">
-                <span class="rv-info-label">Recurring Profile ID</span>
-                <span class="rv-info-value cp-txn-id">
-                  <?php echo !empty($_SESSION['recurring_profile_id']) ? $_SESSION['recurring_profile_id'] : ''; ?>
                 </span>
               </div>
             </div>
