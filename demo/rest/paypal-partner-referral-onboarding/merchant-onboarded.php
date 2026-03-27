@@ -163,9 +163,9 @@ if( !isset( $_SESSION['verified_merchant_data'] ) ) {
                         $nameImg = ($status === 'ACTIVE') ? '../../assets/images/pay-complete.svg' : '../../assets/images/info.svg';
                       ?>
                         <div class="merchant-cap-entry">
-                          <span class="merchant-cap-name merchant-value <?php echo $statusClass; ?>">
+                          <span title="<?php echo isset($cap['name']) ? $cap['name'] : '' ?>" class="merchant-cap-name merchant-value <?php echo $statusClass; ?>">
                             <?php echo inline_svg($nameImg); ?>
-                            <?php echo isset($cap['name']) ? $cap['name'] : '' ?>
+                            <?php echo isset($cap['name']) ? str_replace("_", " ", $cap['name']) : '' ?>
                           </span>
                         </div>
                       <?php } ?>

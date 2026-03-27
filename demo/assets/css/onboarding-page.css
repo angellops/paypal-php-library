@@ -106,11 +106,12 @@
     color: #006435;
 }
 .merchant-outh-entry {
+    font-size: 0.875rem;
+    color: var(--muted-fg);
     display: flex;
     align-items: center;
     gap: 0.75rem;
     background: var(--muted);
-    color: var(--muted-fg);
     padding: 0.5rem 1rem;
 }
 .merchant-outh-entry::before {

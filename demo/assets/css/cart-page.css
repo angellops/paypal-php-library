@@ -43,6 +43,13 @@
   margin-bottom: 0.5rem;
 }
 
+/* --- Demo Credentials Wrapper --- */
+.demo-credentials-wrapper {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
 /* --- Demo credentials --- */
 .demo-credentials {
   display: flex;
@@ -386,8 +393,14 @@
 }
 
 /* --- PayPal Button - REST --- */
-#paypalbtn {
+paypal-button,
+venmo-button,
+paypal-pay-later-button,
+paypal-basic-card-container {
   width: 100%;
+}
+#venmo-container paypal-button {
+  margin-bottom: 0.75rem;
 }
 
 /* PayPal Messaging */

@@ -1,0 +1,57 @@
+/* --- ACDC Commoon CSS --- */
+.acdc-credentials .demo-credentials-label {
+    min-width: 5.5rem;
+}
+#pay-button {
+    border-radius: 0.25rem;
+}
+#pay-button[disabled] {
+    pointer-events: none;
+}
+
+/* --- Card Fields --- */
+.card-fields-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin: 1.25rem 0;
+}
+#paypal-card-fields-number {
+    flex: 1 0 100%;
+}
+#paypal-card-fields-expiry, 
+#paypal-card-fields-cvv {
+    flex: 1;
+}
+.card-field {
+	height: 2.75rem;
+}
+
+/* --- ACDC Container Buttons --- */
+#acdc-container paypal-button,
+#multicheckout-container paypal-button,
+#multicheckout-container .paylater-message {
+    margin-bottom: 0.75rem;
+}
+
+/* --- OR Wrapper --- */
+.or-wrapper {
+    font-weight: 700;
+    color: var(--muted-fg);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+    margin-top: 1.25rem;
+}
+.or-wrapper::before,
+.or-wrapper::after {
+    content: "";
+    flex: 1;
+    border-bottom: 0.0625rem dashed var(--border);
+}
+
+/* --- Multicheckout Container CSS --- */
+#multicheckout-container venmo-button {
+    margin: 0.75rem 0;
+}
