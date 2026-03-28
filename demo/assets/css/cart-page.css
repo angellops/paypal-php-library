@@ -262,6 +262,10 @@
   font-size: 1rem;
   flex-shrink: 0;
 }
+.item-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
 .item-icon--green {
   background: rgba(16, 185, 129, 0.1);
   color: hsl(160, 72%, 36%);

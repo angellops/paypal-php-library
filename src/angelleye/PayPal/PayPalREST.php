@@ -484,6 +484,84 @@ class PayPalREST extends PayPal
     }
 
     /**
+     * Patch Order
+     */
+    public function patchOrder($DataArray) {
+        try {
+            $orderId = isset($DataArray['orderID']) ? $DataArray['orderID'] : '';
+            $patchData = isset($DataArray['patchData']) ? $DataArray['patchData'] : [];
+
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'PATCH', $patchData);
+
+            if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
+                return [
+                    'success' => true,
+                    'message' => 'Order updated successfully',
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'full_response' => $response['body'],
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'error' => 'Failed to update order details',
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Track Order
+     */
+    public function trackOrder($DataArray) {
+        try {
+            $orderId = isset($DataArray['orderID']) ? $DataArray['orderID'] : '';
+            $trackingPayload = isset($DataArray['trackingPayload']) ? $DataArray['trackingPayload'] : [];
+
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/track', 'POST', $trackingPayload);
+
+            $purchase_units = $response['body']['purchase_units'][0] ? $response['body']['purchase_units'][0] : [];
+            $shipping_trackers = $purchase_units['shipping']['trackers'] ? $purchase_units['shipping']['trackers'] : [];
+            $tracking_ids_array = !empty($shipping_trackers) ? array_column($shipping_trackers, 'id') : [];
+            $tracking_status_array = !empty($shipping_trackers) ? array_column($shipping_trackers, 'status') : [];
+            $tracking_ids_string = !empty($tracking_ids_array) ? implode(', ', $tracking_ids_array) : '';
+            $tracking_status_string = !empty($tracking_status_array) ? implode(', ', $tracking_status_array) : '';
+
+            if (in_array($response['status_code'], [200, 201])) {
+                return [
+                    'success' => true,
+                    'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                    'tracking_ids' => $tracking_ids_string,
+                    'tracking_status' => $tracking_status_string,
+                    'full_response' => $response['body'],
+                    'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'error' => 'Failed to track order details',
+                'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
+                'errors' => $response['body'],
+                'raw_response' => isset($response['raw_response']) ? $response['raw_response'] : [],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Helper method to extract approval URL from links
      */
     private function getApprovalUrl($links)
