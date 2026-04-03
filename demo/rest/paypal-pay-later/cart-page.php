@@ -51,12 +51,20 @@ $cart = get_cart();
     <!-- Main -->
     <main class="cart-main">
       <div class="container">
+        
         <!-- Page Title -->
-        <div class="cart-page-title">
-          <div class="cart-title-icon">
-            <?php echo inline_svg('../../assets/images/cart-icon.svg'); ?>
+        <div class="paylater-header">
+          <div class="cart-page-title">
+            <div class="cart-title-icon">
+              <?php echo inline_svg('../../assets/images/cart-icon.svg'); ?>
+            </div>
+            <h1>Shopping Cart</h1>
           </div>
-          <h1>Shopping Cart</h1>
+          <?php if (!empty($cart)) { ?>
+            <a href="checkout-page.php?empty_cart=true" class="paylater-checkout-btn btn-buy btn-launch">
+              Empty Cart
+            </a>
+          <?php } ?>
         </div>
 
         <!-- Intro Text -->
@@ -198,7 +206,7 @@ $cart = get_cart();
               <img src="../../assets/images/empty-cart.png" alt="Empty Cart">
               <h3>Your cart is currently empty!</h3>
               <p class="empty-cart-message">Before proceed to checkout you must add some products to your shopping cart. You will find a lot of interesting products on our "Shop" page.</p>
-              <a class="cart-btns" href="./">Return to Shop</a>
+              <a class="btn-buy btn-launch" href="./">Continue Shopping</a>
             </div>
           <?php } ?>
         </form>

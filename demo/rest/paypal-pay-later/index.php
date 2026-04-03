@@ -64,11 +64,17 @@ $_SESSION['billing'] = array(
     <main class="cart-main">
       <div class="container">
         <!-- Page Title -->
-        <div class="cart-page-title">
-          <div class="cart-title-icon">
-            <?php echo inline_svg('../../assets/images/product-shop.svg'); ?>
+        <div class="paylater-header">
+          <div class="cart-page-title">
+            <div class="cart-title-icon">
+              <?php echo inline_svg('../../assets/images/product-shop.svg'); ?>
+            </div>
+            <h1>Shop</h1>
           </div>
-          <h1>Shop</h1>
+          <a href="cart-page.php" class="rv-back-link">
+            Go to Cart
+            <?php echo inline_svg('../../assets/images/right-arrow.svg'); ?>
+          </a>
         </div>
 
         <!-- Intro Text -->

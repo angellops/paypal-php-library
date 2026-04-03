@@ -12,7 +12,7 @@ if ($api_mode === 'classic') {
  * Empty Cart Logic
  * If the 'empty' button was clicked, clear all items and redirect to refresh the UI.
  */
-if (isset($_POST['empty'])) {
+if (isset($_GET['empty_cart']) && $_GET['empty_cart'] === 'true') {
   empty_cart();
   header('Location: cart-page.php');
   exit;
