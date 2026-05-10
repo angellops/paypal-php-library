@@ -14,3 +14,7 @@ logs/*
 !logs/.gitkeep 
 /includes
 /nbproject/private/
+
+/.agents/
+/.codex/
+/.claude/
