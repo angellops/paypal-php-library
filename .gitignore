@@ -7,6 +7,11 @@ Thumbs.db
 *.swo
 *.bak
 
+# AI Agents
+/.agents/
+/.claude/
+/.codex/
+
 # PHPStorm and IDE-related files
 .idea/
 *.iml
@@ -26,6 +31,7 @@ node_modules/
 *.cache
 *.tmp
 /tmp/
+/temp/
 /logs/
 !logs/.gitkeep  # Exclude logs/.gitkeep, keep the directory structure
 
