@@ -1,0 +1,62 @@
+# --- Line-ending normalization ---
+# Treat all text files as LF in the repo and on Linux/macOS checkouts.
+# Git autodetects text vs binary; this just fixes the EOL when it's text.
+* text=auto eol=lf
+
+# Windows-only scripts must stay CRLF.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Common binary types — never normalize.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary
+*.tar   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+
+# --- export-ignore ---
+# Files / directories below are excluded from the Composer / Packagist
+# release tarball (`git archive`). Cloners still see them; merchants who
+# install via `composer require` do not.
+
+# Repo metadata + dotfiles that have no value to package consumers
+.gitattributes   export-ignore
+.gitignore       export-ignore
+.editorconfig    export-ignore
+
+# Local dev environments
+.ddev/**         export-ignore
+.htaccess        export-ignore
+
+# AI agent tooling (local-only metadata)
+.agents/**       export-ignore
+.claude/**       export-ignore
+.codex/**        export-ignore
+
+# CI / contribution / community files
+.github/**       export-ignore
+.travis.yml      export-ignore
+.scrutinizer.yml export-ignore
+CONTRIBUTING.md  export-ignore
+
+# Internal planning / PRD / design docs
+docs/**          export-ignore
+
+# Test infrastructure (when added in v4.0)
+tests/**         export-ignore
+phpunit.xml      export-ignore
+phpunit.xml.dist export-ignore
+phpcs.xml        export-ignore
+phpcs.xml.dist   export-ignore
+
+# NOTE: samples/, templates/, demo/, and documentation/ are intentionally
+# NOT export-ignored — they are user-facing and ship with the package.

@@ -1,59 +1,66 @@
-# General Ignored Files
+# --- OS-generated files ---
 .DS_Store
 Thumbs.db
-
-# OS-generated files
 *.swp
 *.swo
 *.bak
+*.orig
 
-# AI Agents
+# --- Editors / IDEs ---
+.idea/
+*.iml
+.vscode/
+/nbproject/private/
+# PhpStorm/IDEA project XML lives in .idea/ above.
+# Avoid blanket *.xml; ignore specific config files individually below.
+
+# --- Local dev environments ---
+/.ddev/
+/.htaccess
+
+# --- AI agent tooling (local-only metadata) ---
 /.agents/
 /.claude/
 /.codex/
 
-# PHPStorm and IDE-related files
-.idea/
-*.iml
-*.xml
-.vscode/
-phpcs.xml
-
-# Composer dependencies and related files
+# --- Composer / PHP dependencies ---
 /vendor/
 /composer.lock
 
-# Node.js (if npm/yarn is used for assets)
-node_modules/
+# --- PHP tooling caches and configs ---
+/.phpunit.result.cache
+/.phpunit.cache/
+/.php-cs-fixer.cache
+/.phpstan-cache/
+/.psalm/
+/phpcs.xml
+/phpcs.xml.dist
+/phpunit.xml
+/phpunit.xml.dist
 
-# Temporary files
+# --- Build / coverage artifacts ---
+/build/
+/coverage/
+
+# --- Node (if used for asset pipelines) ---
+/node_modules/
+
+# --- Logs and scratch directories ---
 *.log
 *.cache
 *.tmp
 /tmp/
 /temp/
 /logs/
-!logs/.gitkeep  # Exclude logs/.gitkeep, keep the directory structure
+# Keep the logs/ directory in the tree as a placeholder.
+!/logs/.gitkeep
 
-# Private/sensitive files
+# --- Secrets / per-environment config ---
+.env
+.env.*
+# (Files like .env.testing, .env.production, .env.local are all covered above.)
 /includes/config.php
 /admin/config.php
 
-# Git merge conflict files
-*.orig
-
-# PHPUnit
-.phpunit.result.cache
-
-# Coverage and build
-/coverage/
-/build/
-
-# PHP-specific files
-.env
-.env.*       # Include files like .env.testing, .env.production
-/phpunit.xml
-/phpunit.xml.dist
-
-# Ignoring nbproject if NetBeans IDE is used
-/nbproject/private/
+# --- Internal planning / docs not meant for the public package ---
+/docs/
