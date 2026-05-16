@@ -154,16 +154,38 @@ The next iteration starts in a **completely fresh session** with no memory of th
 
 ---
 
-## Planning lifecycle (filling in the roadmap)
+## Planning lifecycles
 
-The roadmap is initially empty. Planning is itself an iteration-like activity but happens in dedicated planning sessions (not execution sessions). A planning session may:
+There are **three** distinct levels of planning. Don't conflate them — they have different inputs, outputs, and session requirements.
 
-- Read the PRD
-- Sketch phases and their iterations into `ROADMAP.md`
-- Create the GitHub milestone, labels (`phase:N`, `iteration:N.M`, `type:*`), and a stub issue per planned iteration (with minimal body — title + 1-line goal + "Iteration MD: TBD")
-- Write detailed iteration specs for the next 1–3 iterations only — not all of them at once
+### 1. Strategic planning — the PRD
 
-**Why just-in-time iteration specs?** Phases planned 6 months ahead will be wrong by then. Phase-level outlines age slowly; iteration-level specs age fast. Keep specs fresh by writing them close to execution.
+- **Input:** vision, stakeholder requirements
+- **Output:** [docs/PRD.md](../PRD.md)
+- **Scope:** "What is this version? What does success look like?"
+- **Cadence:** once per major version, edited rarely
+- **Not what this workflow concerns itself with** — the PRD is an upstream artifact this workflow consumes
+
+### 2. Tactical planning — the roadmap
+
+- **Input:** PRD
+- **Output:** populated [docs/plans/ROADMAP.md](ROADMAP.md) + GitHub milestone + labels + stub issues
+- **Scope:** "What phases? What iterations under each? In what order?"
+- **Cadence:** once at the start of a major version, then small adjustments as iterations reveal needed splits/merges
+- **Slash command:** `/plan-roadmap` (see `.claude/commands/plan-roadmap.md`)
+- **Stays at title + 1-line goal per iteration.** Does **not** write detailed iteration specs.
+
+### 3. Iteration-spec planning — just-in-time
+
+- **Input:** one (or a few) row(s) from the roadmap, plus relevant PRD section(s)
+- **Output:** one (or a few) `docs/plans/iteration-N.M-<slug>.md` file(s)
+- **Scope:** "Exactly what does this iteration ship, in what order, with what tests?"
+- **Cadence:** in batches of 1–3 iterations ahead of execution
+- **Why just-in-time?** Iterations planned 6 months ahead will be wrong by then. Phase-level outlines age slowly; iteration-level specs age fast. Keep specs fresh by writing them close to execution.
+
+### Why split levels 2 and 3 into separate sessions?
+
+Context economy. A roadmap-planning session needs the full PRD loaded — a heavy context cost paid once. An iteration-spec session needs only the one relevant roadmap row + maybe one PRD section + (sometimes) the prior handoff — much lighter. Mixing them defeats the whole point of the workflow.
 
 ---
 
@@ -181,4 +203,5 @@ The roadmap is initially empty. Planning is itself an iteration-like activity bu
 | Commit message format | [.agents/skills/git-commit/](../../.agents/skills/git-commit/) |
 | PR template | [.github/pull_request_template.md](../../.github/pull_request_template.md) |
 | Iteration issue template | [.github/ISSUE_TEMPLATE/iteration-issue.md](../../.github/ISSUE_TEMPLATE/iteration-issue.md) |
+| Slash command to plan the roadmap | `.claude/commands/plan-roadmap.md` |
 | Slash command to start an iteration | `.claude/commands/execute-iteration.md` |

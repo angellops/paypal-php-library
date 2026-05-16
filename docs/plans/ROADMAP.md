@@ -19,7 +19,7 @@ Source of truth for phases and iterations. GitHub milestone (`v4.0`) and issues 
 
 | # | Name | Goal | Milestone | Status |
 |---|---|---|---|---|
-| _TBD_ | _Populated in the first planning session, derived from [docs/PRD.md](../PRD.md)_ | | `v4.0` | 🔵 |
+| _TBD_ | _Populated in the first roadmap planning session, derived from [docs/PRD.md](../PRD.md)_ | | `v4.0` | 🔵 |
 
 ---
 
@@ -37,4 +37,4 @@ Source of truth for phases and iterations. GitHub milestone (`v4.0`) and issues 
 
 ## Change log
 
-- _Empty — the first planning session populates this roadmap from the PRD._
+- _Empty — the first roadmap planning session populates this roadmap from the PRD._
