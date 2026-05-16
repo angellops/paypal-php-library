@@ -18,10 +18,11 @@ Thumbs.db
 /.ddev/
 /.htaccess
 
-# --- AI agent tooling (local-only metadata) ---
-/.agents/
-/.claude/
-/.codex/
+# --- AI agent tooling ---
+# Dirs themselves are tracked (workflow lives in the repo); only machine-local
+# files are ignored. The Composer-published tarball still excludes everything
+# via .gitattributes export-ignore.
+/.claude/settings.local.json
 
 # --- Composer / PHP dependencies ---
 /vendor/
@@ -62,5 +63,6 @@ Thumbs.db
 /includes/config.php
 /admin/config.php
 
-# --- Internal planning / docs not meant for the public package ---
-/docs/
+# --- Internal planning / docs ---
+# docs/ is tracked (PRD, roadmap, iteration specs); .gitattributes export-ignore
+# keeps it out of the Composer-published tarball.

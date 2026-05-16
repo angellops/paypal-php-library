@@ -41,6 +41,8 @@
 .agents/**       export-ignore
 .claude/**       export-ignore
 .codex/**        export-ignore
+AGENTS.md        export-ignore
+CLAUDE.md        export-ignore
 
 # CI / contribution / community files
 .github/**       export-ignore
