@@ -13,11 +13,11 @@ Single source of truth for any AI agent working in this repo. `CLAUDE.md` import
 
 ## Tech stack
 
-- **PHP:** `>=8.0` currently; v4.0 will raise the floor (decision deferred to an early iteration — see PRD)
-- **Composer autoload:** PSR-0 today; PSR-4 migration is in v4.0 scope (TBD)
+- **PHP:** `>=8.0` currently; v4.0 raises the floor to `^8.1` (early Phase 0 iteration)
+- **Composer autoload:** PSR-0 today; v4.0 adopts **dual PSR-0 / PSR-4** — new code under `src/REST/`, `src/Legacy/`, `src/Support/` is PSR-4 at the namespace prefix `angelleye\PayPal\{REST,Legacy,Support}\`; the existing classes (`PayPal`, `PayFlow`, `Adaptive`, `Financing`) stay PSR-0 in their current locations under `src/angelleye/PayPal/` to preserve BC for merchants' `use` statements. Full PSR-4 migration of the legacy classes is deferred to v5.0 (when Classic itself is dropped).
 - **Standard for new code:** PSR-12 (legacy code remains PSR-0-laid-out)
-- **Tests:** none configured yet — v4.0 introduces a testing framework as an early iteration
-- **Lint / static analysis:** none configured yet — same as above
+- **Tests:** none configured yet — v4.0 introduces **PHPUnit** as an early Phase 0 iteration
+- **Lint / static analysis:** none configured yet — tool choice (PHP-CS-Fixer / PHPStan / Psalm) deferred; not blocking for v4.0
 - **Local dev:** DDEV (PHP 8.2, Apache, MariaDB) — see [.ddev/config.yaml](.ddev/config.yaml)
 - **Runtime dep:** `ext-curl` only
 

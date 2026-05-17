@@ -12,7 +12,7 @@ The PayPal PHP SDK at `/home/angellops/projects/paypal-sdk-php/` is a long-stand
 
 **What we're building.** A modernized v4.0 of the SDK that ships full REST support alongside the existing Classic API, plus an "upgrade path" that lets existing Classic integrations transparently route through REST by flipping a single config flag. New integrations start REST-native; legacy integrations get a non-breaking ramp. The release is also the Wekoodo brand rollout.
 
-**Branch.** Continuing on `219_ai`. The OAuth + Orders v2 prototype in `src/angelleye/PayPal/PayPalREST.php` (~410 lines) is structurally sound and gets refactored into the new architecture rather than thrown away.
+**Branch.** Continuing on `feat/219-ppcp-integration` (formerly `219_ai`). The OAuth + Orders v2 prototype in `src/angelleye/PayPal/PayPalREST.php` (~410 lines) was never released in any stable tag and is not in use outside this feature branch; its patterns (OAuth client_credentials flow, header conventions, Orders v2 request/response shapes) inform the new `REST\Client` architecture, but the file itself is deleted in Phase 0 — v4.0 ships a fresh REST stack with no code carried forward from this prototype.
 
 ---
 
@@ -173,9 +173,6 @@ src/angelleye/PayPal/
 ├── Adaptive.php                                KEEP — Adaptive Payments (legacy), flagged @deprecated
 ├── Financing.php                               KEEP — Financing API (legacy), flagged @deprecated
 │
-├── PayPalREST.php                              CONVERT — thin @deprecated proxy delegating to REST\Client
-│                                               so anyone who pulled 219_ai early stays working
-│
 ├── REST/                                       NEW — PSR-4 autoloaded
 │   ├── Client.php                              Facade with lazy resource properties
 │   ├── Config.php                              Immutable value object: client_id, secret, sandbox,
@@ -309,6 +306,12 @@ src/angelleye/PayPal/EventTypesClass.php        Orphaned
 src/angelleye/PayPal/InvoicingClass.php         Orphaned
 src/angelleye/PayPal/PayPalSyncClass.php        Orphaned
 src/angelleye/PayPal/ReferencedPayoutsClass.php Orphaned
+src/angelleye/PayPal/PayPalREST.php             Prototype OAuth + Orders v2 scaffolding from the
+                                                219 feature branch; never released in any stable
+                                                tag and not in use outside this branch. Its patterns
+                                                are read as reference material while building the
+                                                new REST stack, but the file itself does not survive
+                                                into v4.0.
 vendor/paypal/rest-api-sdk-php/                 Abandoned vendor SDK; regenerate composer.lock
 
 # Templates / Samples / Demos — REST counterparts (parallel sibling layout)
@@ -387,14 +390,9 @@ bin/paypal-upgrade-check                        NEW — CLI scanner for merchant
 - Bump `composer.json` PHP floor to `^8.1`. Add PSR-4 autoload entries for new namespaces. Add `psr/log`, `psr/simple-cache` to `require`. Add `guzzlehttp/guzzle` to `suggest`.
 - Extract `PayPal.php:119-489` (Countries/States/AVS/CVV2/Currencies arrays) to `Support\Reference`. Update PayPal.php to load via the new class without changing public method behavior.
 - Set up `phpunit.xml`, `tests/` directory structure, fixtures directory.
-- Convert existing `PayPalREST.php` to a thin `@deprecated` proxy over (yet-to-be-built) `REST\Client`.
+- Delete `src/angelleye/PayPal/PayPalREST.php`. Its OAuth client_credentials flow + Orders v2 patterns are read as reference material when building the new `REST\Auth\OAuth2Authenticator`, `REST\Http\CurlTransport`, and `REST\Resources\Orders` in Phase 1, but the file itself does not survive into v4.0. (The class was never released in a stable tag and is not in use outside the v4.0 feature branch, so there is no BC obligation to keep a deprecated shim.)
 
-**Phase 0b — Brand transition (Week 1, parallel with cleanup).**
-- Update repo metadata: `composer.json` `homepage` and `support.source` to `https://github.com/Wekoodo/paypal-php-library`. Author block can list both Angell EYE (historical) and Wekoodo (current). The package `name` field changes to `wekoodo/paypal-php-library` at the moment of v4.0.0 publish, not before.
-- Update `README.md` header with prominent "**Formerly published as Angell EYE — now Wekoodo.**" notice. Include a "Brand history" section explaining: Angell EYE → angellops (GitHub-only rename) → Wekoodo (v4.0+). Note that the PHP namespace `angelleye\PayPal` is preserved for backward compatibility — no `use` statement changes needed when upgrading from v3.x.
-- Replace any in-code references to "Angell EYE" with "Wekoodo" in user-facing strings (log prefixes, error messages, default `LogPath` directory name if present), keeping the literal namespace `angelleye` intact in PHP code.
-- Update `CHANGELOG.md` with a v4.0.0 entry that opens with the brand change.
-- Coordinate the actual GitHub org migration (`angellops` → `Wekoodo`) with the maintainer; this is a one-click GitHub admin action but should be timed with the v4.0.0 release tag so docs and the new Packagist entry land at the same moment.
+> **Note on brand transition timing.** Earlier drafts of this PRD ran a "Phase 0b" of brand work in parallel with cleanup. That has been consolidated into Phase 6 (Brand & Release) below. The only brand-related work that lands in Phase 0 is the `Support\PartnerAttribution::VALUE = 'WekoodoLLC_Ecom'` constant — because every REST request and the JS SDK helper need that value from day 1 of Phase 1. Everything else visible to the public (composer `name` change, README "Formerly Angell EYE" notice, CHANGELOG brand entry, GitHub org migration, Packagist abandoned flag) clusters at release time so the in-repo brand state stays consistent with what's actually published.
 
 **Phase 1 — Core REST Plumbing (Weeks 2-3).**
 - Build `REST\Config`, `REST\Http\{Request,Response,RequestOptions,Prefer,TransportInterface,CurlTransport}`, `REST\Auth\{OAuth2Authenticator,AccessToken,AuthAssertionBuilder}`, `REST\TokenStore\{TokenStoreInterface,InMemoryTokenStore,FilesystemTokenStore,Psr16TokenStore}`, `REST\Exceptions\*`, `REST\Responses\BaseResponse`, `REST\Resources\BaseResource`, `REST\Client` (facade, lazy resources).
@@ -440,19 +438,30 @@ bin/paypal-upgrade-check                        NEW — CLI scanner for merchant
 - `documentation/brand-history.md` — the Angell EYE → angellops → Wekoodo journey, why the PHP namespace is preserved (`angelleye\PayPal` stays intact), where to find the package on Packagist now (`wekoodo/paypal-php-library` canonical, `angelleye/paypal-php-library` marked abandoned), GitHub redirects, and current contact channels under the Wekoodo brand. Linked prominently from `README.md` and `CHANGELOG.md`.
 - Update `README.md` (with "**Formerly Angell EYE — now Wekoodo**" notice and brand-history link near the top), `CHANGELOG.md` (v4.0.0 entry leads with the brand change, then the REST modernization, then the telemetry removal), and any inline doc-block author/copyright lines in `src/` that mention the old brand.
 
-**Phase 6 — End-to-End Verification & Release (Weeks 15-16).**
+**Phase 6 — Brand & Release (Weeks 15-16).**
+
+*End-to-end verification (the formal release gate).* The bundled demo kits are the gate, not external beta merchants. If all of these run clean in sandbox, v4.0 is releasable:
 - Run `demo/classic/express-checkout-basic/` end-to-end against both backends (`upgrade_from_classic = false` and `true`), diff outputs, verify behavioral parity.
 - Run `demo/rest/checkout-standard/` and `demo/rest/checkout-redirect/` end-to-end in sandbox.
-- Run `bin/paypal-upgrade-check` against three real merchant codebases (e.g., one PayPal + WooCommerce extension, one custom checkout flow, one subscription billing app) and verify the report classifies methods correctly.
+- Run `bin/paypal-upgrade-check` against representative merchant codebases (e.g., one PayPal + WooCommerce extension, one custom checkout flow, one subscription billing app) and verify the report classifies methods correctly.
 - Run full PHPUnit suite — assert ≥ 80% line coverage on `REST/`, `Legacy/`, `Support/` namespaces.
-- Tag `v4.0.0-rc1`, publish to Packagist as a release candidate.
-- After a 2-week RC bake period with community feedback, tag `v4.0.0`.
+
+*In-repo brand transition (lands in this phase, not earlier).* Keeps the in-repo brand state consistent with what's actually published:
+- Update `composer.json`: change `name` from `angelleye/paypal-php-library` to `wekoodo/paypal-php-library`; update `homepage` and `support.source` to `https://github.com/Wekoodo/paypal-php-library`; extend the `authors` block to list both Angell EYE (historical) and Wekoodo (current).
+- Update `README.md` header with prominent "**Formerly published as Angell EYE — now Wekoodo.**" notice and link to a new "Brand history" section explaining: Angell EYE → angellops (GitHub-only rename) → Wekoodo (v4.0+). Note that the PHP namespace `angelleye\PayPal` is preserved for backward compatibility — no `use` statement changes needed when upgrading from v3.x.
+- Replace any in-code references to "Angell EYE" with "Wekoodo" in user-facing strings (log prefixes, error messages, default `LogPath` directory name if present), keeping the literal namespace `angelleye` intact in PHP code.
+- Update `CHANGELOG.md` with a v4.0.0 entry that opens with the brand change, then the REST modernization, then the telemetry removal.
+
+*Release tags.*
+- Tag `v4.0.0-rc1` and publish to Packagist as a release candidate. (Composer's default install behavior is stable-only, so users on `^3.0` won't auto-upgrade — they must explicitly opt in to the RC, e.g., `"wekoodo/paypal-php-library": "^4.0@RC"`.)
+- 1-week RC bake period using the bundled demo kits as the validation gate. If a demo kit fails or surfaces a regression in sandbox during the bake, fix and re-tag (`rc2`, `rc3`, ...). If the demos run clean across the bake window, tag `v4.0.0` for general availability.
+- Coordinate the maintainer-side out-of-band actions to land alongside the `v4.0.0` tag (GitHub org transfer `angellops` → `Wekoodo`, Packagist publish of `wekoodo/paypal-php-library`, marking `angelleye/paypal-php-library` as abandoned — see "Out-of-Band Items" below).
 
 ### Technical Risks
 
 - **EC-token bridge fragility.** The synthetic `EC-XXX` token mapping to REST order_ids depends on a `TokenStore` and on intercepting/rewriting the merchant's `returnurl` so PayPal sends back the synthetic token rather than the raw order_id. If a merchant's framework strips query params, modifies `returnurl` post-call, or runs PayPal redirects in a context where session storage is unavailable (CLI, queued worker), the bridge breaks. **Mitigation:** the bridge accepts BOTH forms on lookup (synthetic token OR raw REST order_id), so even if the rewrite fails, `GetExpressCheckoutDetails` still resolves. Document this fallback explicitly. Add an `EcTokenBridge` integration test that simulates each session storage backend.
 - **Mapper drift.** PayPal's REST and Classic responses are similar but not identical. Subtle field-shape mismatches (currency formatting, address line collapsing, line-item rounding) will surface in production for some merchants. **Mitigation:** comprehensive round-trip tests per mapper with captured real-world fixtures; explicit `behavioral_differences` notes in `documentation/upgrade-from-classic.md`; the upgrade-check CLI flags caveats inline.
-- **Sandbox != live behavior.** PayPal sandbox occasionally diverges from production (test card behavior, Pay Later eligibility, Disputes lifecycle timings). Integration tests passing in sandbox don't guarantee production behavior. **Mitigation:** RC period (2 weeks) with select beta merchants running on production. Documented in `documentation/sandbox-vs-live.md`.
+- **Sandbox != live behavior.** PayPal sandbox occasionally diverges from production (test card behavior, Pay Later eligibility, Disputes lifecycle timings). Integration tests passing in sandbox don't guarantee production behavior. **Mitigation:** the 1-week RC bake (see Phase 6), plus (optionally) beta merchants running the RC against production code. Sandbox-vs-live divergence is an inherent residual risk that the bundled demos can't fully eliminate by definition — `documentation/sandbox-vs-live.md` flags this explicitly so users on `^4.0.0` understand the early-adopter posture.
 - **Token store concurrency.** `FilesystemTokenStore` with file-locking has worked for years in similar libraries, but high-concurrency scenarios (50+ concurrent FPM workers all hitting an expired token) can trigger a thundering herd. **Mitigation:** jittered single-flight refresh inside `OAuth2Authenticator` (refresh delay = `random_int(0, 500)` ms), with file lock as the serialization point.
 - **PHP 8.1 floor excludes some merchants.** Merchants on shared hosting may still be on 8.0 or even 7.4. **Mitigation:** publish a clear deprecation notice in v3.x README and `CHANGELOG.md`; keep v3.x in `support` mode for 12 months post-v4.0 release. v3.x receives security fixes only.
 - **JS SDK helper false-promises.** Merchants who expect `ButtonHelper::renderSmartButtons` to "just work" without writing any JavaScript will be disappointed — they still need to wire `createOrder` / `onApprove` callbacks. **Mitigation:** `ButtonHelper` documentation explicitly states what it does and doesn't do; `demo/rest/checkout-standard/` provides a copy-pasteable working example.
@@ -524,7 +533,9 @@ For each Phase 6 release-gate run:
 - [ ] `README.md` displays the "Formerly Angell EYE — now Wekoodo" notice prominently.
 - [ ] GitHub repo lives at `github.com/Wekoodo/paypal-php-library`; the angellops URL redirects correctly.
 - [ ] Packagist `wekoodo/paypal-php-library` package is published; `angelleye/paypal-php-library` is marked `abandoned` pointing to the new name.
-- [ ] At least 2 beta merchants have run upgrade-mode in production for 2 weeks without regressions on their actual production code paths (not just demos).
+- [ ] All bundled demo kits run clean end-to-end in sandbox — `demo/classic/express-checkout-basic/` in both Classic and `upgrade_from_classic = true` modes (with diffed-identical response shapes), `demo/rest/checkout-standard/`, and `demo/rest/checkout-redirect/`. **This is the formal release gate.**
+- [ ] 1-week RC bake period has elapsed since the `v4.0.0-rc1` tag with no demo-kit regressions.
+- [ ] (Optional) At least 1 beta merchant has run upgrade-mode in production during the RC bake without regressions on actual production code paths.
 
 ---
 
@@ -549,9 +560,6 @@ For each Phase 6 release-gate run:
 - `src/angelleye/PayPal/ReferencedPayoutsClass.php`
 - `vendor/paypal/rest-api-sdk-php/` (whole directory)
 
-**Files that will be converted (kept as a deprecated shim):**
-- `src/angelleye/PayPal/PayPalREST.php` — thin `@deprecated` proxy delegating to `REST\Client` so users who pulled `219_ai` early stay working through one minor version
-
 **New files to create:** see "Proposed File Structure" in §3 above (~120 new files, including resource handlers, response DTOs, exception classes, mappers, helpers, supporting utilities, templates, samples, demo kits, tests, fixtures, documentation).
 
 ---
@@ -563,6 +571,6 @@ These are not code changes but are blockers for the release:
 1. **AWS endpoint and key are already decommissioned** (per maintainer confirmation). No rotation work needed. The code-side cleanup (Phase 0) is the only remaining task. If telemetry is desired in the future, design it as an opt-in `TelemetryInterface` in v4.1+ with documented data fields and clear consent UX.
 2. **Migrate the GitHub repository** from `github.com/angellops/paypal-php-library` to `github.com/Wekoodo/paypal-php-library`. GitHub's transfer-repository flow handles this in one click and sets up automatic redirects from the old URL. Time the transfer with the v4.0.0 release tag so docs and the new Packagist entry land at the same moment.
 3. **Publish the renamed Packagist package.** Create `wekoodo/paypal-php-library` on Packagist pointing at the new GitHub repo URL. Set up Packagist's GitHub webhook so future tags auto-publish. After the v4.0.0 publish succeeds, edit the existing `angelleye/paypal-php-library` package on Packagist and set `"abandoned": "wekoodo/paypal-php-library"` in `composer.json` of the `release` branch (or via the Packagist UI). This makes Composer print the standard "package abandoned, use X instead" notice on every existing merchant's next `composer update`.
-4. **Recruit 2 beta merchants** for the 2-week RC bake period. Ideal mix: one running Express Checkout for e-commerce (will exercise `SetExpressCheckout` / `DoExpressCheckoutPayment` / `RefundTransaction` mappers heavily), one running Recurring Payments (will exercise the Subscriptions mappers including the multi-call Plans + Subscription orchestration). Verify both merchants test on their actual production integration files, not just bundled demos.
+4. **(Optional but recommended) Recruit 1–2 beta merchants** to run v4.0 RC against their production code during the 1-week RC bake. Ideal mix: one running Express Checkout for e-commerce (would exercise `SetExpressCheckout` / `DoExpressCheckoutPayment` / `RefundTransaction` mappers), one running Recurring Payments (would exercise the Subscriptions mappers and the Plans + Subscription orchestration). This is supplemental confidence — the **formal release gate is the bundled demo kits running clean in sandbox** (see Phase 6). Beta merchant testing accelerates discovery of edge cases the demos don't cover, but it is not a blocker for tagging GA.
 5. **Publish a v3.x deprecation notice** on the existing Packagist page and the GitHub README pointing to the v4.0 RC. Set v3.x branch to security-only fixes for 12 months. Make clear that v3.x merchants do NOT need to change `use` statements when upgrading — the namespace `angelleye\PayPal` is preserved.
 6. **Update social and brand assets** — Twitter/X bio, project website (if any), and any related angellops org repos to redirect users to Wekoodo. Coordinate with marketing or do solo, but ensure the brand transition is not just a code-level event.
