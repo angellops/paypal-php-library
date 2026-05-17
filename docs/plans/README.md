@@ -182,6 +182,7 @@ There are **three** distinct levels of planning. Don't conflate them — they ha
 - **Scope:** "Exactly what does this iteration ship, in what order, with what tests?"
 - **Cadence:** in batches of 1–3 iterations ahead of execution
 - **Why just-in-time?** Iterations planned 6 months ahead will be wrong by then. Phase-level outlines age slowly; iteration-level specs age fast. Keep specs fresh by writing them close to execution.
+- **Tooling to install at this stage:** the third-party [`to-issues`](https://www.skills.sh/mattpocock/skills/to-issues) skill (Matt Pocock) is a good fit for decomposing one iteration into its 1–3 GitHub issues using vertical-slice / tracer-bullet methodology. Deliberately **not** installed during roadmap planning (issues at that stage are stubs only — the skill would be overkill). Install it before starting the first iteration-spec session and use it alongside `superpowers:writing-plans` from then on.
 
 ### Why split levels 2 and 3 into separate sessions?
 
