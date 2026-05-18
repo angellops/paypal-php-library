@@ -40,7 +40,7 @@ PRD                                — vision (docs/PRD.md)
 | [`docs/PRD.md`](../PRD.md) | Vision & scope for v4.0 | Authored once, edited rarely | During **planning** only — never auto-loaded during execution |
 | [`docs/plans/README.md`](README.md) | This file — the workflow itself | Updated when workflow changes | Once per agent, then forgotten |
 | [`docs/plans/ROADMAP.md`](ROADMAP.md) | Phase + iteration index | Updated after every iteration | During planning; **not** read by iteration sessions |
-| `docs/plans/iteration-N.M-<slug>.md` | The spec for one iteration | Written **just before** execution (often in batches of 2–3 ahead) | The session executing iteration N.M |
+| `docs/plans/iteration-N.M-<slug>.md` | The spec for one iteration | Written in **phase-batch** sessions before that phase's first iteration executes | The session executing iteration N.M |
 | `docs/plans/handoffs/iteration-N.M-handoff.md` | Delta produced by completing N.M | Written by the iteration as part of "done" | Only by iterations that explicitly list it as a dependency |
 
 ---
@@ -173,20 +173,20 @@ There are **three** distinct levels of planning. Don't conflate them — they ha
 - **Scope:** "What phases? What iterations under each? In what order?"
 - **Cadence:** once at the start of a major version, then small adjustments as iterations reveal needed splits/merges
 - **Slash command:** `/plan-roadmap` (see `.claude/commands/plan-roadmap.md`)
-- **Stays at title + 1-line goal per iteration.** Does **not** write detailed iteration specs.
+- **Stays at title + 1-line goal per iteration.** Does **not** write detailed iteration specs — those are produced later by per-phase planning sessions (level 3 below), which also flesh out the stub issue bodies.
 
-### 3. Iteration-spec planning — just-in-time
+### 3. Phase planning — iteration specs, one phase at a time
 
-- **Input:** one (or a few) row(s) from the roadmap, plus relevant PRD section(s)
-- **Output:** one (or a few) `docs/plans/iteration-N.M-<slug>.md` file(s)
-- **Scope:** "Exactly what does this iteration ship, in what order, with what tests?"
-- **Cadence:** in batches of 1–3 iterations ahead of execution
-- **Why just-in-time?** Iterations planned 6 months ahead will be wrong by then. Phase-level outlines age slowly; iteration-level specs age fast. Keep specs fresh by writing them close to execution.
-- **Tooling to install at this stage:** the third-party [`to-issues`](https://www.skills.sh/mattpocock/skills/to-issues) skill (Matt Pocock) is a good fit for decomposing one iteration into its 1–3 GitHub issues using vertical-slice / tracer-bullet methodology. Deliberately **not** installed during roadmap planning (issues at that stage are stubs only — the skill would be overkill). Install it before starting the first iteration-spec session and use it alongside `superpowers:writing-plans` from then on.
+- **Input:** all iteration rows for one phase from the roadmap, plus relevant PRD section(s), plus prior phases' handoff files if any
+- **Output:** N iteration spec MDs (`docs/plans/iteration-N.M-<slug>.md`) **and** N populated GitHub issue bodies for that phase (the level-2 stubs are rewritten with real content here)
+- **Scope:** "Exactly what does each iteration in this phase ship, in what order, with what tests?"
+- **Cadence:** one batch per phase, written *before* that phase's first iteration executes
+- **Slash command:** `/plan-phase N` (see `.claude/commands/plan-phase.md`)
+- **Skills used:** `superpowers:writing-plans` (for the spec content) + the third-party [`to-issues`](https://www.skills.sh/mattpocock/skills/to-issues) skill from Matt Pocock (for decomposing each iteration into 1–3 vertical-slice GitHub issue bodies). Install `to-issues` once, before the first phase-planning session, then use both skills together from then on.
 
 ### Why split levels 2 and 3 into separate sessions?
 
-Context economy. A roadmap-planning session needs the full PRD loaded — a heavy context cost paid once. An iteration-spec session needs only the one relevant roadmap row + maybe one PRD section + (sometimes) the prior handoff — much lighter. Mixing them defeats the whole point of the workflow.
+Context economy and scope focus. A roadmap-planning session (level 2) needs the full PRD loaded — a heavy context cost paid once to lay out all phases and iterations. A phase-planning session (level 3) needs only the one phase's roadmap rows + relevant PRD section(s) + prior phases' handoffs — much lighter, and lets each session concentrate on one phase's design end-to-end without mixing in unrelated work. Splitting keeps each session focused on one concern at one altitude.
 
 ---
 
@@ -204,5 +204,6 @@ Context economy. A roadmap-planning session needs the full PRD loaded — a heav
 | Commit message format | [.agents/skills/git-commit/](../../.agents/skills/git-commit/) |
 | PR template | [.github/pull_request_template.md](../../.github/pull_request_template.md) |
 | Iteration issue template | [.github/ISSUE_TEMPLATE/iteration-issue.md](../../.github/ISSUE_TEMPLATE/iteration-issue.md) |
-| Slash command to plan the roadmap | `.claude/commands/plan-roadmap.md` |
+| Slash command to plan the roadmap (level 2) | `.claude/commands/plan-roadmap.md` |
+| Slash command to plan one phase's iteration specs (level 3) | `.claude/commands/plan-phase.md` |
 | Slash command to start an iteration | `.claude/commands/execute-iteration.md` |
