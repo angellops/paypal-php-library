@@ -14,7 +14,7 @@ Read, in this order:
 3. Relevant `docs/PRD.md` section(s) for Phase `$ARGUMENTS`
 4. Any prior phases' handoff files under `docs/plans/handoffs/` (only if they exist and are relevant)
 
-Verify the third-party `to-issues` skill (Matt Pocock, [skills.sh](https://www.skills.sh/mattpocock/skills/to-issues)) is installed locally. If it's not, install it before proceeding — this skill is the workhorse for decomposing each spec into vertical-slice GitHub issue bodies.
+Verify the third-party `to-issues` skill (Matt Pocock, [skills.sh](https://www.skills.sh/mattpocock/skills/to-issues)) is available in the discoverable-skills list for this session. It should already be — the repo tracks it under `.agents/skills/to-issues/` per the convention in `.gitignore` and `skills-lock.json`. **If it is NOT available, stop and ask the user to install it.** Do not auto-install third-party skills; that is a local-environment mutation + supply-chain action that requires explicit human approval, not a side effect of running this slash command. This skill is the workhorse for decomposing each spec into vertical-slice GitHub issue bodies.
 
 ## Step 2 — Summarize and check in (do NOT proceed past this step on your own)
 
@@ -33,8 +33,11 @@ For each iteration in the phase, in roadmap order:
 
 1. Use `superpowers:writing-plans` to draft the iteration spec
 2. Save the spec to `docs/plans/iteration-N.M-<slug>.md` using the template in `docs/plans/README.md`
-3. Use the `to-issues` skill to derive 1–3 vertical-slice issue bodies from the spec
-4. Update the corresponding GitHub issue (number from the ROADMAP.md row) with the new body via `gh issue edit <number> --body-file <path>`
+3. Use the `to-issues` skill to derive **1–3** vertical-slice issue bodies from the spec
+4. Populate the GitHub issue tracker:
+   - **If `to-issues` produced exactly 1 body:** update the iteration's existing stub issue (number from the ROADMAP.md row) with `gh issue edit <number> --body-file <path>`.
+   - **If `to-issues` produced 2 or 3 bodies:** treat the existing stub as the *primary* slice — update it with the first body via `gh issue edit`. Then `gh issue create` each additional body, applying the same milestone (`v4.0`) and labels (the iteration's `phase-N` + `iteration`) so they cluster with the rest. Each newly-created issue's body should open with `Sub-issue of #<primary>` so the tracker link back is explicit.
+5. If new issues were created in step 4, update the iteration's ROADMAP.md row to list all issue numbers in the Issue column (e.g., `#239, #284`) and update the iteration spec's `**GitHub issues:**` frontmatter line to match.
 
 Write specs in roadmap order (0.1 → 0.2 → ...) so each can reference its predecessors' planned handoffs.
 

@@ -178,7 +178,7 @@ There are **three** distinct levels of planning. Don't conflate them — they ha
 ### 3. Phase planning — iteration specs, one phase at a time
 
 - **Input:** all iteration rows for one phase from the roadmap, plus relevant PRD section(s), plus prior phases' handoff files if any
-- **Output:** N iteration spec MDs (`docs/plans/iteration-N.M-<slug>.md`) **and** N populated GitHub issue bodies for that phase (the level-2 stubs are rewritten with real content here)
+- **Output:** N iteration spec MDs (`docs/plans/iteration-N.M-<slug>.md`) **and** populated GitHub issue bodies for that phase. Each iteration's existing level-2 stub is rewritten with real content here. Iterations that `to-issues` decomposes into 2–3 vertical slices spawn additional GitHub issues — the existing stub becomes the **primary** slice, and the additional slices are created as new issues on the same milestone with the same phase + `iteration` labels (each linked back via `Sub-issue of #<primary>` in its body). The iteration's ROADMAP.md row is updated to list all issue numbers in its Issue column.
 - **Scope:** "Exactly what does each iteration in this phase ship, in what order, with what tests?"
 - **Cadence:** one batch per phase, written *before* that phase's first iteration executes
 - **Slash command:** `/plan-phase N` (see `.claude/commands/plan-phase.md`)
