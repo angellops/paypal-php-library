@@ -59,3 +59,4 @@ Available under [.agents/skills/](.agents/skills/) (symlinked to `.claude/skills
 - [git-commit](.agents/skills/git-commit/) — Conventional Commit message generation
 - [branch-and-pr-conventions](.agents/skills/branch-and-pr-conventions/) — repo-specific git/PR rules (branch naming, base branch, PR body sections)
 - [stripe-best-practices](.agents/skills/stripe-best-practices/) — Stripe reference (for parity/comparison only)
+- [to-issues](.agents/skills/to-issues/) — ad-hoc decomposition of a plan/spec into vertical-slice GitHub issues (Matt Pocock, from skills.sh). **Not used by `/plan-phase`** — the v4.0 phase-planning workflow ships one issue per iteration (no further decomposition). Available for one-off decomposition work outside the iteration framework.
