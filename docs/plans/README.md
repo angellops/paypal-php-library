@@ -15,21 +15,19 @@ PRD                                — vision (docs/PRD.md)
     │   • Has NO standalone MD file beyond ROADMAP.md
     │
     └── Iteration                  — the executable atom
-        │   • 1 iteration = 1 AI session = 1 PR = 1 MD file
-        │   • Closes 1–3 GitHub issues per PR
+        │   • 1 iteration = 1 AI session = 1 PR = 1 MD file = 1 GitHub issue
         │   • Spec: docs/plans/iteration-N.M-<slug>.md
         │   • Handoff (output): docs/plans/handoffs/iteration-N.M-handoff.md
         │
-        └── GitHub Issue(s)        — granular deliverables (1–3 per iteration)
+        └── GitHub Issue           — the tracker for this iteration (the PR closes it)
 ```
 
 **Why two levels?** Phase gives semantic context for humans and the roadmap; iteration is the actually-executable unit small enough for one clean context window.
 
 **Sizing rule of thumb:**
-- 1 iteration ≈ 1–2 story points ≈ one focused session ≈ one PR
+- 1 iteration ≈ 1–2 story points ≈ one focused session ≈ one PR ≈ 1 GitHub issue
 - If you want to split: it's multiple iterations under the same phase
-- If 1–3 issues naturally ship together in one PR: that's one iteration
-- 4+ issues per iteration → split it
+- If the work doesn't fit one focused session, split it into multiple iterations
 
 ---
 
@@ -74,8 +72,8 @@ Every `iteration-N.M-<slug>.md` file should have these sections:
 # Iteration N.M — <title>
 
 **Phase:** N — <phase name>
-**GitHub issues:** #A, #B, #C
-**Branch:** `{type}/<primary-issue-#>-<slug>`
+**GitHub issue:** #N
+**Branch:** `{type}/<issue-#>-<slug>`
 **Base branch:** feat/219-ppcp-integration (or release for v3.x hotfixes)
 
 ## Goal

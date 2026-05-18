@@ -31,7 +31,7 @@ For each iteration in the phase, in roadmap order:
 
 1. Use `superpowers:writing-plans` to draft the iteration spec
 2. Save the spec to `docs/plans/iteration-N.M-<slug>.md` using the template in `docs/plans/README.md`
-3. Derive a single GitHub issue body from the spec (1–2 paragraph description + acceptance criteria + scope notes — pulled directly from the spec sections of the same names) and update the iteration's existing stub issue (number from the ROADMAP.md row) with `gh issue edit <number> --body-file <path>`
+3. Derive a single GitHub issue body from the spec — copy the spec's **Goal**, **Scope**, and **Acceptance criteria** sections verbatim into the issue body (these are the template section names from `docs/plans/README.md`'s "Iteration spec template"). Then update the iteration's existing stub issue (number from the ROADMAP.md row) with `gh issue edit <number> --body-file <path>`
 
 Write specs in roadmap order (0.1 → 0.2 → ...) so each can reference its predecessors' planned handoffs.
 
@@ -39,7 +39,7 @@ Write specs in roadmap order (0.1 → 0.2 → ...) so each can reference its pre
 
 ## Step 4 — Wrap up
 
-- Update `docs/plans/ROADMAP.md` if any iteration scope clarified or split during planning
+- Update `docs/plans/ROADMAP.md` if any iteration scope clarified or split during planning. **If an iteration was split** (e.g., 3.5 → 3.5a / 3.5b), per `ROADMAP.md`'s own maintenance note you must update **both** the ROADMAP table **and** the GitHub milestone — rename the existing stub issue's title to match the split (e.g., "Iter 3.5a — ..."), add the corresponding labels, and `gh issue create` the additional sub-iteration's stub on the same milestone with the same labels. ROADMAP and GitHub stay in sync.
 - Commit (`git-commit` skill) — Conventional Commit, type `docs`
 - Open PR. **Base branch:** `feat/219-ppcp-integration`. **Branch-name exception:** because phase-planning PRs close no iteration issues, the standard `{type}/{issue-number}-{slug}` branch convention from [`branch-and-pr-conventions`](../../.agents/skills/branch-and-pr-conventions/SKILL.md) doesn't apply. Use `docs/plan-phase-$ARGUMENTS` (e.g., `docs/plan-phase-0`) and state the exception explicitly in the PR body. All other PR conventions (template sections, BC/Compat impact note, etc.) still apply.
 - PR closes none of the iteration issues by design (those close on execution PRs); reference the v4.0 milestone

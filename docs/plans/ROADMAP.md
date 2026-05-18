@@ -36,7 +36,7 @@ Source of truth for phases and iterations. GitHub milestone (`v4.0`) and issues 
 
 ## Iterations
 
-> One row per iteration. PR closes 1–3 issues. Iteration MD is the executable spec.
+> One row per iteration. PR closes 1 issue. Iteration MD is the executable spec.
 
 ### Phase 0: Cleanup & Foundation
 
