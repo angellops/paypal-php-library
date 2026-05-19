@@ -23,11 +23,12 @@ The PayPal PHP SDK at `/home/angellops/projects/paypal-sdk-php/` is a long-stand
 **Proposed Solution.** Ship v4.0 with a clean, vendor-SDK-free REST layer covering PayPal's full REST surface (Orders, Payments, Subscriptions, Plans, Catalog Products, Invoicing, Payouts, Disputes, Webhooks, Identity, Vault, Partner Referrals, Reports). Provide a Legacy Adapter that routes Classic-style method calls through REST when merchants flip `upgrade_from_classic = true`, preserving their existing call sites and response-shape expectations. Existing Classic NVP code paths remain unchanged for merchants who don't opt in.
 
 **Success Criteria.**
-- **Zero-touch upgrade for the 32 most-used Classic methods**: a merchant's existing `$PayPal->SetExpressCheckout(...)` / `DoExpressCheckoutPayment(...)` / `RefundTransaction(...)` etc. continues to return the same response shape after flipping `upgrade_from_classic = true`, verified by running every demo in `demo/classic/` end-to-end against both backends and diffing outputs.
-- **Full REST surface coverage**: 13 resource handlers shipped (Orders, Payments, Subscriptions, Plans, CatalogProducts, Invoicing, Payouts, Disputes, Webhooks, WebhookVerifier, Identity, Vault, PartnerReferrals, Reports).
+- **Zero-touch upgrade for the 30 mapped Classic methods**: a merchant's existing `$PayPal->SetExpressCheckout(...)` / `DoExpressCheckoutPayment(...)` / `RefundTransaction(...)` etc. continues to return the same response shape after flipping `upgrade_from_classic = true`, verified by running every demo in `demo/classic/` end-to-end against both backends and diffing outputs.
+- **Full REST surface coverage**: 14 resource handlers shipped — 13 resources (Orders, Payments, Subscriptions, Plans, CatalogProducts, Invoicing, Payouts, Disputes, Webhooks, Identity, Vault, PartnerReferrals, Reports) plus the WebhookVerifier helper.
 - **Test coverage ≥ 80% line coverage** on the new `REST/`, `Legacy/`, and `Support/` namespaces, plus passing sandbox integration tests for at least one happy-path scenario per resource.
 - **Hardcoded telemetry removed**: zero outbound HTTP calls from the SDK to non-PayPal endpoints (verified by code audit).
 - **Backward compatibility**: every existing public method signature on `angelleye\PayPal\PayPal` continues to exist with the same signature and return-shape contract; existing demos in `demo/classic/` continue to work without any code change.
+- **CI green on every PR**: PHPUnit Unit + coverage ≥ 80% on `REST/`, `Legacy/`, `Support/`; PHPStan static analysis; sandbox integration tests run when `PAYPAL_SANDBOX_*` GitHub Actions secrets are present.
 
 ---
 
@@ -47,9 +48,9 @@ The PayPal PHP SDK at `/home/angellops/projects/paypal-sdk-php/` is a long-stand
 
 - **AC1.1**: Adding `'upgrade_from_classic' => true` + `'ClientID' => ...` + `'ClientSecret' => ...` to my existing config array routes the 32 in-scope Classic methods through REST.
 - **AC1.2**: Response shape from `SetExpressCheckout` / `DoExpressCheckoutPayment` / `GetExpressCheckoutDetails` / `DoCapture` / `DoAuthorization` / `DoVoid` / `RefundTransaction` / `GetTransactionDetails` / `TransactionSearch` / `CreateRecurringPaymentsProfile` / etc. continues to include `ACK`, `CORRELATIONID`, `TIMESTAMP`, `VERSION`, and the per-method response fields my code reads (`TOKEN`, `REDIRECTURL`, `PAYMENTINFO_0_TRANSACTIONID`, `REFUNDTRANSACTIONID`, etc.).
-- **AC1.3**: When a Classic method has no clean REST equivalent (e.g., `BMCreateButton`, `DoNonReferencedCredit`, `AddressVerify`), calling it throws `UnmappableMethodException` with a structured message naming the recommended replacement, OR transparently falls back to Classic NVP if my Classic credentials are present and `'classic_methods_passthrough' => ['BMCreateButton', ...]` lists the method.
+- **AC1.3**: When a Classic method has no clean REST equivalent (e.g., `BMCreateButton`, `DoNonReferencedCredit`, `AddressVerify`), the SDK automatically routes the call to Classic NVP if my Classic credentials (API username/password/signature) are present in the same config array. The auto-fallback is observable: on construction, the SDK emits a one-time PSR-3 NOTICE listing every method that will route through Classic. If Classic credentials are absent, the unmappable method throws `UnmappableMethodException` with a structured message naming the recommended PayPal-side replacement. There is no `classic_methods_passthrough` config key — auto-fallback is implicit.
 - **AC1.4**: My existing static PayPal button graphic continues to work — the upgrade does NOT require me to add the JS SDK.
-- **AC1.5**: Running `vendor/bin/paypal-upgrade-check ./src` against my codebase produces a report listing every Classic method call site, classified as cleanly-upgradable, upgradable-with-caveats, or unmappable.
+- **AC1.5**: Running `vendor/bin/paypal-upgrade-check ./src` against my codebase produces a report listing every Classic method call site, classified into one of four buckets: cleanly-upgradable, upgradable-with-caveats, auto-fallback-to-Classic (no REST equivalent but my Classic credentials will keep it running), or unmappable (no REST equivalent and no Classic credentials available).
 
 **Story 2 (Persona B).** As a new merchant integrator, I want a modern REST-first PHP API so I can build a clean integration from day one.
 
@@ -90,13 +91,14 @@ $PayPalConfig['ClientSecret'] = 'EHxxxxxxxxxxxxxx';
 ```bash
 vendor/bin/paypal-upgrade-check ./src
 ```
-Tool scans the merchant's source tree, lists every Classic method call site, classifies each as cleanly-upgradable / upgradable-with-caveats / unmappable, and prints a recommended `classic_methods_passthrough` list for the few that can't be cleanly upgraded.
+Tool scans the merchant's source tree, lists every Classic method call site, classifies each into one of four buckets (cleanly-upgradable / upgradable-with-caveats / auto-fallback-to-Classic / unmappable), and prints a concise summary naming which methods will route through Classic NVP if the merchant keeps their Classic credentials in the config array.
 
 **Step 3.** Merchant flips the switch:
 ```php
-$PayPalConfig['upgrade_from_classic']        = true;
-$PayPalConfig['classic_methods_passthrough'] = ['BMCreateButton'];  // from CLI output
+$PayPalConfig['upgrade_from_classic'] = true;
 ```
+
+If the upgrade-check CLI flagged any methods as auto-fallback-to-Classic, the SDK will route those calls to the merchant's existing Classic NVP credentials automatically — no additional config needed. On the first construction in upgrade mode the SDK emits a PSR-3 NOTICE listing which methods will route through Classic so the merchant can confirm the behavior in their logs.
 
 **Step 4.** Merchant tests in sandbox. **Their actual production integration files run unchanged** — every existing call site to `SetExpressCheckout`, `DoExpressCheckoutPayment`, `RefundTransaction`, etc. continues to work with the same input shape and the same response shape. Existing demo/test pages (if they have them) and the bundled `demo/classic/` kits also continue to work — the demos function as a useful sanity check, but the goal is unchanged behavior across the merchant's whole codebase, not just demo pages. The PayPal redirect URL changes from `paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-...` to `paypal.com/checkoutnow?token=ORDER_ID` but the buyer experience is otherwise identical.
 
@@ -281,7 +283,6 @@ src/angelleye/PayPal/
 │   │   ├── GetInvoiceDetailsMapper.php
 │   │   ├── UpdateInvoiceMapper.php
 │   │   ├── CancelInvoiceMapper.php
-│   │   ├── DoCaptureMapper.php
 │   │   ├── ManagePendingTransactionStatusMapper.php
 │   │   ├── GetBalanceMapper.php                → Reports::balances
 │   │   └── FieldMap.php                        Constant: simple 1:1 leaf mappings (~200 entries)
@@ -289,18 +290,18 @@ src/angelleye/PayPal/
 │       ├── UnmappableMethodException.php       Thrown for BMCreateButton, AddressVerify, etc.
 │       └── LegacyConfigException.php           e.g. ClientID missing when upgrade_from_classic=true
 │
-├── Support/                                    NEW — PSR-4 autoloaded; shared utilities
-│   ├── Reference.php                           Countries/States/AVS/CVV2/Currencies
-│   │                                           (extracted from inline arrays in PayPal.php)
-│   ├── Logger.php                              PSR-3 LoggerInterface impl with debug_id-aware formatter
-│   ├── Json.php                                json_encode/decode wrappers with consistent error handling
-│   └── PartnerAttribution.php                  Single class constant `VALUE = 'WekoodoLLC_Ecom'` —
-│                                                no setter, no override; the one source of truth
-│                                                referenced by both Classic (`PayPal::$APIButtonSource`)
-│                                                and REST (request headers + JS SDK helper)
-│
-└── ButtonHelper.php                            NEW — emits JS SDK <script> tag with merchant's
-                                                client_id pre-filled, optional funding sources, currency
+└── Support/                                    NEW — PSR-4 autoloaded; shared utilities
+    ├── Reference.php                           Countries/States/AVS/CVV2/Currencies
+    │                                           (extracted from inline arrays in PayPal.php)
+    ├── Logger.php                              PSR-3 LoggerInterface impl with debug_id-aware formatter
+    ├── Json.php                                json_encode/decode wrappers with consistent error handling
+    ├── PartnerAttribution.php                  Single class constant `VALUE = 'WekoodoLLC_Ecom'` —
+    │                                            no setter, no override; the one source of truth
+    │                                            referenced by both Classic (`PayPal::$APIButtonSource`)
+    │                                            and REST (request headers + JS SDK helper)
+    └── ButtonHelper.php                        NEW — emits JS SDK <script> tag with merchant's
+                                                 client_id pre-filled, optional funding sources, currency,
+                                                 and the hardcoded Wekoodo Partner-Attribution-Id
 
 # Files / dirs to DELETE (top-level orphan wrappers — public facade of the abandoned REST stack)
 src/angelleye/PayPal/RestClass.php              Bridge facade for the abandoned PayPal REST SDK
@@ -384,15 +385,22 @@ tests/                                          NEW
 
 phpunit.xml                                     NEW — at repo root
 bin/paypal-upgrade-check                        NEW — CLI scanner for merchant codebases
+phpstan.neon                                    NEW — level 5 starting point, baseline file allowed
+phpstan-baseline.neon                           NEW — empty at first, grows if level-5 surfaces issues
+.github/workflows/ci.yml                        NEW — PHPUnit + coverage + PHPStan + sandbox-integration
+                                                (sandbox job skips silently when PAYPAL_SANDBOX_* secrets
+                                                are absent so external-contributor PRs don't fail)
+.github/ISSUE_TEMPLATE/v4-plan-handoff.md       NEW — issue template mirroring the plan-file template
+                                                for follow-up issues opened mid-flight
 ```
 
 ### Integration Points
 
 - **PayPal REST API** — `https://api-m.{sandbox.}paypal.com`. OAuth 2.0 client_credentials. All endpoints listed under `Resources/` above. JSON request/response.
-- **Partner-Attribution-Id** — every REST request and the JS SDK helper send `WekoodoLLC_Ecom`. The value is a single hardcoded class constant in `Support\PartnerAttribution::VALUE` — referenced by the legacy `PayPal::$APIButtonSource` assignment (replacing today's `AngellEYELLC_Ecom_PHPCatalog` literal) and by every REST request header. It is **not** a config key; merchants don't see it and can't change it through their config array. (Determined contributors can patch it in code if they fork the library, but that's not a supported integration mode.)
+- **Partner-Attribution-Id** — every REST request and the JS SDK helper send `WekoodoLLC_Ecom`. The value is a single hardcoded class constant in `Support\PartnerAttribution::VALUE` — referenced by the legacy `PayPal::$APIButtonSource` assignment (replacing today's empty-string assignment on `main`) and by every REST request header. It is **not** a config key; merchants don't see it and can't change it through their config array. (Determined contributors can patch it in code if they fork the library, but that's not a supported integration mode.)
 - **Composer** — `composer.json` updates: `require` PHP floor to `^8.1`; add `psr/log` and `psr/simple-cache`; add `guzzlehttp/guzzle` and `nikic/php-parser` (dev) as `suggest`; declare PSR-4 autoload for the new namespaces while keeping the existing PSR-0 declaration for `angelleye\\PayPal`. **Package name moves from `angelleye/paypal-php-library` to `wekoodo/paypal-php-library`** at the v4.0.0 release. The existing Packagist entry `angelleye/paypal-php-library` is marked `"abandoned": "wekoodo/paypal-php-library"` so existing merchants see Composer's "package abandoned, use X instead" prompt on their next `composer update`.
 - **GitHub** — repo migrates from `github.com/angellops/paypal-php-library` to `github.com/Wekoodo/paypal-php-library` as part of the v4.0 release. GitHub's automatic redirects keep the angellops URL working for existing clones; new contributors and Packagist see the Wekoodo URL canonically. The previous `angelleye/paypal-php-library` GitHub URL also continues to redirect (chained: angelleye → angellops → Wekoodo). Update `composer.json` `homepage` and `support.source` URLs accordingly.
-- **Merchant config** — single associative array passed to constructor. New keys: `ClientID`, `ClientSecret`, `upgrade_from_classic`, `classic_methods_passthrough`, `TokenStore`, `TokenStorePath`, `TokenStoreTTL`, `RESTLogPath`, `on_unmappable_method`, `on_rest_error`. All have sensible defaults. (`PartnerAttributionId` is intentionally **not** a config key — see Partner-Attribution-Id bullet above.)
+- **Merchant config** — single associative array passed to constructor. New keys: `ClientID`, `ClientSecret`, `upgrade_from_classic`, `TokenStore`, `TokenStorePath`, `TokenStoreTTL`, `RESTLogPath`, `on_rest_error`. All have sensible defaults. Auto-fallback to Classic NVP for unmappable methods is implicit — there is no `classic_methods_passthrough` key; if Classic credentials are present, unmappable methods route to Classic, otherwise they throw `UnmappableMethodException`. (`PartnerAttributionId` is intentionally **not** a config key — see Partner-Attribution-Id bullet above.)
 - **PayPal JS SDK** — emitted via `ButtonHelper::renderSmartButtons([...])`. Loads `https://www.paypal.com/sdk/js?client-id={ClientID}&currency=USD&components=buttons` and the merchant-supplied init code, with the hardcoded Wekoodo Partner-Attribution-Id passed via the `data-partner-attribution-id` script attribute.
 - **TokenStore drivers** — session (default for upgrade-mode EC-token bridge), filesystem, PSR-16 cache.
 
@@ -417,22 +425,24 @@ bin/paypal-upgrade-check                        NEW — CLI scanner for merchant
 - Delete the entire `src/angelleye/PayPal/rest/` subdirectory (the ~12 API files behind those wrappers — all `use PayPal\Api\*` / `PayPal\Common\*` / `PayPal\Exception\*` from the abandoned vendor SDK).
 - **Remove the abandoned vendor SDK from `composer.json`'s `require` block** (`"paypal/rest-api-sdk-php": "*"`). The `vendor/` directory is gitignored in this repo, so there is no checked-in vendor tree to delete — the composer.json edit is what actually severs the dependency. Run `composer update` to regenerate `composer.lock` locally (it's also gitignored).
 - Remove the AWS telemetry tracker from `PayPal.php`. Search for and delete: (a) the `https://gtctgyk7fh.execute-api.us-east-2.amazonaws.com/...` URL assignment in the constructor, (b) the call site inside `CURLRequest`, and (c) the `TPV_Parse_Request` + `TPV_Send_Request` method definitions plus every call site. The endpoint is already decommissioned AWS-side; this is the code-side companion. (Specific line numbers intentionally omitted — they drift between branches; search by symbol, not line.)
-- Update the BN code (`Partner-Attribution-Id` for REST, `APIButtonSource` for Classic): create `Support\PartnerAttribution` with a single `public const VALUE = 'WekoodoLLC_Ecom';`, then replace every literal occurrence of `AngellEYELLC_Ecom_PHPCatalog` in the codebase with a reference to that constant. On `main` this is currently the `$this->APIButtonSource = 'AngellEYELLC_Ecom_PHPCatalog';` line in `PayPal.php`'s constructor (becomes `$this->APIButtonSource = \angelleye\PayPal\Support\PartnerAttribution::VALUE;`). Keep this hardcoded — do NOT add a config key for it. The whole point is that merchants don't see it and don't change it.
+- Update the BN code (`Partner-Attribution-Id` for REST, `APIButtonSource` for Classic): create `Support\PartnerAttribution` with a single `public const VALUE = 'WekoodoLLC_Ecom';`, then wire it into `PayPal.php`'s `$APIButtonSource` assignment. On `main` today this is `$this->APIButtonSource = '';` in `PayPal.php`'s constructor — currently an empty string. Phase 0 changes it to `$this->APIButtonSource = \angelleye\PayPal\Support\PartnerAttribution::VALUE;`. There is no `AngellEYELLC_Ecom_PHPCatalog` literal to hunt for — that string was already removed in a prior cleanup; the BN code on `main` is simply empty until Phase 0 wires the new constant in. Keep this hardcoded — do NOT add a config key for it. The whole point is that merchants don't see it and don't change it.
 - **Bump the `composer.json` PHP floor from `>=5.3.0` to `^8.1`.** This is a *large* BC change — merchants on PHP 5.x / 7.x will be unable to upgrade without bumping their runtime. Document the floor change prominently in `CHANGELOG.md` (Phase 6) and the v3.x deprecation notice (out-of-band item below). v3.x stays in security-only support for 12 months post-v4.0 to give those merchants a window.
 - Add PSR-4 autoload entries to `composer.json` for new namespaces (`angelleye\PayPal\REST\*`, `angelleye\PayPal\Legacy\*`, `angelleye\PayPal\Support\*` at `src/REST/`, `src/Legacy/`, `src/Support/` respectively). Keep the existing PSR-0 declaration for `angelleye\PayPal` so the legacy `PayPal`, `PayFlow`, `Adaptive`, `Financing` classes stay at their current paths under `src/angelleye/PayPal/`. Full PSR-4 migration of those legacy classes is deferred to v5.0 (when Classic itself is dropped).
 - Add `psr/log` + `psr/simple-cache` to `composer.json` `require`. Add `guzzlehttp/guzzle` to `suggest` (optional alternative `TransportInterface` impl). Add `nikic/php-parser` to `require-dev` (the upgrade-check CLI in Phase 3 needs it).
 - Extract the in-class reference-data arrays from `PayPal.php` (Countries / States / AVS / CVV2 / Currencies — currently inline in the class around the top of the file; search for the `$this->Countries` / `$this->States` etc. assignments) to a new `Support\Reference` class. Update `PayPal.php` to load via the new class without changing any public method behavior.
 - Set up `phpunit.xml`, `tests/Unit/` + `tests/Integration/` + `tests/Fixtures/` directory tree, and a first smoke test verifying the modified `PayPal.php` still autoloads cleanly.
+- Create `.github/workflows/ci.yml` running three jobs on every PR: (a) PHPUnit Unit + coverage gate (fails when `REST/`, `Legacy/`, `Support/` coverage drops below 80% — the gate is permissive while those namespaces are empty in Phase 0, and tightens as code lands), (b) PHPStan static analysis at level 5 with an allowed baseline file, (c) Sandbox Integration tests gated on the presence of `PAYPAL_SANDBOX_CLIENT_ID` / `PAYPAL_SANDBOX_CLIENT_SECRET` / `PAYPAL_SANDBOX_API_USERNAME` / `PAYPAL_SANDBOX_API_PASSWORD` / `PAYPAL_SANDBOX_API_SIGNATURE` GitHub Actions secrets (the job skips silently if absent so external-contributor PRs don't fail). Maintainer adds the secrets out-of-band.
+- Create `phpstan.neon` (level 5) and an empty `phpstan-baseline.neon`. Add a `scripts` block to `composer.json` exposing `composer test` (`vendor/bin/phpunit`) and `composer phpstan` (`vendor/bin/phpstan analyse`).
 - **License.** v4.0 stays `GPL-3.0+` (same as v3.x). No license change.
 
-> **Note on brand transition timing.** Earlier drafts of this PRD ran a "Phase 0b" of brand work in parallel with cleanup. That has been consolidated into Phase 6 (Brand & Release) below. The only brand-related work that lands in Phase 0 is the `Support\PartnerAttribution::VALUE = 'WekoodoLLC_Ecom'` constant — because every REST request and the JS SDK helper need that value from day 1 of Phase 1. Everything else visible to the public (composer `name` change, README "Formerly Angell EYE" notice, CHANGELOG brand entry, GitHub org migration, Packagist abandoned flag) clusters at release time so the in-repo brand state stays consistent with what's actually published.
+> **Note on brand transition timing.** Earlier drafts of this PRD ran a "Phase 0b" of brand work in parallel with cleanup. That has been consolidated into Phase 7 (Release & Brand Cutover) below. The only brand-related work that lands in Phase 0 is the `Support\PartnerAttribution::VALUE = 'WekoodoLLC_Ecom'` constant — because every REST request and the JS SDK helper need that value from day 1 of Phase 1. Everything else visible to the public (composer `name` change, README "Formerly Angell EYE" notice, CHANGELOG brand entry, GitHub org migration, Packagist abandoned flag) clusters at the v4.0.0 GA tag so the in-repo brand state stays consistent with what's actually published.
 
 **Phase 1 — Core REST Plumbing (Weeks 2-3).**
 - Build `REST\Config`, `REST\Http\{Request,Response,RequestOptions,Prefer,TransportInterface,CurlTransport}`, `REST\Auth\{OAuth2Authenticator,AccessToken,AuthAssertionBuilder}`, `REST\TokenStore\{TokenStoreInterface,InMemoryTokenStore,FilesystemTokenStore,Psr16TokenStore}`, `REST\Exceptions\*`, `REST\Responses\BaseResponse`, `REST\Resources\BaseResource`, `REST\Client` (facade, lazy resources).
 - Unit tests for all of the above (mocked HTTP).
 
 **Phase 2 — REST Resource Handlers (Weeks 4-9).**
-- Build all 13 resource handlers in this order (each ~3-5 days including tests):
+- Build all 14 resource handlers in this order (each ~3-5 days including tests):
   1. `Orders` (Week 4)
   2. `Payments` (Week 4)
   3. `Webhooks` + `WebhookVerifier` (Week 5)
@@ -462,7 +472,7 @@ bin/paypal-upgrade-check                        NEW — CLI scanner for merchant
 - Update `samples/config/config-sample.php` with all new config keys and inline documentation.
 
 **Phase 5 — Documentation (Week 14).**
-- `documentation/upgrade-from-classic.md` — full upgrade walkthrough, the 32 mapped methods, the unmappable list, tradeoffs.
+- `documentation/upgrade-from-classic.md` — full upgrade walkthrough, the 30 mapped methods, the auto-fallback-to-Classic list, the unmappable list with PayPal-side alternatives, tradeoffs.
 - `documentation/rest/index.md` — overview of the new REST architecture.
 - `documentation/rest/{orders,payments,subscriptions,plans,catalog-products,invoicing,payouts,disputes,webhooks,identity,vault,partner-referrals,reports}.md` — one per resource.
 - `documentation/js-sdk-upgrade-guide.md` — optional UX modernization with JS SDK Smart Buttons.
@@ -471,24 +481,35 @@ bin/paypal-upgrade-check                        NEW — CLI scanner for merchant
 - `documentation/brand-history.md` — the Angell EYE → angellops → Wekoodo journey, why the PHP namespace is preserved (`angelleye\PayPal` stays intact), where to find the package on Packagist now (`wekoodo/paypal-php-library` canonical, `angelleye/paypal-php-library` marked abandoned), GitHub redirects, and current contact channels under the Wekoodo brand. Linked prominently from `README.md` and `CHANGELOG.md`.
 - Update `README.md` (with "**Formerly Angell EYE — now Wekoodo**" notice and brand-history link near the top), `CHANGELOG.md` (v4.0.0 entry leads with the brand change, then the REST modernization, then the telemetry removal), and any inline doc-block author/copyright lines in `src/` that mention the old brand.
 
-**Phase 6 — Brand & Release (Weeks 15-16).**
+**Phase 6 — Verification & RC Bake (Week 15).**
 
 *End-to-end verification (the formal release gate).* The bundled demo kits are the gate, not external beta merchants. If all of these run clean in sandbox, v4.0 is releasable:
 - Run `demo/classic/express-checkout-basic/` end-to-end against both backends (`upgrade_from_classic = false` and `true`), diff outputs, verify behavioral parity.
 - Run `demo/rest/checkout-standard/` and `demo/rest/checkout-redirect/` end-to-end in sandbox.
-- Run `bin/paypal-upgrade-check` against representative merchant codebases (e.g., one PayPal + WooCommerce extension, one custom checkout flow, one subscription billing app) and verify the report classifies methods correctly.
+- Run `bin/paypal-upgrade-check` against representative merchant codebases (e.g., one PayPal + WooCommerce extension, one custom checkout flow, one subscription billing app) and verify the report classifies methods correctly across all four buckets (cleanly-upgradable / upgradable-with-caveats / auto-fallback-to-Classic / unmappable).
 - Run full PHPUnit suite — assert ≥ 80% line coverage on `REST/`, `Legacy/`, `Support/` namespaces.
+- Confirm CI is green on the `v4` branch tip (PHPUnit + coverage + PHPStan + sandbox-integration).
 
-*In-repo brand transition (lands in this phase, not earlier).* Keeps the in-repo brand state consistent with what's actually published:
+*Release candidate tag and bake.*
+- Tag `v4.0.0-rc1` on `angellops/paypal-php-library` and publish to Packagist as a release candidate under the current package name. (Composer's default install behavior is stable-only, so users on `^3.0` won't auto-upgrade — they must explicitly opt in to the RC, e.g., `"angelleye/paypal-php-library": "^4.0@RC"`.)
+- 1-week RC bake period using the bundled demo kits as the validation gate. If a demo kit fails or surfaces a regression in sandbox during the bake, fix and re-tag (`rc2`, `rc3`, ...).
+- Phase 6 ends with a clean RC that has baked for one week without regressions. The composer rename, README brand updates, GitHub repo transfer, and GA tag happen in Phase 7.
+
+**Phase 7 — Release & Brand Cutover (Week 16).**
+
+*In-repo brand transition.* Keeps the in-repo brand state consistent with what's actually published:
 - Update `composer.json`: change `name` from `angelleye/paypal-php-library` to `wekoodo/paypal-php-library`; update `homepage` and `support.source` to `https://github.com/Wekoodo/paypal-php-library`; extend the `authors` block to list both Angell EYE (historical) and Wekoodo (current).
 - Update `README.md` header with prominent "**Formerly published as Angell EYE — now Wekoodo.**" notice and link to a new "Brand history" section explaining: Angell EYE → angellops (GitHub-only rename) → Wekoodo (v4.0+). Note that the PHP namespace `angelleye\PayPal` is preserved for backward compatibility — no `use` statement changes needed when upgrading from v3.x.
 - Replace any in-code references to "Angell EYE" with "Wekoodo" in user-facing strings (log prefixes, error messages, default `LogPath` directory name if present), keeping the literal namespace `angelleye` intact in PHP code.
 - Update `CHANGELOG.md` with a v4.0.0 entry that opens with the brand change, then the REST modernization, then the telemetry removal.
 
-*Release tags.*
-- Tag `v4.0.0-rc1` and publish to Packagist as a release candidate. (Composer's default install behavior is stable-only, so users on `^3.0` won't auto-upgrade — they must explicitly opt in to the RC, e.g., `"wekoodo/paypal-php-library": "^4.0@RC"`.)
-- 1-week RC bake period using the bundled demo kits as the validation gate. If a demo kit fails or surfaces a regression in sandbox during the bake, fix and re-tag (`rc2`, `rc3`, ...). If the demos run clean across the bake window, tag `v4.0.0` for general availability.
-- Coordinate the maintainer-side out-of-band actions to land alongside the `v4.0.0` tag (GitHub org transfer `angellops` → `Wekoodo`, Packagist publish of `wekoodo/paypal-php-library`, marking `angelleye/paypal-php-library` as abandoned — see "Out-of-Band Items" below).
+*GA release coordination.*
+- Coordinate the maintainer-side OOB actions to land alongside the v4.0.0 GA tag: GitHub org transfer `angellops` → `Wekoodo` (one-click via GitHub's transfer-repository flow, sets up automatic redirects), Packagist publish of `wekoodo/paypal-php-library` from the new repo URL (set up Packagist's GitHub webhook so future tags auto-publish), marking the existing `angelleye/paypal-php-library` Packagist entry as `abandoned: wekoodo/paypal-php-library` via the Packagist web UI (no v3.0.6 release needed). See "Out-of-Band Items" below for the full coordinator checklist.
+- Tag `v4.0.0` on the post-transfer `Wekoodo/paypal-php-library` repo.
+
+*Post-GA followups.*
+- Update social and brand assets per OOB item below (Twitter/X bio, project website, related repos under the angellops org).
+- Monitor for early-adopter issues on the new repo's issue tracker. Triage the first wave during the week after GA.
 
 ### Technical Risks
 
@@ -498,7 +519,7 @@ bin/paypal-upgrade-check                        NEW — CLI scanner for merchant
 - **Token store concurrency.** `FilesystemTokenStore` with file-locking has worked for years in similar libraries, but high-concurrency scenarios (50+ concurrent FPM workers all hitting an expired token) can trigger a thundering herd. **Mitigation:** jittered single-flight refresh inside `OAuth2Authenticator` (refresh delay = `random_int(0, 500)` ms), with file lock as the serialization point.
 - **PHP 8.1 floor excludes some merchants.** Merchants on shared hosting may still be on 8.0 or even 7.4. **Mitigation:** publish a clear deprecation notice in v3.x README and `CHANGELOG.md`; keep v3.x in `support` mode for 12 months post-v4.0 release. v3.x receives security fixes only.
 - **JS SDK helper false-promises.** Merchants who expect `ButtonHelper::renderSmartButtons` to "just work" without writing any JavaScript will be disappointed — they still need to wire `createOrder` / `onApprove` callbacks. **Mitigation:** `ButtonHelper` documentation explicitly states what it does and doesn't do; `demo/rest/checkout-standard/` provides a copy-pasteable working example.
-- **Adaptive Payments / Permissions / Hosted Buttons orphans.** Some Classic methods (`BMCreateButton`, `Adaptive::Pay`, `Permissions::RequestPermissions`, `DoNonReferencedCredit`, `AddressVerify`) have no REST equivalent. Merchants using them will hit `UnmappableMethodException`. **Mitigation:** the `paypal-upgrade-check` CLI flags these in advance; documentation lists every unmappable method with the recommended PayPal-side alternative; merchants can opt to keep using Classic for those specific methods via `classic_methods_passthrough`.
+- **Adaptive Payments / Permissions / Hosted Buttons orphans.** Some Classic methods (`BMCreateButton`, `Adaptive::Pay`, `Permissions::RequestPermissions`, `DoNonReferencedCredit`, `AddressVerify`) have no REST equivalent. Merchants using them will hit `UnmappableMethodException` **only if their Classic NVP credentials are absent**. **Mitigation:** the `paypal-upgrade-check` CLI flags these in advance and classifies each call as auto-fallback-to-Classic (if Classic creds will be present) or unmappable; documentation lists every method with no REST equivalent and the recommended PayPal-side alternative; merchants who keep their Classic API username/password/signature in their config get automatic Classic-NVP routing for these methods, observable via the SDK's startup PSR-3 NOTICE listing the auto-fallback methods.
 
 ### Roadmap Beyond v4.0
 
@@ -546,7 +567,7 @@ For each Phase 6 release-gate run:
 2. **Upgrade-mode demo.** Same demo, same files, same browser steps — but config now has `upgrade_from_classic = true` plus REST `ClientID`/`ClientSecret`. Verify identical buyer experience and identical merchant-side response shape (TOKEN, REDIRECTURL, PAYMENTINFO_0_TRANSACTIONID, ACK="Success", etc.). The PayPal-hosted approval URL changes from `paypal.com/cgi-bin/webscr?cmd=_express-checkout` to `paypal.com/checkoutnow` — that is expected and is the visible signal that REST is active.
 3. **REST-native Smart Buttons demo.** Walk `http://localhost/demo/rest/checkout-standard/index.php`. Verify JS SDK loads, Smart Buttons render, click "PayPal" button, complete in-modal checkout, return to merchant page, see order-complete with capture details.
 4. **REST-native redirect demo.** Walk `http://localhost/demo/rest/checkout-redirect/index.php`. Same as #1 but file paths are `CreateOrder.php`, `CaptureOrder.php`, etc.
-5. **Upgrade-check CLI.** Run `vendor/bin/paypal-upgrade-check tests/Fixtures/sample-merchant-codebases/` — verify output classifies the seeded method calls correctly across cleanly-upgradable / caveats / unmappable buckets and prints the recommended `classic_methods_passthrough` config block.
+5. **Upgrade-check CLI.** Run `vendor/bin/paypal-upgrade-check tests/Fixtures/sample-merchant-codebases/` — verify output classifies the seeded method calls correctly across all four buckets (cleanly-upgradable / upgradable-with-caveats / auto-fallback-to-Classic / unmappable) and prints a concise summary that names which methods will route through Classic NVP if the merchant keeps their Classic credentials.
 
 ### Pre-Release Checklist
 
@@ -559,7 +580,8 @@ For each Phase 6 release-gate run:
 - [ ] Code search for `gtctgyk7fh.execute-api.us-east-2.amazonaws.com` returns zero hits.
 - [ ] Code search for `srGiuJFpDO4W7YCDXF56g2c9nT1JhlURVGqYD7oa` returns zero hits.
 - [ ] Code search for `TPV_Parse_Request` and `TPV_Send_Request` returns zero hits.
-- [ ] Code search for `AngellEYELLC_Ecom_PHPCatalog` returns zero hits — the BN code default is `WekoodoLLC_Ecom`.
+- [ ] `PayPal::$APIButtonSource` evaluates to `\angelleye\PayPal\Support\PartnerAttribution::VALUE` (i.e., `'WekoodoLLC_Ecom'`). (Note: the literal `'AngellEYELLC_Ecom_PHPCatalog'` is already absent on `main` — `APIButtonSource` was emptied in a prior cleanup; Phase 0 fills it with the new constant.)
+- [ ] CI is green on the GA commit: PHPUnit Unit + coverage ≥ 80% on new namespaces, PHPStan (level 5), sandbox Integration tests (with `PAYPAL_SANDBOX_*` secrets present in env).
 - [ ] `CHANGELOG.md` documents all breaking changes, the telemetry removal, and the brand transition.
 - [ ] `documentation/upgrade-from-classic.md` walks through the full 5-step upgrade flow.
 - [ ] `documentation/brand-history.md` exists and is linked from `README.md`.
@@ -578,7 +600,7 @@ For each Phase 6 release-gate run:
 - `composer.json` — change `name` to `wekoodo/paypal-php-library`; PHP floor `^8.1`; update `homepage` and `support.source` to the new Wekoodo GitHub URL; preserve / extend the `authors` block to credit both Angell EYE (historical) and Wekoodo (current); add PSR-4 autoload for new namespaces; add `psr/log` + `psr/simple-cache`; suggest `guzzlehttp/guzzle`; suggest `nikic/php-parser` (dev); add `bin` entry for `paypal-upgrade-check`. (The OLD `composer.json` on the `release` branch under the old package name will get its own update setting `"abandoned": "wekoodo/paypal-php-library"` AFTER the v4.0.0 publish succeeds — see Out-of-Band item 3.)
 - `composer.lock` — regenerate after vendor cleanup
 - `autoload.php` — verify the custom SPL fallback handles PSR-4 paths for the new namespaces
-- `src/angelleye/PayPal/PayPal.php` — DELETE AWS tracker (search by symbol — the `gtctgyk7fh.execute-api...` URL string, the `TPV_Parse_Request` + `TPV_Send_Request` method definitions, and every call site); CHANGE the `$this->APIButtonSource = 'AngellEYELLC_Ecom_PHPCatalog'` assignment to reference `Support\PartnerAttribution::VALUE` (which holds `'WekoodoLLC_Ecom'`); EXTRACT the in-class reference-data arrays (Countries / States / AVS / CVV2 / Currencies) to `Support\Reference`; ADD `private ?Legacy\RESTBackend $backend` property + dispatch hook in 32 public methods. PHP namespace stays `angelleye\PayPal` for backward compatibility — only doc-block author/copyright lines update to the Wekoodo brand. (Specific line numbers intentionally omitted — they drift between branches; search by symbol or string.)
+- `src/angelleye/PayPal/PayPal.php` — DELETE AWS tracker (search by symbol — the `gtctgyk7fh.execute-api...` URL string, the `TPV_Parse_Request` + `TPV_Send_Request` method definitions, and every call site); CHANGE the `$this->APIButtonSource = ''` assignment (currently empty on `main`) to `$this->APIButtonSource = \angelleye\PayPal\Support\PartnerAttribution::VALUE` (which holds `'WekoodoLLC_Ecom'`); EXTRACT the in-class reference-data arrays (Countries / States / AVS / CVV2 / Currencies) to `Support\Reference`; ADD `private ?Legacy\RESTBackend $backend` property + dispatch hook in the 30 mapped public methods. PHP namespace stays `angelleye\PayPal` for backward compatibility — only doc-block author/copyright lines update to the Wekoodo brand. (Specific line numbers intentionally omitted — they drift between branches; search by symbol or string.)
 - `samples/config/config-sample.php` — add all new config keys with inline documentation
 - `README.md` — prominent "Formerly Angell EYE — now Wekoodo" notice + brand-history link near the top; REST quickstart; upgrade walkthrough teaser
 - `CHANGELOG.md` — v4.0.0 entry leads with brand change, then REST modernization, then telemetry removal
@@ -603,7 +625,7 @@ These are not code changes but are blockers for the release:
 
 1. **AWS endpoint and key are already decommissioned** (per maintainer confirmation). No rotation work needed. The code-side cleanup (Phase 0) is the only remaining task. If telemetry is desired in the future, design it as an opt-in `TelemetryInterface` in v4.1+ with documented data fields and clear consent UX.
 2. **Migrate the GitHub repository** from `github.com/angellops/paypal-php-library` to `github.com/Wekoodo/paypal-php-library`. GitHub's transfer-repository flow handles this in one click and sets up automatic redirects from the old URL. Time the transfer with the v4.0.0 release tag so docs and the new Packagist entry land at the same moment.
-3. **Publish the renamed Packagist package.** Create `wekoodo/paypal-php-library` on Packagist pointing at the new GitHub repo URL. Set up Packagist's GitHub webhook so future tags auto-publish. After the v4.0.0 publish succeeds, edit the existing `angelleye/paypal-php-library` package on Packagist and set `"abandoned": "wekoodo/paypal-php-library"` in `composer.json` of the `release` branch (or via the Packagist UI). This makes Composer print the standard "package abandoned, use X instead" notice on every existing merchant's next `composer update`.
+3. **Publish the renamed Packagist package and mark the old one abandoned.** Create `wekoodo/paypal-php-library` on Packagist pointing at the new GitHub repo URL. Set up Packagist's GitHub webhook so future tags auto-publish. After the v4.0.0 publish succeeds, use Packagist's web UI to set the existing `angelleye/paypal-php-library` package to `abandoned: wekoodo/paypal-php-library`. **No v3.0.6 release is needed** — the Packagist UI flag is sufficient. Composer prints the standard "package abandoned, use X instead" notice on every existing merchant's next `composer update`.
 4. **(Optional but recommended) Recruit 1–2 beta merchants** to run v4.0 RC against their production code during the 1-week RC bake. Ideal mix: one running Express Checkout for e-commerce (would exercise `SetExpressCheckout` / `DoExpressCheckoutPayment` / `RefundTransaction` mappers), one running Recurring Payments (would exercise the Subscriptions mappers and the Plans + Subscription orchestration). This is supplemental confidence — the **formal release gate is the bundled demo kits running clean in sandbox** (see Phase 6). Beta merchant testing accelerates discovery of edge cases the demos don't cover, but it is not a blocker for tagging GA.
 5. **Publish a v3.x deprecation notice** on the existing Packagist page and the GitHub README pointing to the v4.0 RC. Set v3.x branch to security-only fixes for 12 months. Make clear that v3.x merchants do NOT need to change `use` statements when upgrading — the namespace `angelleye\PayPal` is preserved.
 6. **Update social and brand assets** — Twitter/X bio, project website (if any), and any related angellops org repos to redirect users to Wekoodo. Coordinate with marketing or do solo, but ensure the brand transition is not just a code-level event.
