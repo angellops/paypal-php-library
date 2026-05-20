@@ -61,7 +61,10 @@ document.addEventListener("DOMContentLoaded", function () {
                                 experience_context: {
                                     brand_name: "AngellEYE",
                                     shipping_preference: "GET_FROM_FILE",
-                                    user_action: "PAY_NOW"
+                                    user_action: "PAY_NOW",
+                                    return_url: window.location.href,
+                                    cancel_url: window.location.href,
+                                    contact_preference: "UPDATE_CONTACT_INFO"
                                 }
                             }
                         }

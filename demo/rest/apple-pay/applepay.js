@@ -26,6 +26,15 @@ document.addEventListener("DOMContentLoaded", function () {
                             },
                         },
                     ],
+                    payment_source: {
+                        apple_pay: {
+                            experience_context: {
+                                return_url: window.location.href,
+                                cancel_url: window.location.href,
+                                contact_preference: "UPDATE_CONTACT_INFO"
+                            },
+                        },
+                    },
                 };
     
                 const response = await fetch('../../core/paypal-api.php?action=ae_create_order', {

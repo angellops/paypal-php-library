@@ -49,7 +49,8 @@ if( $PayPalResult['success'] ) {
     $_SESSION['first_name']     = isset($PayPalResult['order']['payer']['name']['given_name']) ? $PayPalResult['order']['payer']['name']['given_name'] : '';
     $_SESSION['last_name']      = isset($PayPalResult['order']['payer']['name']['surname']) ? $PayPalResult['order']['payer']['name']['surname'] : '';
     $_SESSION['billing_country_code'] = isset($PayPalResult['order']['payer']['address']['country_code']) ? $PayPalResult['order']['payer']['address']['country_code'] : '';
-    
+    $_SESSION['saved_vault_id'] = isset($PayPalResult['order']['payment_source']['paypal']['attributes']['vault']['id']) ? $PayPalResult['order']['payment_source']['paypal']['attributes']['vault']['id'] : '';
+
     $captures = !empty($PayPalResult['order']['purchase_units'][0]['payments']['captures'][0]) ? $PayPalResult['order']['purchase_units'][0]['payments']['captures'][0] : [];
     $_SESSION['paypal_transaction_id'] = isset($captures['id']) ? $captures['id'] : '';
     $_SESSION['paypal_fee'] = isset( $captures['seller_receivable_breakdown']['paypal_fee']['value'] ) ? $captures['seller_receivable_breakdown']['paypal_fee']['value'] : 0.00;

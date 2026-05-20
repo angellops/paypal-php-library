@@ -45,7 +45,7 @@ if ($api_mode === 'classic') {
 
         <!-- Intro -->
         <div class="cart-intro">
-          <p>We have now reached the final thank you / receipt page and the payment has been processed!  We have added the PayPal transaction ID 
+          <p>We have now reached the final thank you / receipt page and the payment has been processed!  We have added the PayPal transaction ID and Vault ID 
             to the Billing Information, which was provided in the response.
           </p>
         </div>
@@ -99,7 +99,7 @@ if ($api_mode === 'classic') {
                   <span class="col-qty">
                     <div class="qty-badge">
                       <?php echo $cart_item['qty']; ?>
-                    </div>
+                    </div> 
                   </span>
                   <span class="col-total">
                     <?php echo '$' . number_format($cart_item['qty'] * $cart_item['price'], 2); ?>
@@ -144,6 +144,14 @@ if ($api_mode === 'classic') {
                   <?php echo !empty($_SESSION['paypal_transaction_id']) ? $_SESSION['paypal_transaction_id'] : ''; ?>
                 </span>
               </div>
+              <?php if (!empty($_SESSION['saved_vault_id'])): ?>
+                <div class="rv-info-row cp-txn-row">
+                  <span class="rv-info-label">Vault ID</span>
+                  <span class="rv-info-value cp-txn-id">
+                    <?php echo $_SESSION['saved_vault_id']; ?>
+                  </span>
+                </div>
+              <?php endif; ?>
             </div>
           </div>
 

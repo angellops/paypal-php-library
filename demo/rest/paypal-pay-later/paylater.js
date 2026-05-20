@@ -183,7 +183,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     paypal: {
                         experience_context: {
                             brand_name: "AngellEYE",
-                            shipping_preference: "SET_PROVIDED_ADDRESS"
+                            shipping_preference: "SET_PROVIDED_ADDRESS",
+                            return_url: window.location.href,
+                            cancel_url: window.location.href,
+                            contact_preference: "UPDATE_CONTACT_INFO"
                         }
                     }
                 }

@@ -29,10 +29,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     payment_source: {
                         google_pay: {
                             experience_context: {
-                                brand_name: "AngellEYE Payment Demo",
-                                locale: "en-US",
-                                landing_page: "LOGIN",
-                                user_action: "PAY_NOW",
+                                return_url: window.location.href,
+                                cancel_url: window.location.href,
+                                contact_preference: "UPDATE_CONTACT_INFO"
                             },
                         },
                     },

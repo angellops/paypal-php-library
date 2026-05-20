@@ -95,7 +95,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 payload.payment_source = {
                     paypal: {
                         experience_context: {
-                            user_action: "PAY_NOW"
+                            user_action: "PAY_NOW",
+                            return_url: window.location.href,
+                            cancel_url: window.location.href,
+                            contact_preference: "UPDATE_CONTACT_INFO"
                         }
                     }
                 };
@@ -105,7 +108,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 payload.payment_source = {
                     venmo: {
                         experience_context: {
-                            user_action: "PAY_NOW"
+                            user_action: "PAY_NOW",
+                            return_url: window.location.href,
+                            cancel_url: window.location.href,
+                            contact_preference: "UPDATE_CONTACT_INFO"
                         }
                     }
                 };

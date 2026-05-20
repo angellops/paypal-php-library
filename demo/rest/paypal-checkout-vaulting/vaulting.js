@@ -11,7 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             locale: "en-US",
                             shipping_preference: "NO_SHIPPING",
                             return_url: window.location.href,
-                            cancel_url: window.location.href
+                            cancel_url: window.location.href,
+                            contact_preference: "UPDATE_CONTACT_INFO"
                         }
                     }
                 }

@@ -41,7 +41,7 @@ $acdcCountries = ['US', 'GB', 'DE', 'FR', 'AU'];
  * If true, enable digital wallets; otherwise, keep the capabilities list empty.
  */
 if (in_array($country, $acdcCountries)) {
-    $capabilities = ['APPLE_PAY', 'GOOGLE_PAY'];
+    $capabilities = ['PAYPAL_WALLET_VAULTING_ADVANCED'];
 } else {
     $capabilities = [];
 }
@@ -66,15 +66,18 @@ $PayPalRequestData = [
                 'integration_type' => 'THIRD_PARTY',        // Indicates this is a third-party (partner) integration.
                 'third_party_details' => [
                     'features' => [
-                        'PAYMENT',                          // Allows the partner to process payments on behalf of the merchant.
-                        'REFUND',                           // Allows issuing refunds via API.
+                        'PAYMENT',
+                        'REFUND',
+                        'ACCESS_MERCHANT_INFORMATION',
+                        'VAULT',
                     ]     
                 ]
             ]
         ]
     ]],
     'products' => [ 
-        'PAYMENT_METHODS',                                  // Requests Payment Methods capability for the onboarded merchant.
+        'PPCP',                                  // Requests Payment Methods capability for the onboarded merchant.
+        'ADVANCED_VAULTING'
     ], 
     'legal_consents' => [[
         'type' => 'SHARE_DATA_CONSENT',                     // Merchant consents to share account data with the partner.

@@ -62,6 +62,12 @@ $orderPayload = [
     ],
     'payment_source' => [
         'paypal' => [
+            'experience_context' => [
+                'brand_name' => 'Angell EYE Web Hosting',
+                'return_url' => $domain . 'demo/rest/paypal-checkout-vaulting/getCapturedOrder.php',
+                'cancel_url' => $domain . 'demo/rest/paypal-checkout-vaulting/',
+                'contact_preference' => 'UPDATE_CONTACT_INFO'
+            ],
             'vault_id' => $_SESSION['paypal_vault_token'],
             'stored_credential' => [
                 'payment_initiator' => 'MERCHANT',

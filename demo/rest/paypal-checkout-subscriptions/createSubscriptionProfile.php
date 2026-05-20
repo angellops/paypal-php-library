@@ -74,7 +74,8 @@ $SubscriptionData = array(
         "shipping_preference" => "NO_SHIPPING",
         "user_action" => "SUBSCRIBE_NOW",
         'return_url' => $domain . 'demo/rest/paypal-checkout-subscriptions/getSubscriptionProfile.php', 		// Required.  URL to which the customer will be returned after returning from PayPal.  2048 char max.
-        'cancel_url' => $domain . 'demo/rest/paypal-checkout-subscriptions/', 
+        'cancel_url' => $domain . 'demo/rest/paypal-checkout-subscriptions/',
+        'contact_preference' => 'UPDATE_CONTACT_INFO'
     )
 );
 

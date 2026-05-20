@@ -28,7 +28,7 @@ $PayPalConfig = array(
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
 // Vault token ID
-$VaultTokenID = '1bm89546xv216635v';
+$VaultTokenID = '1bm89546xv216635v';		// Use Stored Vault Token here
 
 /**
  * Create PayPal order payload
