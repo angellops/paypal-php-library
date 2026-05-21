@@ -199,6 +199,15 @@ document.addEventListener('DOMContentLoaded', function () {
             })
 
             const data = await response.json();
+
+            if (data.debug_id) {
+                fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'createOrder', debug_id: data.debug_id })
+                });
+            }
+
             if (!data.order_id) {
                 showPaypalError("Unable to create PayPal order.");
                 return;

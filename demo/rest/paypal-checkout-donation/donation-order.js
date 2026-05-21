@@ -105,6 +105,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
 
                 const data = await response.json();
+
+                if (data.debug_id) {
+                    fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'createOrder', debug_id: data.debug_id })
+                    });
+                }
+
                 if (!data.order_id) {
                     showPaypalMessage("Unable to create PayPal order.", "error");
                     return;
@@ -150,6 +159,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 const captureResult = await response.json();
+
+                if (captureResult.debug_id) {
+                    fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'captureOrder', debug_id: captureResult.debug_id })
+                    });
+                }
 
                 if (captureResult.status === "COMPLETED") {
                     window.location.href = `getOrder.php?order_id=${data.orderId}`;

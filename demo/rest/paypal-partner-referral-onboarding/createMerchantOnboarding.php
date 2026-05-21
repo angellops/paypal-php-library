@@ -18,8 +18,8 @@ $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
     'PayPalAPIUpgrade' => $api_upgrade,
-	'ClientID' => $rest_client_id_2,
-	'ClientSecret' => $rest_client_secret_2,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
     'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
@@ -106,6 +106,15 @@ if (!empty($capabilities)) {
  * the required permissions to the partner application.
  */
 $PayPalResult = $PayPal->createMerchantOnboarding($PayPalRequestData);
+
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'createMerchantOnboarding',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
 
 if( $PayPalResult['success'] ) {
     header('Location: ' . $PayPalResult['approval_url']);

@@ -18,6 +18,7 @@ $PayPalConfig = array(
     'PayPalAPIUpgrade' => $api_upgrade,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
+    'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
@@ -40,6 +41,15 @@ $PayPalPatchData = [
 ];
 
 $PayPalResult = $PayPal->patchOrder($PayPalPatchData);
+
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'patchOrder',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
 
 if( $PayPalResult['success'] ) {
     $_SESSION['shipping_name'] = $_POST['first_name'] . ' ' . $_POST['last_name'];

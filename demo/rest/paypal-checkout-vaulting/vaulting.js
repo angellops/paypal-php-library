@@ -18,13 +18,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             };
 
-            const response = await fetch('../../core/paypal-api.php?action=ae_create_vault_setup_token&vaulting=true', {
+            const response = await fetch('../../core/paypal-api.php?action=ae_create_vault_setup_token', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payloadData)
             })
 
             const setupTokenData = await response.json();
+
+            if (setupTokenData.debug_id) {
+                fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'createVaultSetupToken', debug_id: setupTokenData.debug_id })
+                });
+            }
+
             if (!setupTokenData.setup_token) {
                 showPaypalMessage("Unable to create Vault Setup Token.", "error");
                 return;
@@ -63,12 +72,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function createPaymentToken(data) {
         try {
-            const response = await fetch('../../core/paypal-api.php?action=ae_get_vault_setup_token&vaulting=true', {
+            const response = await fetch('../../core/paypal-api.php?action=ae_get_vault_setup_token', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: data.vaultSetupToken }),
             });
             const getSetupTokenData = await response.json();
+
+            if (getSetupTokenData.debug_id) {
+                fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getSetupToken', debug_id: getSetupTokenData.debug_id })
+                });
+            }
 
             if (getSetupTokenData.status === "APPROVED") {
                 const payloadData = {
@@ -80,13 +97,22 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 };
 
-                const response = await fetch('../../core/paypal-api.php?action=ae_create_vault_payment_token&vaulting=true', {
+                const response = await fetch('../../core/paypal-api.php?action=ae_create_vault_payment_token', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payloadData)
                 })
 
                 const vaultTokenData = await response.json();
+
+                if (vaultTokenData.debug_id) {
+                    fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'createPaymentToken', debug_id: vaultTokenData.debug_id })
+                    });
+                }
+
                 if (!vaultTokenData.vault_token) {
                     showPaypalMessage("Unable to create Vault Payment Token.", "error");
                     return;

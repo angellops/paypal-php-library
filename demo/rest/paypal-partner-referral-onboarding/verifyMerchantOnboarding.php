@@ -18,8 +18,8 @@ $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
     'PayPalAPIUpgrade' => $api_upgrade,
-	'ClientID' => $rest_client_id_2,
-	'ClientSecret' => $rest_client_secret_2,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
     'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
@@ -41,6 +41,15 @@ $merchantId = isset( $_GET['merchantIdInPayPal'] ) ? $_GET['merchantIdInPayPal']
 
 // Call the PayPal service to verify the onboarding status
 $PayPalResult = $PayPal->verifyMerchantOnboarding($merchantId);
+
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'verifyMerchantOnboarding',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
 
 // Handle the verification outcome
 if( $PayPalResult['success'] ) {

@@ -33,6 +33,7 @@
   background: var(--card);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  height: 100%;
 }
 .rv-info-header {
   display: flex;
@@ -73,6 +74,10 @@
 }
 .rv-info-icon--purple svg { 
   stroke: hsl(239, 84%, 67%); 
+}
+.rv-info-icon--red {
+  background: rgba(212, 63, 58, 0.1);
+  color: hsl(2, 64%, 53%);
 }
 .rv-info-body {
   padding: 1.125rem 1.375rem;
@@ -195,7 +200,7 @@
 .cp-txn-id {
   font-family: Monospace;
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 700 !important;
   letter-spacing: 0.025rem;
   color: var(--primary);
   background: rgba(0, 112, 186, 0.06);
@@ -236,4 +241,20 @@
 #googlepay-button-container button,
 #applepay-button-container apple-pay-button {
   width: 100%;
+}
+
+/* --- Debug IDs Section -- */
+.cart-debug-card {
+  margin-top: 2rem;
+  margin-bottom: 0;
+}
+.cart-debug-card .cart-table-head,
+.cart-debug-card .cart-table-row {
+  grid-template-columns: 7rem 1fr 10rem;
+}
+@media (max-width: 40rem) {
+  .cart-debug-card .cart-table-head,
+  .cart-debug-card .cart-table-row {
+    grid-template-columns: 4rem 1fr 10rem;
+  }
 }

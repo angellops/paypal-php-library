@@ -128,6 +128,15 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const data = await response.json();
+
+            if (data.debug_id) {
+                fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'createOrder', debug_id: data.debug_id })
+                });
+            }
+
             if (!data.order_id) throw new Error(data.message || "Order creation failed.");
             return data.order_id;
 
@@ -150,6 +159,14 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const result = await response.json();
+
+            if (result.debug_id) {
+                fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'captureOrder', debug_id: result.debug_id })
+                });
+            }
 
             if (result.status === "COMPLETED") {
                 window.location.href = `getOrder.php?payment_mode=${mode}&order_id=${orderId}`;

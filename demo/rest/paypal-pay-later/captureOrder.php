@@ -18,6 +18,7 @@ $PayPalConfig = array(
     'PayPalAPIUpgrade' => $api_upgrade,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
+    'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
@@ -25,6 +26,15 @@ $PayPalConfig = array(
 $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
 $PayPalResult = $PayPal->captureOrder($_SESSION['paypal_token']);
+
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'captureOrder',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
 
 if ( $PayPalResult['success'] ) {
     // Initialize temporary arrays to collect data

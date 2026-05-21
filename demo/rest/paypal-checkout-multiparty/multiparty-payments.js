@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
         async function createOrder() {
             try {
                 const purchaseUnits = checkoutData.multiparty_items.map((item, index) => {
-                    console.log(item);
                     const itemTotal = (Number(item.price) * Number(item.qty)).toFixed(2);
                     return {
                         reference_id: `CART-${index}`,
@@ -48,27 +47,26 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     };
 
-                    });
+                });
 
-                    const orderPayload = {
-                        intent: "CAPTURE",
-                        purchase_units: purchaseUnits,
-                        payer: {
-                            email_address: checkoutData.buyer_email
-                        },
-                        payment_source: {
-                            paypal: {
-                                experience_context: {
-                                    brand_name: "AngellEYE",
-                                    shipping_preference: "GET_FROM_FILE",
-                                    user_action: "PAY_NOW",
-                                    return_url: window.location.href,
-                                    cancel_url: window.location.href,
-                                    contact_preference: "UPDATE_CONTACT_INFO"
-                                }
+                const orderPayload = {
+                    intent: "CAPTURE",
+                    purchase_units: purchaseUnits,
+                    payer: {
+                        email_address: checkoutData.buyer_email
+                    },
+                    payment_source: {
+                        paypal: {
+                            experience_context: {
+                                brand_name: "AngellEYE",
+                                shipping_preference: "GET_FROM_FILE",
+                                user_action: "PAY_NOW",
+                                return_url: window.location.href,
+                                cancel_url: window.location.href,
                             }
                         }
-                    };
+                    }
+                };
 
                 const response = await fetch('../../core/paypal-api.php?action=ae_create_order', {
                     method: "POST",
@@ -77,6 +75,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
 
                 const data = await response.json();
+
+                if (data.debug_id) {
+                    fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'createOrder', debug_id: data.debug_id })
+                    });
+                }
+
                 if (!data.order_id) {
                     showPaypalMessage("Unable to create PayPal order.", "error");
                     return;
@@ -122,6 +129,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 const captureResult = await response.json();
+
+                if (captureResult.debug_id) {
+                    fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'captureOrder', debug_id: captureResult.debug_id })
+                    });
+                }
 
                 if (captureResult.status === "COMPLETED") {
                     window.location.href = `getOrder.php?order_id=${data.orderId}`;

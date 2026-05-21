@@ -20,6 +20,7 @@ $PayPalConfig = array(
     'PayPalAPIUpgrade' => $api_upgrade,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
+    'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
@@ -29,6 +30,15 @@ $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 $_SESSION['payment_mode'] = isset($_GET['payment_mode']) ? $_GET['payment_mode'] : '';
 
 $PayPalResult = $PayPal->getOrder($_GET['order_id']);
+
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'getOrder',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
 
 if ( $PayPalResult['success'] ) {
     /**

@@ -2,16 +2,13 @@
 require_once(__DIR__ . '/../../includes/config.php');
 require_once(__DIR__ . '/../../autoload.php');
 
-// Check if vaulting is enabled
-$vaulting = isset($_GET['vaulting']) ? $_GET['vaulting'] : false;
-
 // Create PayPal object.
 $PayPalConfig = array(
     'Sandbox' => $sandbox,
     'PayPalAPIMode' => $api_mode,
     'PayPalAPIUpgrade' => $api_upgrade,
-    'ClientID' => ($vaulting) ? $rest_client_id_2 : $rest_client_id,
-    'ClientSecret' => ($vaulting) ? $rest_client_secret_2 : $rest_client_secret,
+    'ClientID' => $rest_client_id,
+    'ClientSecret' => $rest_client_secret,
     'MerchantID' => $rest_merchant_id,
     'PrintHeaders' => $print_headers,
     'LogResults' => $log_results,
@@ -57,6 +54,17 @@ if (!empty($action)) {
           $create_vault_paymenttoken_response = $PayPal->createVaultPaymentToken($vaultPaymentData);
           echo json_encode($create_vault_paymenttoken_response);
           break;
+        
+        case 'ae_save_debug_ids':
+            if (!empty($input['action']) && !empty($input['debug_id'])) {
+                $_SESSION['paypal_debug_ids'][] = [
+                    'action'   => $input['action'],
+                    'debug_id' => $input['debug_id'],
+                    'time'     => date('H:i:s'),
+                ];
+            }
+            echo json_encode(['saved' => true]);
+            break;
 
         default:
             http_response_code(400);

@@ -20,6 +20,7 @@ $PayPalConfig = array(
     'PayPalAPIUpgrade' => $api_upgrade,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
+    'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
@@ -30,6 +31,15 @@ $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
  * Here we call GetExpressCheckoutDetails to obtain payer information from PayPal
  */
 $PayPalResult = $PayPal->getOrder($_GET['order_id']);
+
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'getOrder',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
 
 /**
  * Now we'll check for any errors returned by PayPal, and if we get an error,

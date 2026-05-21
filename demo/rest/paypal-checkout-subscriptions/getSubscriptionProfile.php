@@ -20,6 +20,7 @@ $PayPalConfig = array(
     'PayPalAPIUpgrade' => $api_upgrade,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
+    'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
@@ -31,6 +32,15 @@ $subscriptionID = isset($_GET['subscription_id']) ? $_GET['subscription_id'] : '
 
 // Pass data into class for processing with PayPal and load the response array into $PayPalResult
 $PayPalResult = $PayPal->getSubscriptionProfile($subscriptionID);
+
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'getSubscriptionProfile',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
 
 if( $PayPalResult['success'] ) {
     $full_response = !empty( $PayPalResult['full_response'] ) ? $PayPalResult['full_response'] : [];

@@ -18,6 +18,7 @@ $PayPalConfig = array(
     'PayPalAPIUpgrade' => $api_upgrade,
 	'ClientID' => $rest_client_id,
 	'ClientSecret' => $rest_client_secret,
+    'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
 	'LogPath' => $log_path,
@@ -48,6 +49,15 @@ $PayPalTrackData = [
 ];
 
 $PayPalResult = $PayPal->trackOrder($PayPalTrackData);
+
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'trackOrder',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
 
 if( $PayPalResult['success'] ) {
     $_SESSION['paypal_tracking_status'] = $PayPalResult['tracking_status'];

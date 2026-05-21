@@ -85,7 +85,7 @@ $donationItems = [
             <p class="dnr-paypal-label">Donate with PayPal</p>
             <div id="paypal-button-container" data-checkout='<?php echo json_encode($donationItems); ?>'>
               <div id="paypalMessage"></div>
-              <paypal-button type="pay" hidden></paypal-button>
+              <paypal-button type="donate" hidden></paypal-button>
             </div>
           </div>
 

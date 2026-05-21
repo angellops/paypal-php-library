@@ -230,7 +230,7 @@ class PayPalREST extends PayPal
     /**
      * Make authenticated REST API request
      */
-    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null, $isInvoiceRequest = false, $includeAuth = false)
+    protected function makeRequest($endpoint, $method = 'GET', $data = null, $requestId = null, $isInvoiceRequest = false, $includeAuth = true)
     {
         $headers = $this->getHeaders(true, 'application/json', $requestId, $isInvoiceRequest, $includeAuth);
 
@@ -347,7 +347,7 @@ class PayPalREST extends PayPal
     /**
      * Create an order (replaces SetExpressCheckout)
      */
-    public function createOrder($orderData, $paypalRequestId = null, $includeAuth = false)
+    public function createOrder($orderData, $paypalRequestId = null, $includeAuth = true)
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders', 'POST', $orderData, $paypalRequestId, false, $includeAuth);
@@ -355,6 +355,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'order_id' => $response['body']['id'],
@@ -366,6 +367,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'error' => 'Failed to create order',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
@@ -383,7 +385,7 @@ class PayPalREST extends PayPal
     /**
      * Get order details (replaces GetExpressCheckoutDetails)
      */
-    public function getOrder($orderId, $paypalRequestId = null, $includeAuth = false)
+    public function getOrder($orderId, $paypalRequestId = null, $includeAuth = true)
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'GET', [], $paypalRequestId, false, $includeAuth);
@@ -391,6 +393,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'order' => $response['body'],
@@ -400,6 +403,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'error' => 'Failed to get order details',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
@@ -417,7 +421,7 @@ class PayPalREST extends PayPal
     /**
      * Authorize order (for auth-only transactions)
      */
-    public function authorizeOrder($orderId, $paypalRequestId = null, $includeAuth = false)
+    public function authorizeOrder($orderId, $paypalRequestId = null, $includeAuth = true)
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/authorize', 'POST', [], $paypalRequestId, false, $includeAuth);
@@ -425,6 +429,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'authorization_id' => $response['body']['purchase_units'][0]['payments']['authorizations'][0]['id'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
@@ -435,6 +440,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'error' => 'Failed to authorize order',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
@@ -452,7 +458,7 @@ class PayPalREST extends PayPal
     /**
      * Capture order (replaces DoExpressCheckoutPayment)
      */
-    public function captureOrder($orderId, $paypalRequestId = null, $includeAuth = false)
+    public function captureOrder($orderId, $paypalRequestId = null, $includeAuth = true)
     {
         try {
             $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/capture', 'POST', [], $paypalRequestId, false, $includeAuth);
@@ -460,6 +466,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'capture_id' => $response['body']['purchase_units'][0]['payments']['captures'][0]['id'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
@@ -470,6 +477,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -486,16 +494,18 @@ class PayPalREST extends PayPal
     /**
      * Patch Order
      */
-    public function patchOrder($DataArray) {
+    public function patchOrder($DataArray, $paypalRequestId = null, $includeAuth = true) {
         try {
             $orderId = isset($DataArray['orderID']) ? $DataArray['orderID'] : '';
             $patchData = isset($DataArray['patchData']) ? $DataArray['patchData'] : [];
 
-            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'PATCH', $patchData);
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId, 'PATCH', $patchData, $paypalRequestId, false, $includeAuth);
 
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                    'headers' => $response['headers'],
                     'message' => 'Order updated successfully',
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -505,6 +515,8 @@ class PayPalREST extends PayPal
             
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                'headers' => $response['headers'],
                 'error' => 'Failed to update order details',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -521,12 +533,12 @@ class PayPalREST extends PayPal
     /**
      * Track Order
      */
-    public function trackOrder($DataArray) {
+    public function trackOrder($DataArray, $paypalRequestId = null, $includeAuth = true) {
         try {
             $orderId = isset($DataArray['orderID']) ? $DataArray['orderID'] : '';
             $trackingPayload = isset($DataArray['trackingPayload']) ? $DataArray['trackingPayload'] : [];
 
-            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/track', 'POST', $trackingPayload);
+            $response = $this->makeRequest('/v2/checkout/orders/' . $orderId . '/track', 'POST', $trackingPayload, $paypalRequestId, false, $includeAuth);
 
             $purchase_units = $response['body']['purchase_units'][0] ? $response['body']['purchase_units'][0] : [];
             $shipping_trackers = $purchase_units['shipping']['trackers'] ? $purchase_units['shipping']['trackers'] : [];
@@ -538,6 +550,8 @@ class PayPalREST extends PayPal
             if (in_array($response['status_code'], [200, 201])) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                    'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'tracking_ids' => $tracking_ids_string,
                     'tracking_status' => $tracking_status_string,
@@ -548,6 +562,8 @@ class PayPalREST extends PayPal
             
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                'headers' => $response['headers'],
                 'error' => 'Failed to track order details',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -585,6 +601,7 @@ class PayPalREST extends PayPal
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'order' => $response['body'],
@@ -594,6 +611,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -618,6 +636,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -627,6 +646,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -667,6 +687,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -695,6 +716,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'refund_id' => !empty($response['body']['id']) ? $response['body']['id'] : '',
@@ -705,6 +727,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -735,6 +758,7 @@ class PayPalREST extends PayPal
                 // Normal REST-style response
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $body,
@@ -744,6 +768,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -808,6 +833,7 @@ class PayPalREST extends PayPal
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'id' => isset($response['body']['id']) ? $response['body']['id'] : '',
                 'response' => $response,
@@ -817,6 +843,7 @@ class PayPalREST extends PayPal
 
         return [
             'success' => false,
+            'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
             'headers' => $response['headers'],
             'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
             'errors' => isset($response['body']) ? $response['body'] : [],
@@ -843,6 +870,7 @@ class PayPalREST extends PayPal
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'id' => isset($response['body']['id']) ? $response['body']['id'] : '',
                 'response' => $response,
@@ -852,6 +880,7 @@ class PayPalREST extends PayPal
 
         return [
             'success' => false,
+            'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
             'headers' => $response['headers'],
             'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
             'errors' => isset($response['body']) ? $response['body'] : [],
@@ -878,6 +907,7 @@ class PayPalREST extends PayPal
         if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
             return [
                 'success' => true,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'subscription_id' => !empty($response['body']['id']) ? $response['body']['id'] : '',
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
@@ -889,6 +919,7 @@ class PayPalREST extends PayPal
 
         return [
             'success' => false,
+            'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
             'headers' => $response['headers'],
             'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
             'errors' => !empty($response['body']) ? $response['body'] : [],
@@ -910,6 +941,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -919,6 +951,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => !empty($response['body']) ? $response['body'] : [],
@@ -949,6 +982,7 @@ class PayPalREST extends PayPal
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
@@ -958,6 +992,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => isset($response['body']) ? $response['body'] : ['message' => 'Actions like cancel or suspend may not return a body'],
@@ -988,6 +1023,7 @@ class PayPalREST extends PayPal
             if ( $response['status_code'] >= 200 && $response['status_code'] < 300 ) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
@@ -997,6 +1033,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => isset($response['body']) ? $response['body'] : ['message' => 'Patch Operations completed successfully which may not return a body'],
@@ -1027,6 +1064,8 @@ class PayPalREST extends PayPal
             if (in_array($response['status_code'], [200, 201])) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                    'headers' => $response['headers'],
                     'setup_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
                     'customer_id' => isset($response['body']['customer']['id']) ? $response['body']['customer']['id'] : '',
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
@@ -1038,6 +1077,8 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                'headers' => $response['headers'],
                 'error' => 'Failed to create setup token',
                 'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1068,6 +1109,8 @@ class PayPalREST extends PayPal
             if (in_array($response['status_code'], [200, 201])) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                    'headers' => $response['headers'],
                     'setup_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
                     'customer_id' => isset($response['body']['customer']['id']) ? $response['body']['customer']['id'] : '',
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
@@ -1078,6 +1121,8 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                'headers' => $response['headers'],
                 'error' => 'Failed to get setup token',
                 'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1111,6 +1156,8 @@ class PayPalREST extends PayPal
             if (in_array($response['status_code'], [200, 201])) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                    'headers' => $response['headers'],
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'vault_token' => isset($response['body']['id']) ? $response['body']['id'] : '',
                     'full_response' => $response['body'],
@@ -1120,6 +1167,8 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                'headers' => $response['headers'],
                 'error' => 'Failed to create setup token',
                 'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1146,6 +1195,8 @@ class PayPalREST extends PayPal
             if (in_array($response['status_code'], [200, 201])) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                    'headers' => $response['headers'],
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'approval_url' => $this->getApprovalUrl($response['body']['links']),
                     'full_response' => $response['body'],
@@ -1155,6 +1206,8 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                'headers' => $response['headers'],
                 'error' => 'Failed to create setup token',
                 'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1181,6 +1234,8 @@ class PayPalREST extends PayPal
             if (in_array($response['status_code'], [200, 201])) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                    'headers' => $response['headers'],
                     'status' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
                     'raw_response' => $response['raw_response']
@@ -1189,6 +1244,8 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
+                'headers' => $response['headers'],
                 'error' => 'Failed to create setup token',
                 'status_code' => isset($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1217,6 +1274,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -1226,6 +1284,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1253,6 +1312,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'invoice_id' => !empty($response['body']['id']) ? $response['body']['id'] : null,
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
@@ -1263,6 +1323,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1291,6 +1352,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -1300,6 +1362,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1339,6 +1402,7 @@ class PayPalREST extends PayPal
                 if ($sendInvoiceResponse['status_code'] >= 200 && $sendInvoiceResponse['status_code'] < 300) {
                     $responseSimplified = array(
                         'success' => true,
+                        'debug_id' => !empty($sendInvoiceResponse['debug_id']) ? $sendInvoiceResponse['debug_id'] : '',
                         'headers' => $sendInvoiceResponse['headers'],
                         'status' => !empty($sendInvoiceResponse['body']['status']) ? $sendInvoiceResponse['body']['status'] : $sendInvoiceResponse['status_code'],
                         'response' => !empty($sendInvoiceResponse['body']) ? $sendInvoiceResponse['body'] : [],
@@ -1347,6 +1411,7 @@ class PayPalREST extends PayPal
                 } else {
                     $responseSimplified = array(
                         'success' => false,
+                        'debug_id' => !empty($sendInvoiceResponse['debug_id']) ? $sendInvoiceResponse['debug_id'] : '',
                         'headers' => $sendInvoiceResponse['headers'],
                         'status' => !empty($sendInvoiceResponse['body']['status']) ? $sendInvoiceResponse['body']['status'] : $sendInvoiceResponse['status_code'],
                         'errors' => !empty($sendInvoiceResponse['body']) ? $sendInvoiceResponse['body'] : [],
@@ -1356,6 +1421,7 @@ class PayPalREST extends PayPal
             } else {
                 $responseSimplified = array(
                     'success' => false,
+                    'debug_id' => !empty($createInvoiceResponse['debug_id']) ? $createInvoiceResponse['debug_id'] : '',
                     'headers' => $createInvoiceResponse['headers'],
                     'status' => !empty($createInvoiceResponse['body']['status']) ? $createInvoiceResponse['body']['status'] : $createInvoiceResponse['status_code'],
                     'errors' => !empty($createInvoiceResponse['body']) ? $createInvoiceResponse['body'] : [],
@@ -1386,6 +1452,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -1395,6 +1462,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1426,6 +1494,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice canceled successfully which may not return a body'],
@@ -1435,6 +1504,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice canceled successfully which may not return a body'],
@@ -1464,6 +1534,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice deleted successfully which may not return a body'],
@@ -1473,6 +1544,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice deleted successfully which may not return a body'],
@@ -1507,6 +1579,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -1516,6 +1589,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1547,6 +1621,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => $response['body'],
@@ -1556,6 +1631,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => $response['body'],
@@ -1586,6 +1662,7 @@ class PayPalREST extends PayPal
             if ($response['status_code'] >= 200 && $response['status_code'] < 300) {
                 return [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'full_response' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice reminder sent successfully which may not return a body'],
@@ -1595,6 +1672,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'errors' => !empty($response['body']) ? $response['body'] : ['message' => 'Invoice reminder sent successfully which may not return a body'],
@@ -1696,6 +1774,7 @@ class PayPalREST extends PayPal
 
                 $result = [
                     'success' => true,
+                    'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                     'headers' => $response['headers'],
                     'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                     'total_items' => count($filteredInvoices),
@@ -1708,6 +1787,7 @@ class PayPalREST extends PayPal
 
             return [
                 'success' => false,
+                'debug_id' => !empty($response['debug_id']) ? $response['debug_id'] : '',
                 'headers' => $response['headers'],
                 'status' => !empty($response['body']['status']) ? $response['body']['status'] : $response['status_code'],
                 'message' => !empty($response['body']['message']) ? $response['body']['message'] : 'Unknown error',

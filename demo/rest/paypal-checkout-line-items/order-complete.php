@@ -267,9 +267,44 @@ if ($api_mode === 'classic') {
               Back to All Demos
             </a>
           </div>
-
         </div>
 
+        <div class="cart-items-card rv-items-card cart-debug-card">
+          <div class="rv-info-header">
+            <div class="rv-info-icon rv-info-icon--red">
+              <?php echo inline_svg('../../assets/images/bug.svg'); ?>
+            </div>
+            <h3>PayPal Debug IDs</h3>
+          </div>
+
+          <div class="cart-table">
+            <!-- Table Header -->
+            <div class="cart-table-head">
+              <span class="col-name">Sr.</span>
+              <span class="col-name">Action</span>
+              <span class="col-price">Debug ID</span>
+            </div>
+
+            <!-- Item Rows -->
+            <?php if (!empty($_SESSION['paypal_debug_ids'])) {
+              foreach ($_SESSION['paypal_debug_ids'] as $cart_key => $cart_item) { ?>
+                <div class="cart-table-row">
+                  <span class="col-name">
+                    <span class="item-id-badge">
+                      <?php echo ($cart_key + 1); ?>
+                    </span>
+                  </span>
+                  <span class="col-name">
+                    <?php echo $cart_item['action']; ?>
+                  </span>
+                  <span class="col-price cp-txn-id">
+                    <?php echo $cart_item['debug_id']; ?>
+                  </span>
+                </div>
+            <?php } 
+              } ?>
+          </div>
+        </div>
       </div>
     </main>
 

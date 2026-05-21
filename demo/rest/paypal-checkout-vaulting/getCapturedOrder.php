@@ -18,8 +18,8 @@ $PayPalConfig = array(
 	'Sandbox' => $sandbox,
 	'PayPalAPIMode' => $api_mode,
     'PayPalAPIUpgrade' => $api_upgrade,
-	'ClientID' => $rest_client_id_2,
-	'ClientSecret' => $rest_client_secret_2,
+	'ClientID' => $rest_client_id,
+	'ClientSecret' => $rest_client_secret,
     'MerchantID' => $rest_merchant_id,
 	'PrintHeaders' => $print_headers, 
 	'LogResults' => $log_results, 
@@ -33,6 +33,15 @@ $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 $paypalRequestId = uniqid('pprid_', true);
 
 $PayPalResult = $PayPal->getOrder($_SESSION['paypal_token'], $paypalRequestId, true);
+
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'getOrder',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
 
 if ( $PayPalResult['success'] ) {
     /**

@@ -125,6 +125,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             const data = await res.json();
 
+            if (data.debug_id) {
+                fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'createOrder', debug_id: data.debug_id })
+                });
+            }
+
             if (!data.order_id) {
                 throw new Error(data.message || "Unable to create order");
             }
@@ -146,6 +154,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
 
             const data = await res.json();
+
+            if (data.debug_id) {
+                fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'captureOrder', debug_id: data.debug_id })
+                });
+            }
 
             if (data.status === "COMPLETED") {
                 window.location.href = `getOrder.php?payment_mode=${mode}&order_id=${orderId}`;
