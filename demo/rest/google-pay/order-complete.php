@@ -124,17 +124,23 @@ if ($api_mode === 'classic') {
             <div class="rv-info-body">
               <div class="rv-info-row">
                 <span class="rv-info-label">Name</span>
-                <?php $first = !empty($_SESSION['first_name']) ? $_SESSION['first_name'] : '';
-                  $last = !empty($_SESSION['last_name']) ? $_SESSION['last_name'] : '';
-                  $name = trim($first . ' ' . $last); ?>
                 <span class="rv-info-value">
-                  <?php echo !empty($name) ? $name : ''; ?>
+                  <?php echo !empty($_SESSION['billing_name']) ? $_SESSION['billing_name'] : ''; ?>
                 </span>
               </div>
               <div class="rv-info-row">
                 <span class="rv-info-label">Email</span>
                 <span class="rv-info-value">
                   <?php echo !empty($_SESSION['email']) ? $_SESSION['email'] : ''; ?>
+                </span>
+              </div>
+              <div class="rv-info-row">
+                <span class="rv-info-label">Card</span>
+                <?php $brand = !empty($_SESSION['card_brand']) ? $_SESSION['card_brand'] : '';
+                  $last_digits = !empty($_SESSION['card_last_digits']) ? $_SESSION['card_last_digits'] : '';
+                  $card_name = trim($brand . ' (' . $last_digits . ')'); ?>
+                <span class="rv-info-value">
+                  <?php echo !empty($card_name) ? $card_name : ''; ?>
                 </span>
               </div>
               <div class="rv-info-row">
@@ -152,33 +158,33 @@ if ($api_mode === 'classic') {
             </div>
           </div>
 
-          <!-- Shipping Information -->
+          <!-- Billing & Shipping Information -->
           <div class="rv-info-card">
             <div class="rv-info-header">
               <div class="rv-info-icon rv-info-icon--purple">
                 <?php echo inline_svg('../../assets/images/shipping.svg'); ?>
               </div>
-              <h3>Shipping Information</h3>
+              <h3>Billing & Shipping Information</h3>
             </div>
             <div class="rv-info-body">
-              <?php if( !empty($_SESSION['shipping_name']) || !empty($_SESSION['shipping_street']) || !empty($_SESSION['shipping_city']) || !empty($_SESSION['shipping_state']) || !empty($_SESSION['shipping_zip']) || !empty($_SESSION['shipping_country_name']) ): ?>
+              <?php if( !empty($_SESSION['billing_name']) || !empty($_SESSION['billing_street']) || !empty($_SESSION['billing_city']) || !empty($_SESSION['billing_state']) || !empty($_SESSION['billing_zip']) || !empty($_SESSION['billing_country_code']) ): ?>
                 <div class="rv-info-row">
                   <span class="rv-info-label">Name</span>
                   <span class="rv-info-value">
-                    <?php echo !empty($_SESSION['shipping_name']) ? $_SESSION['shipping_name'] : ''; ?>
+                    <?php echo !empty($_SESSION['billing_name']) ? $_SESSION['billing_name'] : ''; ?>
                   </span>
                 </div>
                 <div class="rv-info-row">
                   <span class="rv-info-label">Address</span>
                   <span class="rv-info-value">
-                    <?php echo !empty($_SESSION['shipping_street']) ? $_SESSION['shipping_street'] : ''; ?>
+                    <?php echo !empty($_SESSION['billing_street']) ? $_SESSION['billing_street'] : ''; ?>
                   </span>
                 </div>
                 <div class="rv-info-row">
                   <span class="rv-info-label">City</span>
-                  <?php $city = !empty($_SESSION['shipping_city']) ? $_SESSION['shipping_city'] : '';
-                    $state = !empty($_SESSION['shipping_state']) ? $_SESSION['shipping_state'] : '';
-                    $zip = !empty($_SESSION['shipping_zip']) ? $_SESSION['shipping_zip'] : '';
+                  <?php $city = !empty($_SESSION['billing_city']) ? $_SESSION['billing_city'] : '';
+                    $state = !empty($_SESSION['billing_state']) ? $_SESSION['billing_state'] : '';
+                    $zip = !empty($_SESSION['billing_zip']) ? $_SESSION['billing_zip'] : '';
                     $line1 = trim(implode(', ', array_filter([$city, $state])));
                     $line2 = trim($zip);
                   ?>
@@ -195,12 +201,13 @@ if ($api_mode === 'classic') {
                 <div class="rv-info-row">
                   <span class="rv-info-label">Country</span>
                   <span class="rv-info-value">
-                    <?php echo !empty($_SESSION['shipping_country_name']) ? $_SESSION['shipping_country_name'] : ''; ?>
+                    <?php echo !empty($_SESSION['billing_country_code']) ? $_SESSION['billing_country_code'] : ''; ?>
                   </span>
                 </div>
-              <?php else : ?>
-                <div class="rv-info-row">No Shipping Information Available.</div>
-              <?php endif; ?>
+                <?php else: ?>
+                  <div class="rv-info-row">No Billing Information Available.</div>
+                <?php endif; ?>
+                <div class="rv-info-row cp-txn-row">No Shipping Information Available.</div>
             </div>
           </div>
 
@@ -263,6 +270,43 @@ if ($api_mode === 'classic') {
               <?php echo inline_svg('../../assets/images/back-icon.svg'); ?>
               Back to All Demos
             </a>
+          </div>
+        </div>
+
+        <div class="cart-items-card rv-items-card cart-debug-card">
+          <div class="rv-info-header">
+            <div class="rv-info-icon rv-info-icon--red">
+              <?php echo inline_svg('../../assets/images/bug.svg'); ?>
+            </div>
+            <h3>PayPal Debug IDs</h3>
+          </div>
+
+          <div class="cart-table">
+            <!-- Table Header -->
+            <div class="cart-table-head">
+              <span class="col-name">Sr.</span>
+              <span class="col-name">Action</span>
+              <span class="col-price">Debug ID</span>
+            </div>
+
+            <!-- Item Rows -->
+            <?php if (!empty($_SESSION['paypal_debug_ids'])) {
+              foreach ($_SESSION['paypal_debug_ids'] as $cart_key => $cart_item) { ?>
+                <div class="cart-table-row">
+                  <span class="col-name">
+                    <span class="item-id-badge">
+                      <?php echo ($cart_key + 1); ?>
+                    </span>
+                  </span>
+                  <span class="col-name">
+                    <?php echo $cart_item['action']; ?>
+                  </span>
+                  <span class="col-price cp-txn-id">
+                    <?php echo $cart_item['debug_id']; ?>
+                  </span>
+                </div>
+            <?php } 
+              } ?>
           </div>
         </div>
       </div>

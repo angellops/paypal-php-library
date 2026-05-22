@@ -7,9 +7,6 @@ if ($api_mode === 'classic') {
   header('Location: ../../');
 }
 
-// Set buyer email in session
-$_SESSION['buyer_email'] = 'paypal-buyer@angelleye.com';
-
 /**
  * Here we are building a very simple, static shopping cart to use
  * throughout this demo.  In most cases, you will working with a dynamic
@@ -35,6 +32,9 @@ $_SESSION['shopping_cart'] = array(
 	'shipping' => 0,
 	'handling' => 0,
 	'tax' => 0,
+  'merchant_id' => $rest_merchant_id,
+  'brand_name' => 'AngellEYE Payment Demo',
+  'buyer_email' => 'paypal-buyer@angelleye.com'
 );
 $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_cart']['subtotal'] + $_SESSION['shopping_cart']['shipping'] + $_SESSION['shopping_cart']['handling'] + $_SESSION['shopping_cart']['tax'],2);
 ?>
@@ -197,9 +197,9 @@ $_SESSION['shopping_cart']['grand_total'] = number_format($_SESSION['shopping_ca
               </div>
 
               <!-- PayPal Button -->
-              <div id="gpay-container-main" data-amount="<?php echo $_SESSION['shopping_cart']['grand_total']; ?>" data-email="<?php echo $_SESSION['buyer_email']; ?>">
-                <div id="paypalMessage"></div>
-                <div id="googlepay-button-container"></div>
+              <div id='gpay-container-main' data-checkout='<?php echo json_encode($_SESSION['shopping_cart']); ?>'>
+                <div id='paypalMessage'></div>
+                <div id='googlepay-button-container'></div>
               </div>
             </div>
           </aside>

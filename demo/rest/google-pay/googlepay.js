@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     const gpayContainerMain = document.getElementById("gpay-container-main");
     if ( gpayContainerMain !== undefined && gpayContainerMain !== null ) {
-        const purchaseAmount = gpayContainerMain.dataset.amount;
-        const buyerEmail = gpayContainerMain.dataset.email;
+        const checkoutData = JSON.parse(gpayContainerMain.dataset.checkout);
+        const purchaseAmount = checkoutData.grand_total;
         const gpayButtonContainer = gpayContainerMain.querySelector("#googlepay-button-container");
 
         async function createOrder(purchaseAmount) {
@@ -10,17 +10,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 const orderPayload = {
                     intent: "CAPTURE",
                     payer: {
-                        email_address: buyerEmail,
+                        email_address: checkoutData.buyer_email,
                     },
                     purchase_units: [
                         {
                             amount: {
                                 currency_code: "USD",
-                                value: purchaseAmount,
+                                value: Number(purchaseAmount).toFixed(2),
                                 breakdown: {
                                     item_total: {
                                         currency_code: "USD",
-                                        value: purchaseAmount,
+                                        value: Number(purchaseAmount).toFixed(2),
                                     },
                                 },
                             },
@@ -44,11 +44,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
 
                 const data = await response.json();
-                if (!data.id) {
+
+                if (data.debug_id) {
+                    fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'createOrder', debug_id: data.debug_id })
+                    });
+                }
+
+                if (!data.order_id) {
                     throw new Error(data.message || "Unable to create PayPal order.");
                 }
                 
-                return data.id;
+                return data.order_id;
             } catch (error) {
                 showPaypalMessage(error.message, "error");
                 throw error;
@@ -106,8 +115,8 @@ document.addEventListener("DOMContentLoaded", function () {
             paymentDataRequest.allowedPaymentMethods = allowedPaymentMethods;
             paymentDataRequest.transactionInfo = getGoogleTransactionInfo(purchaseAmount, countryCode);
             paymentDataRequest.merchantInfo = {
-                merchantName: "AngellEYE Payment Demo",
-                merchantId: "BCR2DN5TRC26ZQ3J",
+                merchantName: checkoutData.brand_name,
+                merchantId: checkoutData.merchant_id,
             };
             paymentDataRequest.callbackIntents = ["PAYMENT_AUTHORIZATION"];
 
@@ -128,6 +137,8 @@ document.addEventListener("DOMContentLoaded", function () {
             try {
                 const id = await createOrder(purchaseAmount);
 
+                console.log(id);
+
                 const { status } = await googlePaySession.confirmOrder({
                     orderId: id,
                     paymentMethodData: paymentData.paymentMethodData,
@@ -145,6 +156,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 const captureResult = await response.json();
+
+                if (captureResult.debug_id) {
+                    fetch('../../core/paypal-api.php?action=ae_save_debug_ids', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'captureOrder', debug_id: captureResult.debug_id })
+                    });
+                }
 
                 if (captureResult.status === "COMPLETED") {
                     window.location.href = `getOrder.php?order_id=${id}`;

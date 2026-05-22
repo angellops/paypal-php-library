@@ -45,11 +45,11 @@ document.addEventListener("DOMContentLoaded", function () {
     
                 const data = await response.json();
     
-                if (!data.id) {
+                if (!data.order_id) {
                     throw new Error(data.message || "Unable to create PayPal order.");
                 }
     
-                return data.id;
+                return data.order_id;
             } catch (err) {
                 showPaypalMessage(error.message, "error");
                 throw err;

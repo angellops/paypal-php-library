@@ -29,19 +29,55 @@ $PayPal = new angelleye\PayPal\PayPalREST($PayPalConfig);
 
 $PayPalResult = $PayPal->getOrder($_GET['order_id']);
 
+// Store Debug IDs
+if (!empty($PayPalResult['debug_id'])) {
+    $_SESSION['paypal_debug_ids'][] = [
+        'action'   => 'getOrder',
+        'debug_id' => $PayPalResult['debug_id'],
+        'time'     => date('H:i:s'),
+    ];
+}
+
 if ( $PayPalResult['success'] ) {
     /**
      * Here we'll pull out data from the PayPal response.
      */
-    $_SESSION['paypal_transaction_id'] = $_GET['order_id'];
     $_SESSION['paypal_payer_id'] = isset($PayPalResult['order']['payer']['payer_id']) ? $PayPalResult['order']['payer']['payer_id'] : '';
-    $_SESSION['phone_number']   = isset($PayPalResult['order']['payer']['phone']['phone_number']['national_number']) ? $PayPalResult['order']['payer']['phone']['phone_number']['national_number'] : '';
-    $_SESSION['email']          = isset($PayPalResult['order']['payer']['email_address']) ? $PayPalResult['order']['payer']['email_address'] : '';
-    $_SESSION['first_name']     = isset($PayPalResult['order']['payer']['name']['given_name']) ? $PayPalResult['order']['payer']['name']['given_name'] : '';
-    $_SESSION['last_name']      = isset($PayPalResult['order']['payer']['name']['surname']) ? $PayPalResult['order']['payer']['name']['surname'] : '';
-    $_SESSION['billing_country_code'] = isset($PayPalResult['order']['payer']['address']['country_code']) ? $PayPalResult['order']['payer']['address']['country_code'] : '';
+    
+    $card_info = isset($PayPalResult['order']['payment_source']['google_pay']['card']) ? $PayPalResult['order']['payment_source']['google_pay']['card'] : [];
+    $_SESSION['card_brand'] = isset($card_info['brand']) ? $card_info['brand'] : '';
+    $_SESSION['card_last_digits'] = isset($card_info['last_digits']) ? $card_info['last_digits'] : '';
+    $_SESSION['billing_name'] = isset($card_info['name']) ? $card_info['name'] : '';
+    $_SESSION['billing_street'] = isset($card_info['billing_address']['address_line_1']) ? $card_info['billing_address']['address_line_1'] : '';
+    $_SESSION['billing_city'] = isset($card_info['billing_address']['admin_area_2']) ? $card_info['billing_address']['admin_area_2'] : '';
+    $_SESSION['billing_state'] = isset($card_info['billing_address']['admin_area_1']) ? $card_info['billing_address']['admin_area_1'] : '';
+    $_SESSION['billing_zip'] = isset($card_info['billing_address']['postal_code']) ? $card_info['billing_address']['postal_code'] : '';
+    $_SESSION['billing_country_code'] = isset($card_info['billing_address']['country_code']) ? $card_info['billing_address']['country_code'] : 'US';
+
+    // Initialize temporary arrays to collect data
+    $transaction_ids = [];
+    $paypal_fees = [];
+    if( isset( $PayPalResult['order']['purchase_units'] ) ) {
+        foreach( $PayPalResult['order']['purchase_units'] as $unit ) {
+            if( isset( $unit['payments']['captures'][0] ) ) {
+                $capture = $unit['payments']['captures'][0];
+                $transaction_ids[] = $capture['id'];
+                $paypal_fees[] = isset($capture['seller_receivable_breakdown']['paypal_fee']['value']) 
+                                ? $capture['seller_receivable_breakdown']['paypal_fee']['value'] 
+                                : '0.00';
+            }
+        }
+    }
+
+    // If only 1 item, store as string. If multiple, store as array.
+    $_SESSION['paypal_transaction_id'] = (count($transaction_ids) === 1) ? $transaction_ids[0] : $transaction_ids;
+    $_SESSION['paypal_fee']            = (count($paypal_fees) === 1) ? $paypal_fees[0] : $paypal_fees;
 
     $purchaseUnit = $PayPalResult['order']['purchase_units'][0];
+
+    // Payee Email Address
+    $_SESSION['email'] = isset($purchaseUnit['payee']['email_address']) ? $purchaseUnit['payee']['email_address'] : '';
+
     $shipping = isset( $purchaseUnit['shipping'] ) ? $purchaseUnit['shipping'] : [];
     $_SESSION['shipping_name'] = isset($shipping['name']['full_name']) ? $shipping['name']['full_name'] : '';
     $_SESSION['shipping_street'] = isset($shipping['address']['address_line_1']) ? $shipping['address']['address_line_1'] : '';
