@@ -50,9 +50,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
     
                 return data.order_id;
-            } catch (err) {
+            } catch (error) {
                 showPaypalMessage(error.message, "error");
-                throw err;
+                throw error;
             }
         }
     
@@ -170,7 +170,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                     shippingContact: event.payment.shippingContact,
                                 });
     
-                                console.log("Capturing payment...");
                                 const response = await fetch('../../core/paypal-api.php?action=ae_capture_order', {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },

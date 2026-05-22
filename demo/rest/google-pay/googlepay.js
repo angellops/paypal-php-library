@@ -137,8 +137,6 @@ document.addEventListener("DOMContentLoaded", function () {
             try {
                 const id = await createOrder(purchaseAmount);
 
-                console.log(id);
-
                 const { status } = await googlePaySession.confirmOrder({
                     orderId: id,
                     paymentMethodData: paymentData.paymentMethodData,
@@ -198,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const googlePaySession = sdkInstance.createGooglePayOneTimePaymentSession();
 
                 const paymentsClient = new google.payments.api.PaymentsClient({
-                    environment: "TEST",
+                    environment: checkoutData.environment_mode,
                     paymentDataCallbacks: {
                         onPaymentAuthorized: (paymentData) => onPaymentAuthorized(purchaseAmount, paymentData, googlePaySession),
                     },

@@ -32,6 +32,7 @@ $_SESSION['shopping_cart'] = array(
 	'shipping' => 0,
 	'handling' => 0,
 	'tax' => 0,
+  'environment_mode' => $sandbox ? 'TEST' : 'PRODUCTION',
   'merchant_id' => $rest_merchant_id,
   'brand_name' => 'AngellEYE Payment Demo',
   'buyer_email' => 'paypal-buyer@angelleye.com'
