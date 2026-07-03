@@ -70,6 +70,7 @@ $PayPalRequestData = [
                         'REFUND',
                         'ACCESS_MERCHANT_INFORMATION',
                         'VAULT',
+                        'BILLING_AGREEMENT'
                     ]     
                 ]
             ]

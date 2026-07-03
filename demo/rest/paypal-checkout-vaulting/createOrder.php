@@ -57,9 +57,6 @@ $orderPayload = [
             ]
         ]
     ],
-    'customer' => [
-        'id' => $_SESSION['paypal_customer_id']
-    ],
     'payment_source' => [
         'paypal' => [
             'experience_context' => [
@@ -73,6 +70,11 @@ $orderPayload = [
                 'payment_initiator' => 'MERCHANT',
                 'payment_type' => 'RECURRING',
                 'usage' => 'SUBSEQUENT'
+            ],
+            'attributes' => [
+                'customer' => [
+                    'id' => $_SESSION['paypal_customer_id']
+                ]
             ]
         ]
     ]
