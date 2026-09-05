@@ -12,6 +12,7 @@ Start with [AGENTS.md](AGENTS.md). Select the route for the task; links are cont
 | Plan or implement an authorized change | [Workflow](docs/agents/workflow.md) | Inputs, reviewable outputs, authorization and verification; then relevant source/spec |
 | Investigate a bug or regression | [Codebase map](docs/agents/codebase.md), [workflow verification](docs/agents/workflow.md#verification) | Existing behavior first; reproduce without initiating unintended payments |
 | Change packaging, runtime or local setup | [Codebase map](docs/agents/codebase.md#runtime-and-tooling) | Actual Composer/autoload files; distinguish local environment from v4 target |
+| Choose a branch, merge target or release line | [Branch and release policy](docs/agents/branching.md) | `main` stays v3-compatible before GA; v4 implementation PRs target `v4` |
 | Find prior reasoning | [Handoff router](docs/handoffs/CONTEXT.md) | Current state first, selected dated handoff only when needed |
 | Investigate superseded PRD/plans/issues | [Archive index](docs/archive/README.md) | Historical evidence only |
 | Maintain agent context | [ICM conventions](docs/agents/icm-conventions.md) | Layer ownership, scoped loading, link maintenance and audit |

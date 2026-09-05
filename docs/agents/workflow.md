@@ -8,6 +8,7 @@ Use the user's authorized scope and existing approvals. These contracts keep wor
 | --- | --- |
 | [Current state](../handoffs/current-state.md) — Layer 4 | Active artifact, approval status, next-step boundary |
 | [Codebase map](codebase.md) — Layer 3 | The affected integration surface, callers and runtime notes |
+| [Branch policy](branching.md) — Layer 3 | Select the correct base/PR target before making changes; distinguish merges from releases |
 | [Documentation router](../CONTEXT.md) — Layer 1 | Select relevant sections of the current spec rather than loading all documents |
 | Affected source and caller/template — implementation evidence | Actual signatures, data shapes, transport and dependencies |
 | Current task's spec/plan/handoff — Layer 4 | Only the artifact selected by current state or the user's request; archived plans are excluded |

@@ -15,6 +15,7 @@ This file is the canonical shared entrypoint. `CLAUDE.md` only imports it. Conte
 - Follow the user's current scope and existing approvals. A request to organize documentation does not authorize SDK implementation, publishing, payments, or external issue updates.
 - Use scoped context: load the named reference and relevant spec sections, then inspect the affected code and callers. Do not read every handoff, archived plan, or skill by default.
 - The active spec governs v4 intent; source and observed tests govern current behavior. Historical documents under `docs/archive/` are evidence only, never an execution queue.
+- Follow the [branch policy](docs/agents/branching.md): before v4 GA, shared docs and v3-compatible fixes target `main`; v4 implementation targets `v4` through topic-branch PRs.
 - Preserve the separation between Classic NVP, Adaptive XML, existing REST invoicing/facades, and Payflow. Verify field, response, consent and resource-origin semantics before claiming compatibility.
 - Never resolve an uncertain payment by replaying it on another backend. Do not infer success from an HTTP response, approval redirect, or missing error alone.
 - Keep credentials, tokens, card data and customer data out of logs, fixtures and committed context. Inspect example configuration rather than private configuration. Demos may submit real API operations; running a demo is not a harmless unit test.
