@@ -6,7 +6,7 @@ Status: Design sections approved; written specification self-reviewed; awaiting 
 
 Scope: Product behavior, architecture, compatibility, and release acceptance. Implementation planning is explicitly outside this document and this session.
 
-This specification supersedes [the old PRD](../../PRD.md) and **every file under [docs/v4-plans](../../v4-plans/README.md)**. Those files remain historical records, not implementation instructions. Their schedules, mapper counts, deletion lists, and linked issues do not carry approval into the replacement design. External issues and milestones have not been changed. The [brainstorming handoff](../../handoffs/2026-09-04-v4-brainstorming.md) records the preceding review and approvals.
+This specification supersedes [the old PRD](../../archive/v4-pre-replacement/PRD.md) and **every file under [the archived v4 plans](../../archive/v4-pre-replacement/v4-plans/README.md)**. Those files remain historical records, not implementation instructions. Their schedules, mapper counts, deletion lists, and linked issues do not carry approval into the replacement design. External issues and milestones have not been changed. The [brainstorming handoff](../../handoffs/2026-09-04-v4-brainstorming.md) records the preceding review and approvals.
 
 ## 1. Outcome and approved boundaries
 
