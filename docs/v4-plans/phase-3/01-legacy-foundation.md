@@ -1,5 +1,7 @@
 # Phase 3.1 — Legacy adapter foundation
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 3 · **Issue:** TBD · **PRD sections:** [§3 Legacy/](../../PRD.md#proposed-file-structure), [§4 Phase 3](../../PRD.md#phased-rollout)
 
 ## Context

@@ -1,5 +1,7 @@
 # Phase 1.3 — Auth + TokenStore
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 1 · **Issue:** TBD · **PRD sections:** [§3 REST/Auth/ and TokenStore/](../../PRD.md#proposed-file-structure), [§4 Phase 1](../../PRD.md#phased-rollout)
 
 ## Context

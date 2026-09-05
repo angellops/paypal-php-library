@@ -1,5 +1,7 @@
 # Phase 7.2 — OOB followups: abandoned flag, social assets, early-adopter triage
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 7 · **Issue:** TBD · **PRD sections:** [§4 Phase 7 / Post-GA followups](../../PRD.md#phased-rollout), [§6 Out-of-Band Items](../../PRD.md#out-of-band-items-the-maintainer-must-action)
 
 ## Context

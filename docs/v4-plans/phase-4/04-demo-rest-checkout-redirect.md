@@ -1,5 +1,7 @@
 # Phase 4.4 — demo/rest/checkout-redirect/ (server-only)
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 4 · **Issue:** TBD · **PRD sections:** [§2.1 AC2.5](../../PRD.md#user-stories--acceptance-criteria), [§5 Manual Demo Verification](../../PRD.md#manual-demo-verification)
 
 ## Context

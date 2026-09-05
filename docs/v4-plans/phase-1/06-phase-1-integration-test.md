@@ -1,5 +1,7 @@
 # Phase 1.6 — Phase 1 end-to-end sanity test
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 1 · **Issue:** TBD · **PRD sections:** [§5 Verification Strategy](../../PRD.md#5-verification-strategy), [§4 Phase 1](../../PRD.md#phased-rollout)
 
 ## Context

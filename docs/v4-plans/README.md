@@ -1,10 +1,12 @@
 # v4.0 plan-file index
 
+> **SUPERSEDED — historical plan collection.** Every plan in this directory is superseded by the [v4 replacement specification](../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Do not execute these plans. Fresh implementation planning belongs to a separate session after review of the replacement spec. Linked GitHub issues have not been updated.
+
 Plan/handoff files for the v4.0 modernization rollout. Each file is one focused session's scope of work. Each maps 1:1 to a GitHub issue under the [`v4.0` milestone](https://github.com/angellops/paypal-php-library/milestone/12) (52 issues, #286–#337).
 
-**Source of truth:** [`docs/PRD.md`](../PRD.md). When in doubt, the PRD wins; plan files defer to it.
+**Historical source:** [`docs/PRD.md`](../PRD.md), also superseded. The replacement specification now governs v4 design.
 
-**How to use these files.** Fresh iteration sessions pick a plan file, read the PRD sections it references, then execute. Each plan file follows the same structured template (Context → Scope → Files affected → Acceptance criteria → Verification → References) so sessions pick up cold. When work surfaces follow-ups, open new GitHub issues using the [`v4-plan-handoff` template](../../.github/ISSUE_TEMPLATE/v4-plan-handoff.md) so the rolling list stays uniform.
+**Historical organization.** The phase tables below preserve the previous plan and issue mapping for reference. They are not an execution queue or approval to update external issues.
 
 ---
 

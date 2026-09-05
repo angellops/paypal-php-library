@@ -1,5 +1,7 @@
 # Phase 1.2 — Http layer (Transport + Request/Response + RequestOptions + Prefer)
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 1 · **Issue:** TBD · **PRD sections:** [§3 REST/Http/](../../PRD.md#proposed-file-structure), [§4 Phase 1](../../PRD.md#phased-rollout)
 
 ## Context

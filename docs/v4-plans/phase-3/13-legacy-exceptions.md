@@ -1,5 +1,7 @@
 # Phase 3.13 — Legacy exceptions + auto-fallback dispatch
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 3 · **Issue:** TBD · **PRD sections:** [§3 Legacy/Exceptions/](../../PRD.md#proposed-file-structure), [§2.1 AC1.3](../../PRD.md#user-stories--acceptance-criteria)
 
 ## Context

@@ -1,5 +1,7 @@
 # Phase 7.1 — GA cutover: composer rename, GitHub move, Packagist publish, v4.0.0 tag
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 7 · **Issue:** TBD · **PRD sections:** [§4 Phase 7](../../PRD.md#phased-rollout), [§6 Out-of-Band Items](../../PRD.md#out-of-band-items-the-maintainer-must-action)
 
 ## Context

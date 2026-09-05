@@ -1,5 +1,7 @@
 # PayPal PHP SDK — REST Modernization Plan & PRD
 
+> **SUPERSEDED — historical document.** The [v4 replacement specification](superpowers/specs/2026-09-04-v4-sdk-modernization-design.md) replaces this PRD and all old v4 plans. Do not implement this document. Its original contents are preserved below for history.
+
 *Target release: **v4.0.0** (the Wekoodo rebrand). Current stable: **v3.0.5**, published as `angelleye/paypal-php-library`.*
 
 ## Context

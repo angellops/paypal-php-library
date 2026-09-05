@@ -1,5 +1,7 @@
 # Phase 1.5 — Support utilities (Logger, Json)
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 1 · **Issue:** TBD · **PRD sections:** [§3 Support/](../../PRD.md#proposed-file-structure), [§3 Security & Privacy](../../PRD.md#security--privacy)
 
 ## Context

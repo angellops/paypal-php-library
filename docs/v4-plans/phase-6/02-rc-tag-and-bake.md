@@ -1,5 +1,7 @@
 # Phase 6.2 — RC tag + 1-week bake
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 6 · **Issue:** TBD · **PRD sections:** [§4 Phase 6](../../PRD.md#phased-rollout), [§5 Pre-Release Checklist](../../PRD.md#pre-release-checklist)
 
 ## Context

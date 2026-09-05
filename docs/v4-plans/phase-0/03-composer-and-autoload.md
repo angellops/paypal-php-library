@@ -1,5 +1,7 @@
 # Phase 0.3 — composer.json modernization & PSR-4 autoload
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 0 · **Issue:** TBD · **PRD sections:** [§3 Integration Points / Composer](../../PRD.md#integration-points), [§4 Phase 0](../../PRD.md#phased-rollout)
 
 ## Context

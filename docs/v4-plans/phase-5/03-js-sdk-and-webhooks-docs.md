@@ -1,5 +1,7 @@
 # Phase 5.3 — JS SDK upgrade guide + webhooks doc
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 5 · **Issue:** TBD · **PRD sections:** [§4 Phase 5](../../PRD.md#phased-rollout)
 
 ## Context

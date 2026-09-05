@@ -1,5 +1,7 @@
 # Phase 6.1 — Manual demo verifications
 
+> **SUPERSEDED — do not execute.** This historical plan is replaced by the [v4 replacement specification](../../superpowers/specs/2026-09-04-v4-sdk-modernization-design.md). Its implementation instructions and acceptance criteria are no longer authoritative.
+
 **Phase:** 6 · **Issue:** TBD · **PRD sections:** [§5 Manual Demo Verification](../../PRD.md#manual-demo-verification)
 
 ## Context
